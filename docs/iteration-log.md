@@ -764,3 +764,30 @@ What still feels wrong / not done yet:
 
 Next:
 - Now only the genuinely large/blocked platform items remain (workspace lift — risky refactor; live DB — needs `DATABASE_URL`). Per the playbook, the loop should idle quietly unless the environment changes or new direction arrives.
+
+---
+
+## Steady state reached (Cycle 35 onward — idle)
+
+The whole actionable backlog is done: the original 10-cycle plan, both five-lens
+self-review rounds, and every P1/P2/P3. State: **34 cycles, 176 tests (23 files),
+typecheck clean, build green**, full WCAG-AA contrast (guarded + sync-checked),
+PWA-installable, framework-free core (enforced), live-AI parser wired (dormant
+without a key), trace export/edit/delete, remembered context, first-open intro,
+CI defined.
+
+Only two items remain, both deliberately **not** suitable for an autonomous
+green-keeping tick:
+1. **Workspace lift** (`packages/core` + `packages/design`) — a high-churn monorepo
+   refactor (workspaces config, moving files, retargeting `@/` imports). Its
+   precondition is already enforced (Cycle 27 purity guard). Best done in a
+   deliberate, supervised session, not by a 5-minute autonomous tick.
+2. **Live DB wiring** — needs a real `DATABASE_URL` and a prisma install; the
+   schema + `deserialize*` adapter boundary are already in place (Cycle 17).
+
+Per the tick playbook ("if three consecutive ticks find nothing safe, idle
+quietly"), the loop now idles: each tick re-checks the backlog and the env, runs
+a green sanity check, and skips without manufacturing churn. It will resume real
+work automatically if the environment changes (a `DATABASE_URL`/`ANTHROPIC_API_KEY`
+appears) or new direction is given. To hand off either remaining item, a human
+can green-light the workspace refactor or provide DB credentials.
