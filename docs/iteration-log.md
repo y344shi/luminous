@@ -380,3 +380,26 @@ What still feels wrong / not done yet:
 
 Next:
 - Extract `packages/core` + `packages/design` ahead of iOS, or a Prisma schema (Phase 2), or the key-gated live model call.
+
+---
+
+## Cycle 17: Phase-2 schema + validated (de)serialization seam
+
+What changed:
+- Added `prisma/schema.prisma` (User / Seed / Opportunity / DailyTrace) as an inert Phase-2 record — enums kept as strings to mirror `lib/types.ts`, arrays as Postgres `String[]`, plus `partial` on traces and helpful indexes. Not installed/wired (stays localStorage-first).
+- Added `lib/serialize.ts`: a DB-agnostic `deserializeSeed/Trace(+s)` boundary that **validates + coerces** unknown records (bad enums → safe defaults, malformed → dropped) and `serialize` is plain JSON. This is the seam a Prisma/Supabase adapter will sit behind.
+- Hardened `storage.loadSeeds/loadTraces` to run loaded data through the validators — a corrupt or partial localStorage entry can no longer crash the garden/journal.
+- New `tests/serialize.test.ts` (7): round-trips, drops id/title/date-less records, coerces bad enum/array/number fields, filters lists.
+
+Why:
+- The brief's Phase-2 DB shouldn't block the MVP, but the *boundary* should exist so persistence can swap without touching domain types — and validating on load is a real robustness win today (resilience to schema drift / corruption).
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 116/116 (14 files); `npm run build` green. The existing "survives corrupt JSON" storage test still passes.
+
+What still feels wrong / not done yet:
+- No live DB connection (no prisma install / DATABASE_URL) — deliberately deferred; logged as a follow-up.
+- `Opportunity` isn't persisted client-side yet (it's transient); the schema anticipates it.
+
+Next:
+- Extract `packages/core` + `packages/design` ahead of iOS, or wire the live model call, or a Cycle-10 five-lens self-review (`docs/morning-review.md`).

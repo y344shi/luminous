@@ -2,16 +2,17 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 16)
+## Status (Cycle 17)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 109/109 pass (13 files) |
+| Unit + integration | `npm test` | ✅ 116/116 pass (14 files) |
 | Production build | `npm run build` | ✅ 10 routes (incl. dynamic `/api/seeds/parse`, `/seeds/[id]`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 
-New in Cycle 16: `reminders.test.ts` — `isQuietNow` wrap-around/same-day/degenerate windows; budget clamping; combined `canRemindNow` gate.
+New in Cycle 17: `serialize.test.ts` — round-trips, drops malformed records, coerces bad enum/array/number fields; `storage` now validates on load.
+Cycle 16: `reminders.test.ts` — quiet-window + budget logic.
 Cycle 15: `apiParse.test.ts` — `/api/seeds/parse` draft + 400/413 guards.
 Cycle 14: `contrast.test.ts` — 50 WCAG assertions across 5 themes.
 Cycle 13: contrast tuning — primary/secondary ≥4.5, muted ≥3.0, on-accent ≥4.5.

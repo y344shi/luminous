@@ -1,4 +1,5 @@
 import type { Seed, DailyTrace, Settings, ThemeName } from "./types";
+import { deserializeSeeds, deserializeTraces } from "./serialize";
 
 export const STORAGE_KEYS = {
   seeds: "tdd.seeds",
@@ -42,13 +43,14 @@ function write<T>(key: string, value: T): void {
 
 export const storage = {
   loadSeeds(): Seed[] {
-    return read<Seed[]>(STORAGE_KEYS.seeds, []);
+    // Validate on load so a corrupt/partial record can't crash the garden.
+    return deserializeSeeds(read<unknown>(STORAGE_KEYS.seeds, []));
   },
   saveSeeds(seeds: Seed[]): void {
     write(STORAGE_KEYS.seeds, seeds);
   },
   loadTraces(): DailyTrace[] {
-    return read<DailyTrace[]>(STORAGE_KEYS.traces, []);
+    return deserializeTraces(read<unknown>(STORAGE_KEYS.traces, []));
   },
   saveTraces(traces: DailyTrace[]): void {
     write(STORAGE_KEYS.traces, traces);

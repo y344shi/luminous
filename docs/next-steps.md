@@ -23,7 +23,8 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 
 ## Platform
 - [ ] Extract `packages/core` + `packages/design` ahead of iOS.
-- [ ] Prisma schema + server storage adapter (Phase 2), offline-first.
+- [x] Prisma schema + storage adapter seam (Phase 2). _(Cycle 17 — schema + DB-agnostic validated (de)serialization shipped; live DB connection still deferred)_
+- [ ] Live DB wiring (Phase 2): install prisma, set DATABASE_URL, generate client, and add a server `storage` adapter using the existing `deserialize*` boundary; migrate localStorage → server on first login, offline-first.
 - [ ] Wire the live model call in `/api/seeds/parse` when `ANTHROPIC_API_KEY` is set: call Claude with ONLY the wish text, validate the response against the `SeedDraft` shape, fall back to `parseSeedMock` on any error. No key in this env, so left as a seam.
 
 - [x] Per-theme contrast audit (esp. `--text-muted` on `--surface-soft`) across all 5 themes; tune tokens where WCAG AA fails. _(Cycle 13)_
