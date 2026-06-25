@@ -7,7 +7,7 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 - [x] Now screen: one-tap context chips for "我在外面" / "天气不错" / "在电脑前" feeding `locationHint` + `isOutdoorWeatherGood`. _(Cycle 3)_
 - [x] Auto-offer `soft_ritual` theme at late night (non-forcing). _(Cycle 4)_
 - [x] Richer empty states + gentle Now→trace transition animation. _(Cycle 5)_
-- [ ] Self-written trace option (edit the generated sentence).
+- [x] Self-written trace option (edit the generated sentence). _(Cycle 6)_
 
 ## Quality
 - [ ] Integration test driving the full Now flow via the store (jsdom + Testing Library).

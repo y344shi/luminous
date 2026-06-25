@@ -31,6 +31,7 @@ type Store = {
   setSeedStatus: (id: string, status: SeedStatus) => void;
 
   addTrace: (trace: DailyTrace) => void;
+  updateTrace: (id: string, patch: Partial<DailyTrace>) => void;
   tracesForToday: () => DailyTrace[];
 
   setOpportunities: (opps: Opportunity[], ctx: ContextSnapshot) => void;
@@ -90,6 +91,12 @@ export const useStore = create<Store>((set, get) => ({
 
   addTrace: (trace) => {
     const traces = [trace, ...get().traces];
+    set({ traces });
+    storage.saveTraces(traces);
+  },
+
+  updateTrace: (id, patch) => {
+    const traces = get().traces.map((t) => (t.id === id ? { ...t, ...patch } : t));
     set({ traces });
     storage.saveTraces(traces);
   },

@@ -28,6 +28,7 @@ export default function NowFlow() {
   const seeds = useStore((s) => s.seeds);
   const setOpportunities = useStore((s) => s.setOpportunities);
   const addTrace = useStore((s) => s.addTrace);
+  const updateTrace = useStore((s) => s.updateTrace);
   const updateSeed = useStore((s) => s.updateSeed);
 
   const [step, setStep] = useState<Step>("context");
@@ -42,6 +43,9 @@ export default function NowFlow() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [chosen, setChosen] = useState<Opportunity | null>(null);
   const [traceText, setTraceText] = useState("");
+  const [savedTraceId, setSavedTraceId] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [draftText, setDraftText] = useState("");
 
   const isLateNight = useMemo(() => {
     const h = new Date().getHours();
@@ -89,7 +93,17 @@ export default function NowFlow() {
       updateSeed(seed.id, { status: "sleeping" });
     }
     setTraceText(trace.text);
+    setSavedTraceId(trace.id);
     setStep("trace");
+  }
+
+  function saveEditedTrace() {
+    const text = draftText.trim();
+    if (savedTraceId && text) {
+      updateTrace(savedTraceId, { text });
+      setTraceText(text);
+    }
+    setEditing(false);
   }
 
   // ── Render ────────────────────────────────────────────────
@@ -189,21 +203,56 @@ export default function NowFlow() {
   }
 
   // step === "trace"
+  const canEdit = savedTraceId != null;
   return (
     <div className="flex flex-col gap-5">
-      <BreathingCard className="tdd-bloom min-h-[160px] items-center justify-center text-center">
-        <p className="flex h-full min-h-[120px] items-center justify-center whitespace-pre-line px-2 text-[18px] leading-relaxed text-[var(--text)]">
-          {traceText || `${copy.now.later}。\n愿望还在，等下一个契机。`}
-        </p>
-      </BreathingCard>
-      <div className="flex flex-col gap-2">
-        <SoftButton full onClick={() => router.push("/")}>
-          回到今天
-        </SoftButton>
-        <SoftButton full variant="ghost" onClick={() => router.push("/traces")}>
-          看看今日痕迹
-        </SoftButton>
-      </div>
+      {editing ? (
+        <BreathingCard className="flex flex-col gap-3">
+          <textarea
+            autoFocus
+            value={draftText}
+            onChange={(e) => setDraftText(e.target.value)}
+            placeholder={copy.traces.editPlaceholder}
+            rows={4}
+            className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--surface-soft)] p-4 text-[16px] leading-relaxed text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)]"
+          />
+          <div className="flex gap-2">
+            <SoftButton full onClick={saveEditedTrace} disabled={!draftText.trim()}>
+              {copy.traces.editSave}
+            </SoftButton>
+            <SoftButton full variant="ghost" onClick={() => setEditing(false)}>
+              取消
+            </SoftButton>
+          </div>
+        </BreathingCard>
+      ) : (
+        <BreathingCard className="tdd-bloom min-h-[160px] items-center justify-center text-center">
+          <p className="flex h-full min-h-[120px] items-center justify-center whitespace-pre-line px-2 text-[18px] leading-relaxed text-[var(--text)]">
+            {traceText || `${copy.now.later}。\n愿望还在，等下一个契机。`}
+          </p>
+        </BreathingCard>
+      )}
+      {!editing && (
+        <div className="flex flex-col gap-2">
+          {canEdit && (
+            <button
+              onClick={() => {
+                setDraftText(traceText);
+                setEditing(true);
+              }}
+              className="self-center text-[13px] text-[var(--text-secondary)] underline-offset-4 hover:underline"
+            >
+              {copy.traces.edit}
+            </button>
+          )}
+          <SoftButton full onClick={() => router.push("/")}>
+            回到今天
+          </SoftButton>
+          <SoftButton full variant="ghost" onClick={() => router.push("/traces")}>
+            看看今日痕迹
+          </SoftButton>
+        </div>
+      )}
     </div>
   );
 }

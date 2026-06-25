@@ -59,6 +59,9 @@ export const copy = {
     title: "今日痕迹",
     subtitle: "不是成就列表。\n只是你曾经真实在场的瞬间。",
     empty: "还没有痕迹。\n今天做了一点点真实的事，就会出现在这里。",
+    edit: "改成自己的话",
+    editSave: "就这样",
+    editPlaceholder: "用你自己的话，写下今天没有消失的理由……",
   },
 
   settings: {

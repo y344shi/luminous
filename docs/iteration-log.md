@@ -129,3 +129,26 @@ What still feels wrong / not done yet:
 
 Next:
 - Quality: integration test driving the full Now flow via the store; copy-lint test for forbidden vocabulary.
+
+---
+
+## Cycle 6: Self-written traces (your own words)
+
+What changed:
+- After a completion/partial, the trace step now offers a quiet "改成自己的话" link. Tapping it swaps the bloom card for a textarea prefilled with the generated sentence; "就这样" saves the user's own words.
+- New `store.updateTrace(id, patch)` persists the edit; `NowFlow` tracks `savedTraceId` + edit draft state.
+- New copy under `copy.traces` (edit / editSave / editPlaceholder).
+- First `tests/store.test.ts` (2 tests): updateTrace rewrites + persists; leaves siblings untouched.
+
+Why:
+- The trace is the user's record of being in their own life — they should be able to phrase it themselves. Generated text is a gift, not a verdict. Editing is offered only when there is a saved trace (not for skipped/later).
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 36/36 (6 files); `npm run build` green.
+
+What still feels wrong / not done yet:
+- Can only edit the just-created trace from the Now flow; editing past traces from `/traces` is not yet possible.
+- This clears the entire "High value, low risk" backlog section.
+
+Next:
+- Quality section: copy-lint test (forbidden vocab) and/or a Now-flow integration test; then product depth (seed detail page).
