@@ -15,6 +15,7 @@ export default function BottomNav() {
   const pathname = usePathname();
   return (
     <nav
+      aria-label="主导航"
       className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--border)] bg-[var(--surface)]/90 backdrop-blur-md"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
@@ -25,12 +26,14 @@ export default function BottomNav() {
             <Link
               key={t.href}
               href={t.href}
+              aria-current={active ? "page" : undefined}
               className={cx(
                 "flex flex-1 flex-col items-center gap-1 py-3 text-[12px] transition-colors",
                 active ? "text-[var(--accent)]" : "text-[var(--text-muted)]"
               )}
             >
               <span
+                aria-hidden
                 className={cx(
                   "h-1.5 w-1.5 rounded-full transition-all",
                   active ? "bg-[var(--accent)]" : "bg-transparent"

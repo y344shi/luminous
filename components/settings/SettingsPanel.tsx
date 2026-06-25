@@ -115,6 +115,7 @@ export default function SettingsPanel() {
           <span className="text-[15px] text-[var(--text)]">每天最多</span>
           <div className="flex items-center gap-3">
             <button
+              aria-label="减少每天契机次数"
               onClick={() =>
                 updateSettings({
                   maxRemindersPerDay: Math.max(0, settings.maxRemindersPerDay - 1),
@@ -128,6 +129,7 @@ export default function SettingsPanel() {
               {settings.maxRemindersPerDay}
             </span>
             <button
+              aria-label="增加每天契机次数"
               onClick={() =>
                 updateSettings({
                   maxRemindersPerDay: Math.min(8, settings.maxRemindersPerDay + 1),

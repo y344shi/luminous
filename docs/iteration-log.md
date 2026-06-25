@@ -267,3 +267,27 @@ What still feels wrong / not done yet:
 
 Next:
 - Accessibility pass (focus states, aria labels, contrast across themes), or extract `packages/core`/`packages/design` ahead of iOS.
+
+---
+
+## Cycle 12: Accessibility pass (focus + ARIA)
+
+What changed:
+- Global keyboard `:focus-visible` ring (2px accent, offset) that shows for keyboard users only; pointer focus stays clean. Theme-aware via `--accent`.
+- Bottom nav: `aria-label="主导航"`, `aria-current="page"` on the active tab, `aria-hidden` on its decorative dot.
+- Selectable chips (mood/energy/free/location) now expose `aria-pressed`; the 天气不错 `ToggleChip` already did.
+- Icon-only reminder steppers got accessible names ("增加/减少每天契机次数").
+- New `tests/a11y.test.tsx` (3): mood chip toggles `aria-pressed`; steppers + AI-toggle expose accessible labels.
+
+Why:
+- The app should be usable one-handed *and* by keyboard/screen-reader users. Focus visibility and accurate state/labels are the highest-leverage a11y wins and cost nothing visually for pointer users.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 55/55 (10 files); `npm run build` green.
+
+What still feels wrong / not done yet:
+- Per-theme **contrast** wasn't formally audited (esp. `--text-muted` on `--surface-soft`); jsdom can't measure it. Flagged for a deeper manual/tooling pass.
+- No skip-link / landmark `<main>` aria beyond the existing structure.
+
+Next:
+- Platform: extract `packages/core` + `packages/design` ahead of iOS, or a per-theme contrast audit.

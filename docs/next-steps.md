@@ -13,7 +13,7 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 - [x] Integration test driving the full Now flow via the store (jsdom + Testing Library). _(Cycle 7)_
 - [x] Copy-lint test: assert `forbiddenWords` never appear in rendered screens. _(Cycle 8)_
 - [x] Test that `data-theme` is applied + persisted. _(Cycle 9)_
-- [ ] Accessibility pass: focus states, aria labels, contrast in every theme.
+- [x] Accessibility pass: focus states, aria labels, contrast in every theme. _(Cycle 12 — focus + ARIA done; per-theme contrast audit still worth a deeper look)_
 
 ## Product depth
 - [x] Seed detail page `/seeds/[id]` (edit, sleep, archive). _(Cycle 10)_
@@ -24,6 +24,8 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 ## Platform
 - [ ] Extract `packages/core` + `packages/design` ahead of iOS.
 - [ ] Prisma schema + server storage adapter (Phase 2), offline-first.
+
+- [ ] Per-theme contrast audit (esp. `--text-muted` on `--surface-soft`) across all 5 themes; tune tokens where WCAG AA fails.
 
 ## Self-review lenses to run (Cycle 10)
 Product designer · ISFP user · tired user at 3AM · technical maintainer · future iOS dev → write `docs/morning-review.md`.

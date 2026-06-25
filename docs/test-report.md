@@ -2,16 +2,17 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 11)
+## Status (Cycle 12)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 52/52 pass (9 files) |
+| Unit + integration | `npm test` | ✅ 55/55 pass (10 files) |
 | Production build | `npm run build` | ✅ 9 routes (incl. `/manifest.webmanifest`, dynamic `/seeds/[id]`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 
-New in Cycle 11: `store.test.ts` — `updateSettings` persists quiet hours + max reminders.
+New in Cycle 12: `a11y.test.tsx` — mood chips toggle `aria-pressed`; reminder steppers + AI toggle expose accessible labels.
+Cycle 11: `store.test.ts` — `updateSettings` persists quiet hours + max reminders.
 Cycle 10: `store.test.ts` — seed-detail edit persists; full sleep→wake→archive→restore lifecycle.
 Cycle 9: `theme.test.tsx` — `AppProvider` applies `<html data-theme>`; `setTheme` updates DOM + persists.
 Cycle 8: `copyLint.test.tsx` — copy dict + 6 rendered screens free of forbidden vocab.

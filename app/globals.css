@@ -178,3 +178,15 @@ body {
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
+
+/* Keyboard accessibility: a clear, on-brand focus ring for keyboard users
+   only (pointer interactions stay clean). Works across every theme via
+   --accent, and sits outside rounded corners with an offset. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}

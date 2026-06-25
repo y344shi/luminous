@@ -75,6 +75,7 @@ function Chip({
   return (
     <button
       onClick={onClick}
+      aria-pressed={active}
       className={cx(
         "rounded-full border px-4 py-2 text-[14px] transition-all duration-200 active:scale-[0.97]",
         active
