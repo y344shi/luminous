@@ -41,5 +41,12 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 - [x] **P2** Add CI (`.github/workflows`) running typecheck + test + build. _(Cycle 26 — path-scoped workflow at the monorepo root; runs only on `dreams/seize_the_day/**` changes. Can't be exercised in this env; YAML validated.)_
 - [x] **P2** Show top opportunity with 1–2 muted "或者……" peeks instead of one-at-a-time only. _(Cycle 25)_
 
+## Polish (from the Cycle-28 morning review, round 2)
+- [ ] **P2** Export/keep traces — a pure `formatTracesForExport()` + a copy-to-clipboard / download action ("把你的痕迹存下来"). The journal is the user's record; the only data action today is destructive reset.
+- [ ] **P2** Remember last mood/energy in the Now flow (persist + pre-select) so a returning user isn't re-quizzed each time.
+- [ ] **P2** First-open intro card (dismissible) introducing Seed / Trace / "别消失", reusing the samples-note dismissal pattern.
+- [ ] **P3** Per-trace delete / tidy affordance + an eventual journal size cap (traces are append-only and unbounded).
+- [ ] **P3** Optionally record a gentle recovery trace for "今天先这样" (onLater currently saves nothing).
+
 ## Self-review lenses to run (Cycle 10)
 - [x] Product designer · ISFP user · tired user at 3AM · technical maintainer · future iOS dev → `docs/morning-review.md`. _(Cycle 18)_

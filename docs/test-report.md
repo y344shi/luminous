@@ -2,7 +2,7 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 27)
+## Status (Cycle 28 — docs-only self-review round 2; numbers unchanged from Cycle 27)
 
 | Check | Command | Result |
 | --- | --- | --- |

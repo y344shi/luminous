@@ -74,3 +74,56 @@ It feels like a life-anchor, not a todo app. The core loop is emotionally true
 and technically guarded. The remaining work is polish (aesthetic consistency,
 human dates) and platform (workspace split, live DB/AI) — none of it threatens
 the soul of the product.
+
+---
+
+# Round 2 — Cycle 28
+
+All Round-1 P1/P2 items shipped (Cycles 19–27): soft confirm, token-sync guard,
+human dates, `/now` late-night offer, form labels, first-run garden note,
+opportunity peeks, CI, core-purity guard. State: 154 tests (19 files), 10 routes,
+typecheck clean, build green. A fresh pass through the five lenses, grounded in
+the current code.
+
+## 1. Product designer
+- **No first-open orientation.** The concepts (Seed / 锚点 / Trace, why "别消失")
+  are never introduced; a new user meets a pre-seeded garden with no framing. One
+  calm, dismissible intro card on first run would earn trust. *(P2)*
+- **"今天先这样" (onLater) records nothing.** It shows a trace-styled card but no
+  trace is saved — a returning user may expect "I chose to rest" to count. Could
+  optionally save a gentle recovery trace, or make the non-saving explicit. *(P3)*
+
+## 2. ISFP user
+- **Now re-asks mood + energy every time** (`NowFlow` local state resets per
+  mount). Remembering the last pick (and offering it pre-selected) removes a
+  decision for a returning user — fewer taps, less "being quizzed." *(P2)*
+- Peeks + one-primary-action flow feels good; nothing new jarring.
+
+## 3. Tired user at 3 AM
+- Late-night gate + Soft Ritual offer on Home **and** Now are solid now. No new
+  3AM hazard found. The quiet-hours indicator is honest about doing nothing yet.
+
+## 4. Technical maintainer
+- **Traces are append-only and unbounded** — no per-trace delete, and the journal
+  grows forever in one localStorage key. Low urgency, but a tidy/delete affordance
+  and an eventual size cap are worth it. *(P3)*
+- `Opportunity` still isn't persisted (transient) though the schema/serializer
+  anticipate it. Fine; note it. *(P3)*
+
+## 5. Future iOS developer
+- Core-purity is now **enforced** (Cycle 27) — the precondition is locked. The
+  remaining lift (workspaces, move files, retarget `@/`) is the real work and is
+  deliberately not an autonomous-tick task. No change.
+
+## Ownership / privacy (extra lens this round)
+- **No way to export/keep your traces.** They're the user's "year rings," yet the
+  only data action is destructive reset. A copy-to-clipboard / text export of the
+  journal ("把你的痕迹存下来") fits the product's soul (your real moments are
+  yours) and is safe + testable via a pure formatter. *(P2 — strongest new item)*
+
+## Top fixes to schedule (added to next-steps.md, "Round 2")
+1. **P2** Export/keep traces — pure `formatTracesForExport()` + a copy/download action.
+2. **P2** Remember last mood/energy in the Now flow (persist + pre-select).
+3. **P2** First-open intro card (dismissible), reusing the samples-note pattern.
+4. **P3** Per-trace delete (or tidy) + eventual journal size cap.
+5. **P3** Optionally record a gentle trace for "今天先这样".

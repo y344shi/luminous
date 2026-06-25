@@ -612,3 +612,26 @@ What still feels wrong / not done yet:
 
 Next:
 - Polish + safe-precondition work is exhausted; a fresh five-lens self-review (Cycle 28) to regenerate a sharp backlog, or pause on the remaining blocked/large items.
+
+---
+
+## Cycle 28: Self-review round 2 (regenerate backlog)
+
+What changed:
+- Appended a "Round 2" section to `docs/morning-review.md`: a fresh five-lens pass (plus an ownership/privacy lens) over the post-Cycle-27 app, grounded in real code checks (confirmed: no remembered mood/energy, no trace export, no onboarding, no per-trace delete).
+- Added a "Polish (round 2)" section to `docs/next-steps.md` with the new findings, prioritized.
+
+Why:
+- The three open backlog items are all large or environment-blocked (workspace lift, live DB, key-gated model call). Forcing them in an autonomous green-keeping tick is the wrong risk. Round 1's review (Cycle 18) drove nine green cycles; a second review now — after the app materially changed — regenerates a safe, high-value backlog so the loop keeps making real progress instead of idling or churning.
+
+New findings (now scheduled):
+- **P2** Export/keep traces (the journal is the user's "year rings"; only reset exists today) — strongest new item.
+- **P2** Remember last mood/energy in Now (fewer decisions for returning users).
+- **P2** First-open intro card introducing the concept.
+- **P3** Per-trace delete + journal size cap; optional recovery trace for "今天先这样".
+
+What was tested:
+- Docs-only. State stays green: 154 tests, typecheck clean, build green (no code changed).
+
+Next:
+- Implement the round-2 P2s, starting with trace export (pure formatter + copy action — safe and testable).
