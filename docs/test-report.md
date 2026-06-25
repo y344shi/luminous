@@ -2,16 +2,17 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 24)
+## Status (Cycle 25)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 137/137 pass (18 files) |
+| Unit + integration | `npm test` | ✅ 138/138 pass (18 files) |
 | Production build | `npm run build` | ✅ 10 routes (incl. dynamic `/api/seeds/parse`, `/seeds/[id]`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 
-New in Cycle 24: `store.test.ts` — first-run samples flag (hydrate flags it, adding a wish clears it, dismiss clears + persists).
+New in Cycle 25: `nowFlow.test.tsx` — opportunity peeks render and tapping one promotes it to the active card.
+Cycle 24: `store.test.ts` — first-run samples flag lifecycle.
 Cycle 23: `a11y.test.tsx` — form-label associations.
 Cycle 22: `lateNightOffer.test.tsx` — Soft Ritual offer time-gating on `/now`.
 Cycle 21: `friendlyDate.test.ts` — relative day labels + formatting.

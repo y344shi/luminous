@@ -167,19 +167,40 @@ export default function NowFlow() {
     }
     const o = opps[activeIndex];
     const seed = findSeed(seeds, o.seedId)!;
+    const peeks = opps
+      .map((opp, i) => ({ opp, i, seed: findSeed(seeds, opp.seedId) }))
+      .filter((p) => p.i !== activeIndex && p.seed);
     return (
-      <OpportunityCard
-        key={o.id}
-        opportunity={o}
-        seed={seed}
-        canSwap={opps.length > 1}
-        onStart={() => handleStart(o)}
-        onSwap={handleSwap}
-        onLater={() => {
-          setTraceText("");
-          setStep("trace");
-        }}
-      />
+      <div className="flex flex-col gap-4">
+        <OpportunityCard
+          key={o.id}
+          opportunity={o}
+          seed={seed}
+          canSwap={opps.length > 1}
+          onStart={() => handleStart(o)}
+          onSwap={handleSwap}
+          onLater={() => {
+            setTraceText("");
+            setStep("trace");
+          }}
+        />
+        {peeks.length > 0 && (
+          <div className="flex flex-col gap-2 px-1">
+            <p className="text-[12px] text-[var(--text-muted)]">或者，现在也可以：</p>
+            <div className="flex flex-wrap gap-2">
+              {peeks.map((p) => (
+                <button
+                  key={p.opp.id}
+                  onClick={() => setActiveIndex(p.i)}
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-[13px] text-[var(--text-secondary)] transition-all active:scale-[0.97] hover:bg-[var(--surface-soft)]"
+                >
+                  {p.seed!.title}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     );
   }
 

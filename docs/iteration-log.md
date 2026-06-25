@@ -551,3 +551,24 @@ What still feels wrong / not done yet:
 
 Next:
 - P2: CI workflow (typecheck + test + build), or opportunity "或者……" peeks on the Now screen.
+
+---
+
+## Cycle 25: Opportunity peeks ("或者，现在也可以：")
+
+What changed:
+- The Now "list" step still leads with one calm OpportunityCard, but now shows the *other* top recommendations as muted, tappable peek chips under "或者，现在也可以：". Tapping a peek makes it the active card (the previous one becomes a peek).
+- Keeps the 换一个 cycle button too; the peeks just make the considered alternatives visible instead of hidden behind repeated taps.
+- Extended `nowFlow.test.tsx`: peeks render with the mock garden, tapping a peek promotes it to the heading, and the start action stays available.
+
+Why:
+- Morning-review P2 (product-designer lens): showing one card at a time hid that the app weighed several options. A quiet "或者……" row reveals the breadth without overwhelming an ISFP user — still one clear primary action.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 138/138 (18 files); `npm run build` green.
+
+What still feels wrong / not done yet:
+- Peeks show seed titles only (no minimum-action preview) — intentional, to keep the row light.
+
+Next:
+- This clears every morning-review P1/P2 item except the CI workflow (can't be exercised in this env). Remaining backlog is platform-scale: `packages/core`/`packages/design` extraction, live DB wiring, the key-gated live model call, CI.

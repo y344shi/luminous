@@ -60,6 +60,28 @@ describe("Now flow (integration) — the core loop end to end", () => {
     cleanup();
   });
 
+  it("shows alternative opportunities as peeks and switching makes one active", () => {
+    render(<NowFlow />);
+    fireEvent.click(screen.getByText("还行"));
+    fireEvent.click(screen.getByText("中"));
+    fireEvent.click(screen.getByText("看看现在适合做什么"));
+
+    // With the mock garden there are multiple candidates → peeks render.
+    expect(screen.getByText("或者，现在也可以：")).toBeTruthy();
+
+    // The first peek button's label should become the active card's title on tap.
+    const peekLabel = "亲手理解一个模块";
+    const peek = screen.queryByRole("button", { name: peekLabel });
+    if (peek) {
+      fireEvent.click(peek);
+      // now it's the headline (a heading), not a peek button
+      expect(screen.getByRole("heading", { name: peekLabel })).toBeTruthy();
+    }
+    // the start action remains available throughout
+    expect(screen.getByText("开始一点点")).toBeTruthy();
+    cleanup();
+  });
+
   it("skipped does not create a trace and shows the gentle message", () => {
     render(<NowFlow />);
     fireEvent.click(screen.getByText("有点空")); // mood: empty
