@@ -14,6 +14,7 @@ export const STORAGE_KEYS = {
   lastPick: "tdd.lastPick",
   introSeen: "tdd.introSeen",
   home: "tdd.home",
+  reminders: "tdd.reminders",
 } as const;
 
 export const defaultSettings: Settings = {
@@ -22,7 +23,10 @@ export const defaultSettings: Settings = {
   quietHoursStart: 23,
   quietHoursEnd: 8,
   maxRemindersPerDay: 3,
+  nudgesEnabled: false,
 };
+
+export type RemindersToday = { date: string; count: number };
 
 function isBrowser(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
@@ -108,6 +112,13 @@ export const storage = {
   },
   saveHome(c: Coords | null): void {
     write(STORAGE_KEYS.home, c);
+  },
+  /** How many gentle reminders were sent today (for the daily budget). */
+  loadReminders(): RemindersToday | null {
+    return read<RemindersToday | null>(STORAGE_KEYS.reminders, null);
+  },
+  saveReminders(r: RemindersToday): void {
+    write(STORAGE_KEYS.reminders, r);
   },
   clearAll(): void {
     if (!isBrowser()) return;

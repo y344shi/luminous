@@ -58,9 +58,29 @@ export default function SettingsPanel() {
   const [confirmReset, setConfirmReset] = useState(false);
   // Client-only so the live quiet state can't cause a hydration mismatch.
   const [quietNow, setQuietNow] = useState<boolean | null>(null);
+  const [notifyState, setNotifyState] = useState<"unsupported" | "default" | "granted" | "denied">("default");
   useEffect(() => {
     setQuietNow(isQuietNow(settings, new Date()));
   }, [settings.quietHoursStart, settings.quietHoursEnd, settings]);
+  useEffect(() => {
+    if (typeof Notification === "undefined") setNotifyState("unsupported");
+    else setNotifyState(Notification.permission as "default" | "granted" | "denied");
+  }, []);
+
+  async function toggleNudges() {
+    if (settings.nudgesEnabled) {
+      updateSettings({ nudgesEnabled: false });
+      return;
+    }
+    if (typeof Notification === "undefined") {
+      setNotifyState("unsupported");
+      return;
+    }
+    let perm = Notification.permission;
+    if (perm === "default") perm = await Notification.requestPermission();
+    setNotifyState(perm as "default" | "granted" | "denied");
+    if (perm === "granted") updateSettings({ nudgesEnabled: true });
+  }
 
   if (!hydrated) return null;
 
@@ -99,6 +119,40 @@ export default function SettingsPanel() {
               )}
             />
           </button>
+        </BreathingCard>
+      </Section>
+
+      <Section title={copy.settings.nudgeLabel}>
+        <BreathingCard className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[15px] text-[var(--text)]">
+              {settings.nudgesEnabled ? copy.settings.nudgeOn : copy.settings.nudgeOff}
+            </span>
+            <button
+              onClick={toggleNudges}
+              disabled={notifyState === "unsupported"}
+              className={cx(
+                "relative h-7 w-12 rounded-full transition-colors disabled:opacity-50",
+                settings.nudgesEnabled ? "bg-[var(--accent)]" : "bg-[var(--surface-soft)]"
+              )}
+              aria-label="切换轻轻提醒"
+              aria-pressed={settings.nudgesEnabled}
+            >
+              <span
+                className={cx(
+                  "absolute top-1 h-5 w-5 rounded-full bg-[var(--surface)] transition-all",
+                  settings.nudgesEnabled ? "left-6" : "left-1"
+                )}
+              />
+            </button>
+          </div>
+          <p className="text-[12px] leading-relaxed text-[var(--text-muted)]">
+            {notifyState === "unsupported"
+              ? copy.settings.nudgeUnsupported
+              : notifyState === "denied"
+                ? copy.settings.nudgeDenied
+                : copy.settings.nudgeHelp}
+          </p>
         </BreathingCard>
       </Section>
 

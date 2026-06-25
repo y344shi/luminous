@@ -119,4 +119,5 @@ export type Settings = {
   quietHoursStart: number; // hour 0-23
   quietHoursEnd: number; // hour 0-23
   maxRemindersPerDay: number;
+  nudgesEnabled: boolean;
 };

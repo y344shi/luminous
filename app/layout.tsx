@@ -4,6 +4,7 @@ import "./globals.css";
 import AppProvider from "@/components/AppProvider";
 import AppShell from "@/components/layout/AppShell";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import NudgeManager from "@/components/NudgeManager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,6 +51,7 @@ export default function RootLayout({
           <AppShell>{children}</AppShell>
         </AppProvider>
         <ServiceWorkerRegister />
+        <NudgeManager />
       </body>
     </html>
   );
