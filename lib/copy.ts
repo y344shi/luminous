@@ -87,15 +87,25 @@ export const copy = {
 } as const;
 
 // Forbidden vocabulary — used by tests/lint to keep the tone safe.
+// Note: the bare word 任务 is NOT banned — the app intentionally says
+// "这些不是任务" to contrast itself with todo apps. What we forbid is todo
+// *framing*, *mechanics*, and *shaming* actually leaking into our own voice.
 export const forbiddenWords = [
-  "任务",
+  // todo framing / mechanics
+  "待办",
+  "任务列表",
+  "完成任务",
+  "todo",
+  "to-do",
   "deadline",
   "overdue",
-  "失败",
   "高优先级",
+  "优先级",
   "完成率",
   "streak",
   "打卡",
+  // shaming
+  "失败",
   "you must",
   "you failed",
 ];

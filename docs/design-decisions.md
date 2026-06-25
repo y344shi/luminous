@@ -41,6 +41,11 @@ Product/engineering decisions, with reasons and tradeoffs. Append as we go.
 ### D9: `transit` added to `SemanticTime`
 - **Reason:** The brief's mock data uses it as a preferred-time window for tiny actions, though the type omitted it. Treated as a soft "on the move" context.
 
+### D11: The bare word 任务 is allowed; todo *framing* is what's forbidden
+- **Reason:** The garden subtitle "这些不是任务" is core copy — it names the thing the app refuses to be. Banning the substring 任务 would forbid the very sentence that expresses the philosophy.
+- **What's forbidden instead:** todo mechanics/framing (待办, 任务列表, 完成任务, todo, deadline, overdue, 优先级, 完成率, streak, 打卡) and shaming (失败, you must/failed).
+- **Tradeoff:** A curated, non-exhaustive list — must grow as copy grows. Enforced by the Cycle-8 copy-lint test over both the `copy` dict and rendered screens.
+
 ### D10: PWA via Next metadata `manifest.ts` + a hand-written `sw.js`, no PWA plugin
 - **Reason:** Zero new runtime deps; full control over the (deliberately tiny, fail-soft) caching strategy. Service worker registers in production only, so it can never interfere with dev/HMR.
 - **Alternatives:** `next-pwa`/Serwist.

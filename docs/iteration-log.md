@@ -175,3 +175,25 @@ What still feels wrong / not done yet:
 
 Next:
 - Copy-lint test (forbidden vocabulary across copy + rendered screens); then `data-theme` persistence test; then product depth.
+
+---
+
+## Cycle 8: Copy-lint test (tone guard)
+
+What changed:
+- New `tests/copyLint.test.tsx`: (1) recursively scans the whole `copy` dictionary for forbidden vocabulary; (2) renders Home, Seed garden, Trace journal, Settings, Now flow, and Add seed and asserts no forbidden word appears in visible text.
+- Refined `forbiddenWords`: dropped the bare word 任务 (the app *intentionally* says "这些不是任务" to contrast with todo apps) and instead bans todo **framing/mechanics** (待办, 任务列表, 完成任务, todo, deadline, overdue, 优先级, 完成率, streak, 打卡) and **shaming** (失败, you must/failed). See decision D11.
+
+Why:
+- Tone is the product. A lint that fires when our own voice drifts toward todo-app/shaming language protects the soul of the app across future edits — including edits made by later autonomous ticks.
+
+What was tested:
+- `npm test` → 46/46 (8 files); `npm run typecheck` clean; `npm run build` green.
+- The lint genuinely fired first (on a naive 任务 match), which drove the more precise forbidden list.
+
+What still feels wrong / not done yet:
+- Forbidden list is curated, not exhaustive; extend as new copy lands.
+- Rendered-screen scan covers the main screens but not every transient sub-state (e.g. completion sheet, draft preview).
+
+Next:
+- `data-theme` applied + persisted test; then product depth (seed detail page) or accessibility pass.

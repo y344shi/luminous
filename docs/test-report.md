@@ -2,17 +2,18 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 7)
+## Status (Cycle 8)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 39/39 pass (7 files) |
+| Unit + integration | `npm test` | ✅ 46/46 pass (8 files) |
 | Production build | `npm run build` | ✅ 8 routes (incl. `/manifest.webmanifest`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 
-New in Cycle 7: `nowFlow.test.tsx` (integration) — renders the real Now flow and drives mood→opportunity→complete/partial/skipped through the live store, asserting trace creation, partial non-shaming, and skipped-creates-nothing.
-Cycle 6: `store.test.ts` — `updateTrace` rewrites + persists; leaves siblings untouched.
+New in Cycle 8: `copyLint.test.tsx` — scans the `copy` dict + renders Home/Garden/Traces/Settings/Now/Add and asserts no forbidden todo/shaming vocabulary appears.
+Cycle 7: `nowFlow.test.tsx` (integration) — full core loop through the live store.
+Cycle 6: `store.test.ts` — `updateTrace` rewrites + persists.
 
 New in Cycle 4: `storage.test.ts` — late-night theme-offer dismissal token persists + clears.
 Cycle 3: `scoring.test.ts` — outdoor+good-weather surfaces "坐一会野外"; at-computer surfaces a computer-bound creation seed.

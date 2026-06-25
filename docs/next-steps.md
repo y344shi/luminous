@@ -11,7 +11,7 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 
 ## Quality
 - [x] Integration test driving the full Now flow via the store (jsdom + Testing Library). _(Cycle 7)_
-- [ ] Copy-lint test: assert `forbiddenWords` never appear in rendered screens.
+- [x] Copy-lint test: assert `forbiddenWords` never appear in rendered screens. _(Cycle 8)_
 - [ ] Test that `data-theme` is applied + persisted.
 - [ ] Accessibility pass: focus states, aria labels, contrast in every theme.
 
