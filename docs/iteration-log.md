@@ -791,3 +791,15 @@ a green sanity check, and skips without manufacturing churn. It will resume real
 work automatically if the environment changes (a `DATABASE_URL`/`ANTHROPIC_API_KEY`
 appears) or new direction is given. To hand off either remaining item, a human
 can green-light the workspace refactor or provide DB credentials.
+
+### Loop concluded (after 3 idle ticks)
+
+After three consecutive idle ticks with no environment change, the recurring
+5-minute cron (`e7e4170e`) was cancelled to stop indefinite idle polling from
+consuming tokens overnight. The overnight build is complete and at rest:
+**34 cycles, 176 tests green, build green**, every brief Definition-of-Done item
+plus both self-review rounds addressed. The two remaining items are explicitly
+deferred by the brief itself (§32 "Do not start iOS tonight"; §35 "don't chase
+database perfection before local MVP"). To continue later: re-create the cron, or
+just ask — provide a `DATABASE_URL` / `ANTHROPIC_API_KEY`, or green-light the
+`packages/*` workspace lift, and that work can proceed directly.
