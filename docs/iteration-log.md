@@ -572,3 +572,24 @@ What still feels wrong / not done yet:
 
 Next:
 - This clears every morning-review P1/P2 item except the CI workflow (can't be exercised in this env). Remaining backlog is platform-scale: `packages/core`/`packages/design` extraction, live DB wiring, the key-gated live model call, CI.
+
+---
+
+## Cycle 26: CI workflow (typecheck + test + build)
+
+What changed:
+- Added `.github/workflows/seize-the-day-ci.yml` at the **monorepo root** (GitHub only reads workflows from the repo root, not from `dreams/seize_the_day/`). It is **path-scoped** to `dreams/seize_the_day/**`, so it never runs for the monorepo's other dreams.
+- The job: checkout → setup-node 22 (npm cache keyed to the project lockfile) → `npm ci` → `npm run typecheck` → `npm test` → `npm run build`, all with `working-directory: dreams/seize_the_day`.
+- Committed alongside `dreams/seize_the_day` (an explicit extra `git add` of the root workflow path, since it lives outside the usual project dir).
+
+Why:
+- Morning-review P2 (maintainer lens): every cycle's green-keeping was manual. This locks typecheck + 138 tests + build into automation for any push/PR touching the project — the natural home for the discipline this loop has followed by hand.
+
+What was tested:
+- The workflow YAML was validated (key presence + `yaml.safe_load`). It **cannot be executed in this environment** (no GitHub runner) — flagged honestly. The app itself stays green: 138 tests, build green.
+
+What still feels wrong / not done yet:
+- Unverified end-to-end until the branch is pushed to GitHub. The blast radius is bounded by the path filter.
+
+Next:
+- Only platform-scale items remain (packages extraction, live DB, key-gated model call). The next tick will likely run a fresh five-lens self-review to regenerate a sharp backlog, since the polish list is exhausted and the rest is large/blocked.

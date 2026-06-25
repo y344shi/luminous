@@ -2,7 +2,7 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 25)
+## Status (Cycle 26)
 
 | Check | Command | Result |
 | --- | --- | --- |
@@ -10,8 +10,9 @@ Updated each cycle. Reflects the latest run.
 | Unit + integration | `npm test` | ✅ 138/138 pass (18 files) |
 | Production build | `npm run build` | ✅ 10 routes (incl. dynamic `/api/seeds/parse`, `/seeds/[id]`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
+| CI workflow | YAML validate | ✅ parses; ⚠️ not executable in this env (no GitHub runner) — runs on push/PR once branch is on GitHub |
 
-New in Cycle 25: `nowFlow.test.tsx` — opportunity peeks render and tapping one promotes it to the active card.
+Cycle 26 added `.github/workflows/seize-the-day-ci.yml` (path-scoped) to run typecheck + test + build in CI.
 Cycle 24: `store.test.ts` — first-run samples flag lifecycle.
 Cycle 23: `a11y.test.tsx` — form-label associations.
 Cycle 22: `lateNightOffer.test.tsx` — Soft Ritual offer time-gating on `/now`.

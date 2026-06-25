@@ -37,7 +37,7 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 - [x] **P2** Surface the late-night theme offer on `/now` too (not just Home), where the rescue copy lives. _(Cycle 22)_
 - [x] **P2** Associate a real `<label>` with the Add-seed textarea (a11y; currently placeholder-only). _(Cycle 23 — also linked the seed-detail title/min fields)_
 - [x] **P2** Explain or make dismissible the first-run mock garden (so it doesn't read as someone else's data). _(Cycle 24)_
-- [ ] **P2** Add CI (`.github/workflows`) running typecheck + test + build.
+- [x] **P2** Add CI (`.github/workflows`) running typecheck + test + build. _(Cycle 26 — path-scoped workflow at the monorepo root; runs only on `dreams/seize_the_day/**` changes. Can't be exercised in this env; YAML validated.)_
 - [x] **P2** Show top opportunity with 1–2 muted "或者……" peeks instead of one-at-a-time only. _(Cycle 25)_
 
 ## Self-review lenses to run (Cycle 10)
