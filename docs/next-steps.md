@@ -5,8 +5,9 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 ## Done — proactive ambient home (user request, Cycle 35)
 - [x] Auto-sense time-of-day / weekday / device on Home (no permission) and float opportunity bubbles tied to that context.
 - [x] Correctable location guess + opt-in geolocation movement sense.
-- [ ] **Follow-up** Persist a "home" location (set once) so location can be sensed, not just guessed; richer movement (DeviceMotion) — both opt-in, coarse only.
-- [ ] **Follow-up** Web Push so bubbles can actually *push* a gentle nudge when `canRemindNow` (needs service-worker push + permission); honor quiet-hours + max-reminders (logic already built).
+- [x] **Follow-up** Persist a "home" location (set once) so location is sensed, not just guessed. _(Cycle 36)_ Richer movement (DeviceMotion) still optional.
+- [x] **Follow-up** Gentle nudges honoring quiet-hours + budget, shown while the app is backgrounded. _(Cycle 37)_
+- [ ] **Follow-up** True closed-app Web Push: a backend storing PushSubscriptions + VAPID keys to send via the push service; wire `PushManager.subscribe` behind `NEXT_PUBLIC_VAPID_PUBLIC_KEY`. The SW `push` handler already renders them.
 
 ## High value, low risk (do first)
 - [x] PWA manifest + icons + service worker (add-to-home-screen). _(Cycle 2)_
