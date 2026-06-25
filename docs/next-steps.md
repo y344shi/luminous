@@ -31,7 +31,7 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 - [x] Accent-as-small-text contrast: added `--accent-text` (darker) variant for text-sized accent, keeping `--accent` vivid for fills. _(Cycle 14)_
 
 ## Polish (from the Cycle-18 morning review)
-- [ ] **P1** Replace the `window.confirm` data-reset with an in-app soft confirm sheet (aesthetic consistency).
+- [x] **P1** Replace the `window.confirm` data-reset with an in-app soft confirm sheet (aesthetic consistency). _(Cycle 19)_
 - [ ] **P1** Token-sync guard test: parse `globals.css` `[data-theme]` blocks and assert they match `themes.ts` (prevent silent drift between the two token sources).
 - [ ] **P2** Human trace dates in the journal (今天 / 昨天 / M月D日) instead of raw `YYYY-MM-DD`.
 - [ ] **P2** Surface the late-night theme offer on `/now` too (not just Home), where the rescue copy lives.

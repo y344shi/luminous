@@ -2,16 +2,17 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 18 — docs-only self-review; numbers unchanged from Cycle 17)
+## Status (Cycle 19)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 116/116 pass (14 files) |
+| Unit + integration | `npm test` | ✅ 119/119 pass (15 files) |
 | Production build | `npm run build` | ✅ 10 routes (incl. dynamic `/api/seeds/parse`, `/seeds/[id]`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 
-New in Cycle 17: `serialize.test.ts` — round-trips, drops malformed records, coerces bad enum/array/number fields; `storage` now validates on load.
+New in Cycle 19: `confirmSheet.test.tsx` — soft confirm gates reset (cancel keeps data, confirm replants), and `window.confirm` is never called.
+Cycle 17: `serialize.test.ts` — validates/coerces on load.
 Cycle 16: `reminders.test.ts` — quiet-window + budget logic.
 Cycle 15: `apiParse.test.ts` — `/api/seeds/parse` draft + 400/413 guards.
 Cycle 14: `contrast.test.ts` — 50 WCAG assertions across 5 themes.

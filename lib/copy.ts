@@ -92,7 +92,10 @@ export const copy = {
     quietNotNow: "现在不在安静时段。",
     maxRemindersLabel: "每天最多递几次契机",
     resetLabel: "清空本地数据",
-    resetConfirm: "确定要清空所有愿望和痕迹吗？这一步无法撤销。",
+    resetConfirmTitle: "清空所有愿望和痕迹？",
+    resetConfirm: "这会清空你保存的所有愿望和痕迹，无法撤回。",
+    resetConfirmYes: "确定清空",
+    resetConfirmNo: "先不要",
     privacy: "这个 app 不应该吵你。\n它只应该在合适的时候轻轻递一个契机。",
   },
 

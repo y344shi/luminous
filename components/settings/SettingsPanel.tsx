@@ -8,6 +8,7 @@ import { isQuietNow } from "@/lib/reminders";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 import ThemeSwitcher from "@/components/design/ThemeSwitcher";
+import ConfirmSheet from "@/components/design/ConfirmSheet";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -54,6 +55,7 @@ export default function SettingsPanel() {
   const updateSettings = useStore((s) => s.updateSettings);
   const resetAll = useStore((s) => s.resetAll);
 
+  const [confirmReset, setConfirmReset] = useState(false);
   // Client-only so the live quiet state can't cause a hydration mismatch.
   const [quietNow, setQuietNow] = useState<boolean | null>(null);
   useEffect(() => {
@@ -165,16 +167,23 @@ export default function SettingsPanel() {
       </Section>
 
       <Section title={copy.settings.resetLabel}>
-        <SoftButton
-          full
-          variant="ghost"
-          onClick={() => {
-            if (confirm(copy.settings.resetConfirm)) resetAll();
-          }}
-        >
+        <SoftButton full variant="ghost" onClick={() => setConfirmReset(true)}>
           清空本地数据
         </SoftButton>
       </Section>
+
+      <ConfirmSheet
+        open={confirmReset}
+        title={copy.settings.resetConfirmTitle}
+        body={copy.settings.resetConfirm}
+        confirmLabel={copy.settings.resetConfirmYes}
+        cancelLabel={copy.settings.resetConfirmNo}
+        onConfirm={() => {
+          resetAll();
+          setConfirmReset(false);
+        }}
+        onCancel={() => setConfirmReset(false)}
+      />
     </div>
   );
 }

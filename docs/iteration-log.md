@@ -425,3 +425,26 @@ What was tested:
 
 Next:
 - Work the P1s from the review: in-app soft confirm, then the token-sync guard test.
+
+---
+
+## Cycle 19: In-app soft confirm (no more window.confirm)
+
+What changed:
+- New reusable `components/design/ConfirmSheet.tsx`: a themed bottom-sheet dialog (dim backdrop, `role="dialog"` + `aria-modal`, Escape cancels, focus lands on the safe Cancel action, safe-area padding).
+- `SettingsPanel` data-reset now opens the soft sheet instead of the OS `window.confirm` — the one place the system UI was breaking the app's aesthetic (morning-review P1, lens: ISFP user).
+- New copy under `copy.settings` (resetConfirmTitle/Yes/No).
+- New `tests/confirmSheet.test.tsx` (3): cancel keeps data, confirm wipes traces + replants garden, and `window.confirm` is never called.
+
+Why:
+- Aesthetic consistency is part of the product's soul; a jarring native dialog at the destructive moment undermines the "gentle, never alarming" tone. A soft, reversible-feeling sheet fits.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 119/119 (15 files); `npm run build` green.
+- The reset-button text collides with its section title — fixed the test to query by role (a small reminder that label reuse needs role-based queries).
+
+What still feels wrong / not done yet:
+- `ConfirmSheet` is only used for reset; other irreversible-ish actions (none currently) could reuse it.
+
+Next:
+- P1: token-sync guard test (`globals.css` `[data-theme]` ↔ `themes.ts`), then the P2 polish items.
