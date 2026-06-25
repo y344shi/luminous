@@ -2,17 +2,18 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 26)
+## Status (Cycle 27)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 138/138 pass (18 files) |
+| Unit + integration | `npm test` | ✅ 154/154 pass (19 files) |
 | Production build | `npm run build` | ✅ 10 routes (incl. dynamic `/api/seeds/parse`, `/seeds/[id]`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
-| CI workflow | YAML validate | ✅ parses; ⚠️ not executable in this env (no GitHub runner) — runs on push/PR once branch is on GitHub |
+| CI workflow | YAML validate | ✅ parses; ⚠️ not executable in this env (no GitHub runner) |
 
-Cycle 26 added `.github/workflows/seize-the-day-ci.yml` (path-scoped) to run typecheck + test + build in CI.
+New in Cycle 27: `corePurity.test.ts` — `lib/` (minus `store.ts`) imports no React/Next/Zustand and isn't a client component (iOS-readiness precondition; 16 assertions).
+Cycle 26: CI workflow added (path-scoped).
 Cycle 24: `store.test.ts` — first-run samples flag lifecycle.
 Cycle 23: `a11y.test.tsx` — form-label associations.
 Cycle 22: `lateNightOffer.test.tsx` — Soft Ritual offer time-gating on `/now`.

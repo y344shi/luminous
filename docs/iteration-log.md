@@ -593,3 +593,22 @@ What still feels wrong / not done yet:
 
 Next:
 - Only platform-scale items remain (packages extraction, live DB, key-gated model call). The next tick will likely run a fresh five-lens self-review to regenerate a sharp backlog, since the polish list is exhausted and the rest is large/blocked.
+
+---
+
+## Cycle 27: Core-purity guard (iOS-readiness precondition)
+
+What changed:
+- New `tests/corePurity.test.ts`: scans every `lib/*.ts` except the store glue (`store.ts`) and asserts none import from React / Next / Zustand or carry a `"use client"` directive. 16 assertions (15 core modules + a "we actually scanned ≥10" sanity check).
+
+Why:
+- The remaining platform items (packages split, live DB, key-gated model call) are all large or environment-blocked. The *safe, valuable* first step of the `packages/core` extraction is to lock the precondition it depends on: `lib/` must stay framework-free so it can become a shared RN/iOS package (ios-roadmap.md). Audited it (only `store.ts` touches Zustand/`"use client"`), then froze that invariant in a test so a future UI import into core logic fails CI instead of silently breaking the iOS path.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 154/154 (19 files); `npm run build` green.
+
+What still feels wrong / not done yet:
+- The actual workspace lift (pnpm/npm workspaces, moving files, retargeting `@/` imports) is genuinely risky for a single green-keeping tick and is best done deliberately, not autonomously — left open with that note.
+
+Next:
+- Polish + safe-precondition work is exhausted; a fresh five-lens self-review (Cycle 28) to regenerate a sharp backlog, or pause on the remaining blocked/large items.
