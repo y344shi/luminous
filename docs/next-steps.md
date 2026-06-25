@@ -30,5 +30,15 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 - [x] Per-theme contrast audit (esp. `--text-muted` on `--surface-soft`) across all 5 themes; tune tokens where WCAG AA fails. _(Cycle 13)_
 - [x] Accent-as-small-text contrast: added `--accent-text` (darker) variant for text-sized accent, keeping `--accent` vivid for fills. _(Cycle 14)_
 
+## Polish (from the Cycle-18 morning review)
+- [ ] **P1** Replace the `window.confirm` data-reset with an in-app soft confirm sheet (aesthetic consistency).
+- [ ] **P1** Token-sync guard test: parse `globals.css` `[data-theme]` blocks and assert they match `themes.ts` (prevent silent drift between the two token sources).
+- [ ] **P2** Human trace dates in the journal (今天 / 昨天 / M月D日) instead of raw `YYYY-MM-DD`.
+- [ ] **P2** Surface the late-night theme offer on `/now` too (not just Home), where the rescue copy lives.
+- [ ] **P2** Associate a real `<label>` with the Add-seed textarea (a11y; currently placeholder-only).
+- [ ] **P2** Explain or make dismissible the first-run mock garden (so it doesn't read as someone else's data).
+- [ ] **P2** Add CI (`.github/workflows`) running typecheck + test + build.
+- [ ] **P2** Show top opportunity with 1–2 muted "或者……" peeks instead of one-at-a-time only.
+
 ## Self-review lenses to run (Cycle 10)
-Product designer · ISFP user · tired user at 3AM · technical maintainer · future iOS dev → write `docs/morning-review.md`.
+- [x] Product designer · ISFP user · tired user at 3AM · technical maintainer · future iOS dev → `docs/morning-review.md`. _(Cycle 18)_

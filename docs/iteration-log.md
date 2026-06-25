@@ -403,3 +403,25 @@ What still feels wrong / not done yet:
 
 Next:
 - Extract `packages/core` + `packages/design` ahead of iOS, or wire the live model call, or a Cycle-10 five-lens self-review (`docs/morning-review.md`).
+
+---
+
+## Cycle 18: Five-lens self-review (morning review)
+
+What changed:
+- Wrote `docs/morning-review.md`: a genuine review through the brief's five lenses (product designer, ISFP user, tired 3AM user, technical maintainer, future iOS dev), grounded in the actual code (cites real findings, not platitudes).
+- Fed the concrete findings back into `docs/next-steps.md` as a new prioritized "Polish" section (P1/P2).
+
+Why:
+- The three remaining backlog items are all infra-heavy and risky/blocked for a single green-keeping tick (monorepo split; live DB needs `DATABASE_URL`; model call needs a key). Per the playbook, the highest-value *safe* move was the mandated Cycle-10 self-review — it costs no risk and produces a better-prioritized backlog than forcing risky infra.
+
+Real findings surfaced (now scheduled):
+- **P1** `window.confirm` reset breaks the soft aesthetic — needs an in-app soft confirm.
+- **P1** `globals.css` and `themes.ts` duplicate token values with no test asserting they match — silent-drift risk.
+- **P2** raw `YYYY-MM-DD` trace dates; late-night theme offer absent on `/now`; Add textarea has no `<label>`; first-run mock garden unexplained; no CI; Now shows one opportunity at a time.
+
+What was tested:
+- Docs-only cycle. Confirmed state remains green: 116 tests, typecheck clean, build green (no code changed).
+
+Next:
+- Work the P1s from the review: in-app soft confirm, then the token-sync guard test.
