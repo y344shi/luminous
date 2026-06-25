@@ -2,16 +2,17 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 20)
+## Status (Cycle 21)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 125/125 pass (16 files) |
+| Unit + integration | `npm test` | ✅ 130/130 pass (17 files) |
 | Production build | `npm run build` | ✅ 10 routes (incl. dynamic `/api/seeds/parse`, `/seeds/[id]`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 
-New in Cycle 20: `tokenSync.test.ts` — parses `globals.css` `[data-theme]` blocks and asserts they match `themes.ts` (no silent token drift).
+New in Cycle 21: `friendlyDate.test.ts` — relative day labels, same/cross-year formatting, future-date guard, malformed passthrough.
+Cycle 20: `tokenSync.test.ts` — globals.css ↔ themes.ts token parity.
 Cycle 19: `confirmSheet.test.tsx` — soft confirm gates reset; `window.confirm` never called.
 Cycle 17: `serialize.test.ts` — validates/coerces on load.
 Cycle 16: `reminders.test.ts` — quiet-window + budget logic.

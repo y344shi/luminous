@@ -4,6 +4,7 @@ import { useStore } from "@/lib/store";
 import TraceCard from "./TraceCard";
 import EmptyState from "@/components/design/EmptyState";
 import { copy } from "@/lib/copy";
+import { friendlyDate } from "@/lib/utils";
 import type { DailyTrace } from "@/lib/types";
 
 function groupByDate(traces: DailyTrace[]): [string, DailyTrace[]][] {
@@ -36,7 +37,9 @@ export default function TraceJournal() {
     <div className="flex flex-col gap-6">
       {groups.map(([date, items]) => (
         <section key={date} className="flex flex-col gap-3">
-          <h2 className="px-1 text-[13px] font-medium text-[var(--text-muted)]">{date}</h2>
+          <h2 className="px-1 text-[13px] font-medium text-[var(--text-muted)]">
+            {friendlyDate(date)}
+          </h2>
           {items.map((t) => (
             <TraceCard key={t.id} trace={t} />
           ))}

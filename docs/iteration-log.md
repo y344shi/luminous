@@ -467,3 +467,24 @@ What still feels wrong / not done yet:
 
 Next:
 - P2 polish: human trace dates, `/now` late-night offer, Add textarea label, first-run garden note, CI, opportunity peeks.
+
+---
+
+## Cycle 21: Human trace dates
+
+What changed:
+- New pure `friendlyDate(dateKey, today?)` in `lib/utils.ts`: 今天 / 昨天 / 前天, else "M月D日", with the year prepended only when it differs from today. `today` is injectable for deterministic tests; malformed input passes through unchanged.
+- `TraceJournal` now renders section headers via `friendlyDate(date)` instead of raw `YYYY-MM-DD`. It's a client-only component (guards on `hydrated`), so computing "today" at render causes no SSR mismatch.
+- New `tests/friendlyDate.test.ts` (5): relative labels, same-year vs cross-year formatting, future-date guard, malformed passthrough.
+
+Why:
+- Morning-review P2 (ISFP lens): raw ISO dates read like a log, not a journal of being present. "今天 / 昨天" is warmer and matches the product's voice.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 130/130 (17 files); `npm run build` green.
+
+What still feels wrong / not done yet:
+- "Today" is computed once per render; a journal left open across midnight won't relabel until navigation — negligible.
+
+Next:
+- P2: surface late-night theme offer on `/now`; Add textarea `<label>`; first-run garden note; CI workflow.
