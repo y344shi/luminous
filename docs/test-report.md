@@ -2,17 +2,18 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 8)
+## Status (Cycle 9)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 46/46 pass (8 files) |
+| Unit + integration | `npm test` | ✅ 49/49 pass (9 files) |
 | Production build | `npm run build` | ✅ 8 routes (incl. `/manifest.webmanifest`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 
-New in Cycle 8: `copyLint.test.tsx` — scans the `copy` dict + renders Home/Garden/Traces/Settings/Now/Add and asserts no forbidden todo/shaming vocabulary appears.
-Cycle 7: `nowFlow.test.tsx` (integration) — full core loop through the live store.
+New in Cycle 9: `theme.test.tsx` — `AppProvider` applies `<html data-theme>`; `setTheme` updates DOM + persists; persisted theme restored on hydrate.
+Cycle 8: `copyLint.test.tsx` — copy dict + 6 rendered screens free of forbidden vocab.
+Cycle 7: `nowFlow.test.tsx` — full core loop through the live store.
 Cycle 6: `store.test.ts` — `updateTrace` rewrites + persists.
 
 New in Cycle 4: `storage.test.ts` — late-night theme-offer dismissal token persists + clears.

@@ -197,3 +197,27 @@ What still feels wrong / not done yet:
 
 Next:
 - `data-theme` applied + persisted test; then product depth (seed detail page) or accessibility pass.
+
+---
+
+## Cycle 9: Theme application + persistence test
+
+What changed:
+- New `tests/theme.test.tsx` (3 tests) covering the theme system end to end:
+  1. `AppProvider` sets `<html data-theme>` to the default (`warm_paper`) after hydration.
+  2. `store.setTheme("soft_ritual")` updates `<html data-theme>` **and** writes to storage (both `tdd.theme` and settings).
+  3. A theme persisted before mount is restored on hydrate and applied to the DOM.
+
+Why:
+- Themes are a headline feature (5 of them) and the switch must survive reloads. Nothing tested the `AppProvider` ↔ store ↔ storage ↔ DOM wiring; now the contract is locked.
+
+What was tested:
+- `npm test` → 49/49 (9 files); `npm run typecheck` clean; `npm run build` green.
+- Used `waitFor`/`act` to let `AppProvider`'s hydration + theme effects settle.
+
+What still feels wrong / not done yet:
+- Doesn't assert the actual CSS variable values resolve (jsdom doesn't apply stylesheets); the `[data-theme]` attribute is the contract we can verify.
+- This clears all four testable Quality items; only the accessibility pass remains in that section.
+
+Next:
+- Product depth: seed detail page `/seeds/[id]` (edit / sleep / archive), or the Settings quiet-hours + max-reminders UI; or the accessibility pass.
