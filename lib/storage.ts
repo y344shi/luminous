@@ -7,6 +7,7 @@ export const STORAGE_KEYS = {
   theme: "tdd.theme",
   settings: "tdd.settings",
   ritualOffer: "tdd.ritualOfferDismissed",
+  samplesPlanted: "tdd.samplesPlanted",
 } as const;
 
 export const defaultSettings: Settings = {
@@ -73,6 +74,13 @@ export const storage = {
   },
   saveRitualOfferDismissed(dateKey: string): void {
     write(STORAGE_KEYS.ritualOffer, dateKey);
+  },
+  /** Whether the current garden is the first-run sample set (shows a note). */
+  loadSamplesPlanted(): boolean {
+    return read<boolean>(STORAGE_KEYS.samplesPlanted, false);
+  },
+  saveSamplesPlanted(v: boolean): void {
+    write(STORAGE_KEYS.samplesPlanted, v);
   },
   clearAll(): void {
     if (!isBrowser()) return;

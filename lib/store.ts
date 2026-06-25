@@ -19,6 +19,7 @@ type Store = {
   seeds: Seed[];
   traces: DailyTrace[];
   settings: Settings;
+  samplesPlanted: boolean;
 
   // transient (not persisted)
   lastContext: ContextSnapshot | null;
@@ -39,6 +40,7 @@ type Store = {
 
   setTheme: (theme: ThemeName) => void;
   updateSettings: (patch: Partial<Settings>) => void;
+  dismissSamplesNote: () => void;
   resetAll: () => void;
 };
 
@@ -47,6 +49,7 @@ export const useStore = create<Store>((set, get) => ({
   seeds: [],
   traces: [],
   settings: defaultSettings,
+  samplesPlanted: false,
   lastContext: null,
   opportunities: [],
 
@@ -58,9 +61,12 @@ export const useStore = create<Store>((set, get) => ({
     if (theme) settings.theme = theme;
 
     // First run: plant a small mock garden so the app never feels empty/dead.
+    let samplesPlanted = storage.loadSamplesPlanted();
     if (seeds.length === 0 && storage.loadTraces().length === 0) {
       seeds = seedMockGarden();
       storage.saveSeeds(seeds);
+      samplesPlanted = true;
+      storage.saveSamplesPlanted(true);
     }
 
     set({
@@ -68,6 +74,7 @@ export const useStore = create<Store>((set, get) => ({
       seeds,
       traces: storage.loadTraces(),
       settings,
+      samplesPlanted,
     });
   },
 
@@ -75,6 +82,11 @@ export const useStore = create<Store>((set, get) => ({
     const seeds = [seed, ...get().seeds];
     set({ seeds });
     storage.saveSeeds(seeds);
+    // The user planted their own wish — it's their garden now.
+    if (get().samplesPlanted) {
+      set({ samplesPlanted: false });
+      storage.saveSamplesPlanted(false);
+    }
   },
 
   updateSeed: (id, patch) => {
@@ -123,14 +135,21 @@ export const useStore = create<Store>((set, get) => ({
     if (patch.theme) storage.saveTheme(patch.theme);
   },
 
+  dismissSamplesNote: () => {
+    set({ samplesPlanted: false });
+    storage.saveSamplesPlanted(false);
+  },
+
   resetAll: () => {
     storage.clearAll();
     const seeds = seedMockGarden();
     storage.saveSeeds(seeds);
+    storage.saveSamplesPlanted(true);
     set({
       seeds,
       traces: [],
       settings: defaultSettings,
+      samplesPlanted: true,
       opportunities: [],
       lastContext: null,
     });

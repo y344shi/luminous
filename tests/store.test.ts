@@ -38,6 +38,29 @@ describe("store.updateTrace", () => {
   });
 });
 
+describe("store — first-run samples note", () => {
+  it("hydrate plants samples and flags samplesPlanted on a fresh install", () => {
+    window.localStorage.clear();
+    useStore.setState({ hydrated: false, seeds: [], traces: [], samplesPlanted: false });
+    useStore.getState().hydrate();
+    expect(useStore.getState().seeds.length).toBeGreaterThan(0);
+    expect(useStore.getState().samplesPlanted).toBe(true);
+  });
+
+  it("adding your own wish clears the samples flag", () => {
+    useStore.setState({ samplesPlanted: true, seeds: [] });
+    useStore.getState().addSeed(materializeSeed(mockSeeds[0]));
+    expect(useStore.getState().samplesPlanted).toBe(false);
+  });
+
+  it("dismissing the note clears the flag and persists", () => {
+    useStore.setState({ samplesPlanted: true });
+    useStore.getState().dismissSamplesNote();
+    expect(useStore.getState().samplesPlanted).toBe(false);
+    expect(storage.loadSamplesPlanted()).toBe(false);
+  });
+});
+
 describe("store — settings", () => {
   it("persists quiet hours and max reminders", () => {
     useStore.getState().updateSettings({

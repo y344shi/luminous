@@ -530,3 +530,24 @@ What still feels wrong / not done yet:
 
 Next:
 - P2: first-run garden note (so it doesn't read as someone else's data); CI workflow; opportunity peeks.
+
+---
+
+## Cycle 24: First-run garden note
+
+What changed:
+- Tracked a `samplesPlanted` flag (store + `tdd.samplesPlanted` storage): set true when `hydrate` plants the first-run mock garden, cleared when the user adds their own wish (`addSeed`) or dismisses the note; reset to true on `resetAll`.
+- New `GardenNote` on `/seeds` (above the garden): a gentle, dismissible "这些是几个示例愿望，先帮你感受一下。随时可以改成自己的，或者轻轻收起来。[知道了]".
+- New copy under `copy.garden`; 3 store tests (hydrate flags it; adding a wish clears it; dismiss clears + persists).
+
+Why:
+- Morning-review P2 (product-designer lens): seven pre-seeded wishes the user didn't write can read as "someone else's data." Naming them as examples — and letting them vanish the moment the garden becomes the user's — builds trust without leaving the app empty on first open.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 137/137 (18 files); `npm run build` green. Copy-lint still passes (new strings clean).
+
+What still feels wrong / not done yet:
+- The note is informational only; a one-tap "清空示例" could be offered, but archiving/editing per-seed already covers it and avoids a destructive shortcut.
+
+Next:
+- P2: CI workflow (typecheck + test + build), or opportunity "或者……" peeks on the Now screen.

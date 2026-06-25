@@ -30,6 +30,8 @@ export const copy = {
     title: "愿望花园",
     subtitle: "这些不是任务。\n它们只是还在等一个合适的时刻。",
     empty: "花园还空着。\n冒出来一个小愿望，就把它种进来。",
+    sampleNote: "这些是几个示例愿望，先帮你感受一下。\n随时可以改成自己的，或者轻轻收起来。",
+    sampleNoteDismiss: "知道了",
   },
 
   seedDetail: {
