@@ -1,7 +1,40 @@
 import { NextResponse } from "next/server";
-import { parseSeedMock } from "@/lib/seedParser";
+import { parseSeedMock, type SeedDraft } from "@/lib/seedParser";
+import { SEED_PARSER_SYSTEM_PROMPT, parseModelDraft } from "@/lib/seedAiPrompt";
 
 export const runtime = "nodejs";
+
+const MODEL = "claude-haiku-4-5-20251001";
+
+/**
+ * Call Claude with ONLY the wish text. Returns a validated SeedDraft, or null
+ * on any failure (network/parse/shape) so the caller falls back to the mock.
+ * Uses global fetch — no SDK dependency, no key in the client, never hardcoded.
+ */
+async function callModel(text: string, apiKey: string): Promise<SeedDraft | null> {
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 400,
+        system: SEED_PARSER_SYSTEM_PROMPT,
+        messages: [{ role: "user", content: text }],
+      }),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { content?: Array<{ text?: string }> };
+    const out = data.content?.map((c) => c.text ?? "").join("") ?? "";
+    return parseModelDraft(out, text);
+  } catch {
+    return null;
+  }
+}
 
 /**
  * POST /api/seeds/parse  { text: string }  →  { draft, source }
@@ -30,12 +63,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "text too long" }, { status: 413 });
   }
 
-  const hasKey = Boolean(process.env.ANTHROPIC_API_KEY);
-  // When a key is configured, a future implementation would call the model
-  // here with ONLY `text` and validate the response against the SeedDraft
-  // schema, falling back to the mock on any error. For now we always use the
-  // deterministic local parser.
-  const draft = parseSeedMock(text);
+  // With a server-side key, ask the model (coarse text only) and validate its
+  // response; ANY failure falls back to the deterministic local parser so the
+  // feature works everywhere and can never break the Add loop.
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (apiKey) {
+    const aiDraft = await callModel(text, apiKey);
+    if (aiDraft) return NextResponse.json({ draft: aiDraft, source: "ai" });
+  }
 
-  return NextResponse.json({ draft, source: hasKey ? "ai-pending" : "mock" });
+  return NextResponse.json({ draft: parseSeedMock(text), source: "mock" });
 }

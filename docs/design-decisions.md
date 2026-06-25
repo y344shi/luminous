@@ -49,8 +49,14 @@ Product/engineering decisions, with reasons and tradeoffs. Append as we go.
 
 ### D13: Real-AI parser as a fail-soft server seam, mock-backed by default
 - **Reason:** The brief wants an isolated, key-free, coarse-input-only AI parser with a "real" mode — but no key exists in this env and the core loop must never break.
-- **Shape:** `lib/aiParser.parseSeed(text, mode)` is the only seam the UI knows. `mock` runs locally/offline. `real` calls `/api/seeds/parse`, which validates + size-limits input, reads no client key, and currently returns the local parse (`source: ai-pending` when a server key is present). Any failure → `parseSeedMock`.
-- **Tradeoff:** The live model call is deferred (a documented, key-gated branch) rather than faked. Default UX is unchanged and fully offline; only `aiMode: "real"` touches the network, and even then it degrades gracefully.
+- **Shape:** `lib/aiParser.parseSeed(text, mode)` is the only seam the UI knows. `mock` runs locally/offline. `real` calls `/api/seeds/parse`, which validates + size-limits input and reads no client key. Any failure → `parseSeedMock`.
+- **Cycle 34 update:** the live model call is now implemented (not just a stub) — see D15.
+
+### D15: Live model call via `fetch`, env-gated, validated, fail-soft
+- **Reason:** The item ("call Claude when `ANTHROPIC_API_KEY` is set") is achievable safely without a key in this env: use global `fetch` (no `@anthropic-ai/sdk` dependency, no install/postinstall risk), read the key only from `process.env` server-side, send **only the wish text**, and wrap everything in try/catch with a mock fallback.
+- **Validation:** `parseModelDraft` extracts JSON even from fenced/prose output and coerces with the same safety net as `serialize`/`seedParser` (bad enums → defaults; missing title/minimumAction → reject → mock). The system prompt encodes the tone rules so a model can't produce homework.
+- **Model:** `claude-haiku-4-5-20251001` (cheap, fast, fine for a short structured parse).
+- **Tradeoff:** The real network path is **not runtime-tested** here (no key); only the validator + no-key fallback are. The dormant path can't affect the build/tests. Verify live once a key is configured.
 
 ### D12: `--on-accent` token instead of recoloring accents for button contrast
 - **Reason:** Light text on the brief's muted accents fails WCAG (dusk_garden 2.11). The two ways to fix it are (a) darken every accent — which changes the brief's palette and each theme's identity — or (b) put a dark label on the accent fill. Chose (b): a per-theme `--on-accent` token used by `SoftButton` primary.

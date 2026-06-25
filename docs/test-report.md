@@ -2,17 +2,19 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 33)
+## Status (Cycle 34)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 170/170 pass (22 files) |
+| Unit + integration | `npm test` | ✅ 176/176 pass (23 files) |
 | Production build | `npm run build` | ✅ 10 routes (incl. dynamic `/api/seeds/parse`, `/seeds/[id]`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
+| Live model path | — | ⚠️ dormant (no `ANTHROPIC_API_KEY` in env); validator + no-key fallback tested, network path not runtime-tested |
 | CI workflow | YAML validate | ✅ parses; ⚠️ not executable in this env (no GitHub runner) |
 
-New in Cycle 33: `traceGenerator.test.ts` (buildRestTrace) + `nowFlow.test.tsx` ("今天先这样" saves nothing by default, can opt to record a rest trace).
+New in Cycle 34: `seedAiPrompt.test.ts` — `parseModelDraft` (valid/fenced/missing/bogus) + prompt tone guard; `apiParse.test.ts` source now `ai|mock`.
+Cycle 33: `traceGenerator.test.ts` (buildRestTrace) + Now "今天先这样" rest-trace.
 Cycle 32: trace delete + 500-cap.
 Cycle 31: `introCard.test.tsx` — first-open intro.
 Cycle 30: remembered mood/energy persistence + pre-select.

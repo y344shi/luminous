@@ -17,7 +17,7 @@ describe("POST /api/seeds/parse", () => {
     expect(data.draft.title.length).toBeGreaterThan(0);
     expect(data.draft.categories).toContain("recovery");
     expect(data.draft.minimumAction.length).toBeLessThan(30);
-    expect(["mock", "ai-pending"]).toContain(data.source);
+    expect(["mock", "ai"]).toContain(data.source); // no key in test env → mock
   });
 
   it("rejects empty text with 400", async () => {

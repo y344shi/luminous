@@ -742,3 +742,25 @@ What still feels wrong / not done yet:
 
 Next:
 - The actionable backlog is now fully exhausted: only blocked/large platform items remain (workspace lift, live DB needing `DATABASE_URL`, key-gated model call). Per the playbook, with nothing safely worth doing, the next ticks should idle quietly rather than manufacture churn — or do another self-review if enough has changed to warrant one.
+
+---
+
+## Cycle 34: Wire the live model call (env-gated, fail-soft)
+
+What changed:
+- Reconsidered the "blocked" live-model item and found a safe path: the call uses the **global `fetch`** (no SDK dependency), reads `process.env.ANTHROPIC_API_KEY` server-side only, and is fully wrapped in try/catch with a **mock fallback** — so it's dormant here (no key) yet correct when a key is present.
+- New pure `lib/seedAiPrompt.ts`: the system prompt (encodes the SeedDraft schema **and** the tone rules — tiny minimum action, no task/shame framing) and `parseModelDraft(raw, rawText)` — a validator that extracts JSON even from fenced/prose output, coerces bad enums to safe defaults, and rejects (→ mock) when title/minimumAction are missing.
+- Route `/api/seeds/parse`: with a key, calls Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) sending **only the wish text**; any failure → local parser. `source` is now `ai | mock`.
+- New `seedAiPrompt.test.ts` (5) + updated `apiParse.test.ts`.
+
+Why:
+- The item was achievable without a key or a new dependency, and without risking the build: the live path never runs in this env, the mock fallback keeps every test green, and the response is validated by the same safety-net pattern as the rest of the app. Better than idling.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 176/176 (23 files); `npm run build` green. Confirmed `ANTHROPIC_API_KEY` is unset → route returns `source: mock`. Core-purity still passes (the new module is framework-free).
+
+What still feels wrong / not done yet:
+- The real network path is **not runtime-tested** (no key here) — only the validator + the no-key fallback are. Flagged: verify once a key exists.
+
+Next:
+- Now only the genuinely large/blocked platform items remain (workspace lift — risky refactor; live DB — needs `DATABASE_URL`). Per the playbook, the loop should idle quietly unless the environment changes or new direction arrives.
