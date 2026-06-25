@@ -488,3 +488,24 @@ What still feels wrong / not done yet:
 
 Next:
 - P2: surface late-night theme offer on `/now`; Add textarea `<label>`; first-run garden note; CI workflow.
+
+---
+
+## Cycle 22: Late-night theme offer on /now
+
+What changed:
+- Rendered the existing `LateNightThemeOffer` on the Now page (above `NowFlow`), so a 3AM user who deep-links straight to `/now` — where the rescue copy already lives — also gets the gentle Soft Ritual offer, not just on Home.
+- New `tests/lateNightOffer.test.tsx` (2): with `vi.setSystemTime`, the offer appears at 02:00 (theme ≠ soft_ritual) and is absent at 15:00.
+
+Why:
+- Morning-review P2 (tired-3AM lens): the dim-the-lights offer was Home-only; the Now screen is exactly where a late-night user lands and most needs it.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 132/132 (18 files); `npm run build` green.
+- Note: `waitFor` stalls under `vi.useFakeTimers()`; since RTL's `render` flushes effects in `act`, the assertions run synchronously after render instead.
+
+What still feels wrong / not done yet:
+- The offer now renders on both Home and Now; if both are mounted (they aren't simultaneously) it'd double — not a real case with route-based pages.
+
+Next:
+- P2: Add textarea `<label>` (a11y); first-run garden note; CI workflow; opportunity peeks.

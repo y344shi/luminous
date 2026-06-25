@@ -34,7 +34,7 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 - [x] **P1** Replace the `window.confirm` data-reset with an in-app soft confirm sheet (aesthetic consistency). _(Cycle 19)_
 - [x] **P1** Token-sync guard test: parse `globals.css` `[data-theme]` blocks and assert they match `themes.ts` (prevent silent drift between the two token sources). _(Cycle 20)_
 - [x] **P2** Human trace dates in the journal (今天 / 昨天 / M月D日) instead of raw `YYYY-MM-DD`. _(Cycle 21)_
-- [ ] **P2** Surface the late-night theme offer on `/now` too (not just Home), where the rescue copy lives.
+- [x] **P2** Surface the late-night theme offer on `/now` too (not just Home), where the rescue copy lives. _(Cycle 22)_
 - [ ] **P2** Associate a real `<label>` with the Add-seed textarea (a11y; currently placeholder-only).
 - [ ] **P2** Explain or make dismissible the first-run mock garden (so it doesn't read as someone else's data).
 - [ ] **P2** Add CI (`.github/workflows`) running typecheck + test + build.

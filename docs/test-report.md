@@ -2,16 +2,17 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 21)
+## Status (Cycle 22)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 130/130 pass (17 files) |
+| Unit + integration | `npm test` | ✅ 132/132 pass (18 files) |
 | Production build | `npm run build` | ✅ 10 routes (incl. dynamic `/api/seeds/parse`, `/seeds/[id]`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 
-New in Cycle 21: `friendlyDate.test.ts` — relative day labels, same/cross-year formatting, future-date guard, malformed passthrough.
+New in Cycle 22: `lateNightOffer.test.tsx` — fake-timer test: Soft Ritual offer shows on `/now` at 02:00, hidden at 15:00.
+Cycle 21: `friendlyDate.test.ts` — relative day labels + formatting.
 Cycle 20: `tokenSync.test.ts` — globals.css ↔ themes.ts token parity.
 Cycle 19: `confirmSheet.test.tsx` — soft confirm gates reset; `window.confirm` never called.
 Cycle 17: `serialize.test.ts` — validates/coerces on load.
