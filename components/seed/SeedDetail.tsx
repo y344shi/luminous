@@ -78,8 +78,11 @@ export default function SeedDetail({ id }: { id: string }) {
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="text-[12px] text-[var(--text-muted)]">{copy.seedDetail.titleLabel}</label>
+          <label htmlFor="seed-title" className="text-[12px] text-[var(--text-muted)]">
+            {copy.seedDetail.titleLabel}
+          </label>
           <input
+            id="seed-title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-soft)] px-4 py-3 text-[17px] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)]"
@@ -87,8 +90,11 @@ export default function SeedDetail({ id }: { id: string }) {
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="text-[12px] text-[var(--text-muted)]">{copy.seedDetail.minLabel}</label>
+          <label htmlFor="seed-min" className="text-[12px] text-[var(--text-muted)]">
+            {copy.seedDetail.minLabel}
+          </label>
           <textarea
+            id="seed-min"
             value={minimumAction}
             onChange={(e) => setMinimumAction(e.target.value)}
             rows={3}

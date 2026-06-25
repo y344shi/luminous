@@ -101,7 +101,11 @@ export default function AddSeedFlow() {
 
   return (
     <div className="flex flex-col gap-4">
+      <label htmlFor="seed-input" className="sr-only">
+        {copy.add.inputLabel}
+      </label>
       <textarea
+        id="seed-input"
         autoFocus
         value={text}
         onChange={(e) => setText(e.target.value)}

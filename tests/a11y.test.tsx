@@ -10,6 +10,9 @@ vi.mock("next/navigation", () => ({
 
 import NowFlow from "@/components/opportunity/NowFlow";
 import SettingsPanel from "@/components/settings/SettingsPanel";
+import AddSeedFlow from "@/components/seed/AddSeedFlow";
+import SeedDetail from "@/components/seed/SeedDetail";
+import { copy } from "@/lib/copy";
 
 beforeEach(() => {
   window.localStorage.clear();
@@ -36,6 +39,21 @@ describe("accessibility", () => {
   it("the AI-mode toggle has an accessible label", () => {
     render(<SettingsPanel />);
     expect(screen.getByLabelText("切换 AI 模式")).toBeTruthy();
+    cleanup();
+  });
+
+  it("the add-seed textarea is reachable by its label", () => {
+    render(<AddSeedFlow />);
+    const ta = screen.getByLabelText(copy.add.inputLabel);
+    expect(ta.tagName).toBe("TEXTAREA");
+    cleanup();
+  });
+
+  it("seed-detail fields are reachable by their labels", () => {
+    const seed = useStore.getState().seeds[0];
+    render(<SeedDetail id={seed.id} />);
+    expect(screen.getByLabelText(copy.seedDetail.titleLabel).tagName).toBe("INPUT");
+    expect(screen.getByLabelText(copy.seedDetail.minLabel).tagName).toBe("TEXTAREA");
     cleanup();
   });
 });

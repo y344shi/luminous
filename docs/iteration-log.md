@@ -509,3 +509,24 @@ What still feels wrong / not done yet:
 
 Next:
 - P2: Add textarea `<label>` (a11y); first-run garden note; CI workflow; opportunity peeks.
+
+---
+
+## Cycle 23: Form-label associations (a11y)
+
+What changed:
+- Add-seed textarea now has an associated `sr-only` `<label htmlFor="seed-input">` (`copy.add.inputLabel`) instead of relying on placeholder-only.
+- Seed-detail title `<input>` and minimum-action `<textarea>` labels are now linked via `htmlFor`/`id` (they were visually present but not associated).
+- Extended `a11y.test.tsx` (2): the add textarea and both seed-detail fields are reachable via `getByLabelText`.
+
+Why:
+- Morning-review P2 (a11y): placeholder text is not an accessible name; screen-reader users had no label for the primary "catch a wish" input. Same gap existed on the seed-detail fields — fixed together since it's one concern.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 134/134 (18 files); `npm run build` green.
+
+What still feels wrong / not done yet:
+- Quiet-hours `HourSelect` already uses a wrapping `<label>` (implicit association) — fine.
+
+Next:
+- P2: first-run garden note (so it doesn't read as someone else's data); CI workflow; opportunity peeks.

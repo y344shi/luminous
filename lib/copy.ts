@@ -16,6 +16,7 @@ export const copy = {
 
   add: {
     prompt: "把刚刚冒出来的小愿望丢进来……",
+    inputLabel: "把刚刚冒出来的小愿望写下来",
     placeholder: "我想记几个法语单词。\n我想找个地方坐一会。\n我想去市中心走走。\n我想亲手看懂一点代码。",
     caught: "我帮你接住了这个愿望：",
     minLabel: "最低完成：",
