@@ -16,6 +16,36 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+const hourLabel = (h: number) => `${String(h).padStart(2, "0")}:00`;
+const HOURS = Array.from({ length: 24 }, (_, h) => h);
+
+function HourSelect({
+  value,
+  onChange,
+  label,
+}: {
+  value: number;
+  onChange: (h: number) => void;
+  label: string;
+}) {
+  return (
+    <label className="flex items-center gap-2 text-[14px] text-[var(--text-secondary)]">
+      {label}
+      <select
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="rounded-full border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-1.5 text-[15px] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)]"
+      >
+        {HOURS.map((h) => (
+          <option key={h} value={h}>
+            {hourLabel(h)}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 export default function SettingsPanel() {
   const hydrated = useStore((s) => s.hydrated);
   const settings = useStore((s) => s.settings);
@@ -59,6 +89,24 @@ export default function SettingsPanel() {
               )}
             />
           </button>
+        </BreathingCard>
+      </Section>
+
+      <Section title={copy.settings.quietLabel}>
+        <BreathingCard className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+            <HourSelect
+              label={copy.settings.quietFrom}
+              value={settings.quietHoursStart}
+              onChange={(h) => updateSettings({ quietHoursStart: h })}
+            />
+            <HourSelect
+              label={copy.settings.quietTo}
+              value={settings.quietHoursEnd}
+              onChange={(h) => updateSettings({ quietHoursEnd: h })}
+            />
+          </div>
+          <p className="text-[12px] text-[var(--text-muted)]">{copy.settings.quietHelp}</p>
         </BreathingCard>
       </Section>
 

@@ -2,16 +2,17 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 10)
+## Status (Cycle 11)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 51/51 pass (9 files) |
+| Unit + integration | `npm test` | ✅ 52/52 pass (9 files) |
 | Production build | `npm run build` | ✅ 9 routes (incl. `/manifest.webmanifest`, dynamic `/seeds/[id]`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 
-New in Cycle 10: `store.test.ts` grows to cover seed-detail actions — edit title/minimumAction persists; full sleep→wake→archive→restore lifecycle.
+New in Cycle 11: `store.test.ts` — `updateSettings` persists quiet hours + max reminders.
+Cycle 10: `store.test.ts` — seed-detail edit persists; full sleep→wake→archive→restore lifecycle.
 Cycle 9: `theme.test.tsx` — `AppProvider` applies `<html data-theme>`; `setTheme` updates DOM + persists.
 Cycle 8: `copyLint.test.tsx` — copy dict + 6 rendered screens free of forbidden vocab.
 Cycle 7: `nowFlow.test.tsx` — full core loop through the live store.

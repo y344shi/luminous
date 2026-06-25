@@ -38,6 +38,21 @@ describe("store.updateTrace", () => {
   });
 });
 
+describe("store — settings", () => {
+  it("persists quiet hours and max reminders", () => {
+    useStore.getState().updateSettings({
+      quietHoursStart: 22,
+      quietHoursEnd: 7,
+      maxRemindersPerDay: 2,
+    });
+    const s = storage.loadSettings();
+    expect(s.quietHoursStart).toBe(22);
+    expect(s.quietHoursEnd).toBe(7);
+    expect(s.maxRemindersPerDay).toBe(2);
+    expect(useStore.getState().settings.quietHoursStart).toBe(22);
+  });
+});
+
 describe("store — seed lifecycle (detail page actions)", () => {
   it("edits a seed's title and minimum action and persists", () => {
     const seed = materializeSeed(mockSeeds[0]);

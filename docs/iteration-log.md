@@ -246,3 +246,24 @@ What still feels wrong / not done yet:
 
 Next:
 - Settings quiet-hours + max-reminders UI (model exists), or the accessibility pass.
+
+---
+
+## Cycle 11: Settings — quiet-hours UI
+
+What changed:
+- Added a "安静时段" section to `SettingsPanel`: two hour pickers (从 / 到, 00:00–23:00) bound to `quietHoursStart` / `quietHoursEnd`, with the line "这段时间它完全不打扰你。" (The max-reminders stepper already shipped in Cycle 1.)
+- New `HourSelect` helper + copy under `copy.settings` (quietHelp/quietFrom/quietTo).
+- 1 new store test: `updateSettings` persists quiet hours + max reminders.
+
+Why:
+- The privacy/quiet model existed but was invisible — the user couldn't set the window in which the app promises silence. This is core to the "it shouldn't nag you" contract.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 52/52 (9 files); `npm run build` green.
+
+What still feels wrong / not done yet:
+- **Settings are stored & editable but not yet enforced** — there are no notifications to gate, so nothing reads quiet-hours/max-reminders. Added an explicit follow-up item (`isQuietNow` helper + reminder budget) to wire this up once local notifications land.
+
+Next:
+- Accessibility pass (focus states, aria labels, contrast across themes), or extract `packages/core`/`packages/design` ahead of iOS.

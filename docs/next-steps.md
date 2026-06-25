@@ -17,8 +17,9 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 
 ## Product depth
 - [x] Seed detail page `/seeds/[id]` (edit, sleep, archive). _(Cycle 10)_
-- [ ] Quiet-hours + max-reminders UI in Settings (model exists).
+- [x] Quiet-hours + max-reminders UI in Settings (model exists). _(Cycle 11 — UI done; enforcement still pending, see below)_
 - [ ] Real-AI parser behind `aiMode: "real"` (server route, coarse input only).
+- [ ] Enforce quiet-hours + max-reminders once local notifications exist (a `isQuietNow(settings, date)` helper + reminder budget). Currently the settings are stored & editable but nothing reads them yet.
 
 ## Platform
 - [ ] Extract `packages/core` + `packages/design` ahead of iOS.
