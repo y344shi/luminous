@@ -116,6 +116,36 @@ body {
   }
 }
 
+/* The trace is the emotional payoff — let it settle in and glow once. */
+@keyframes tdd-bloom {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.965);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  55% {
+    box-shadow: 0 12px 40px var(--accent-soft);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    box-shadow: var(--shadow-card);
+  }
+}
+
+/* A slow, soft pulse for empty-state marks so blank screens still feel alive. */
+@keyframes tdd-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.06);
+  }
+}
+
 .tdd-rise {
   animation: tdd-rise 600ms ease both;
 }
@@ -124,9 +154,19 @@ body {
   animation: tdd-breathe 6s ease-in-out infinite;
 }
 
+.tdd-bloom {
+  animation: tdd-bloom 1100ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.tdd-pulse {
+  animation: tdd-pulse 4.5s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tdd-rise,
   .tdd-breathe,
+  .tdd-bloom,
+  .tdd-pulse,
   body {
     animation: none !important;
     transition: none !important;

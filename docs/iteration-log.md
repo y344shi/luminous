@@ -107,3 +107,25 @@ What still feels wrong / not done yet:
 
 Next:
 - Richer empty states + a gentle Now→trace transition animation.
+
+---
+
+## Cycle 5: Richer empty states + Now→trace bloom
+
+What changed:
+- `EmptyState` now supports an optional `icon` (emoji in a softly **pulsing** mark) and an optional `action` (an invitation link, never a command). Backward compatible.
+- Wired warmer empties: Garden → 🌱 "种下第一个愿望"; Trace journal → 🪵 "现在别消失"; Now (no opportunities) → 🍃 "去种一个新愿望" (replaced the bare button).
+- Added two CSS animations: `tdd-bloom` (the trace card now settles in with a one-time soft glow — the emotional payoff) and `tdd-pulse` (keeps blank screens alive). Both respect `prefers-reduced-motion`.
+
+Why:
+- Empty screens and the trace reveal carry the most feeling. Per the brief, blank states should invite (not judge) and the trace is where "今天没有消失" should land gently.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 34/34; `npm run build` green.
+
+What still feels wrong / not done yet:
+- Bloom plays once on mount; navigating away and back replays it (acceptable).
+- Could stagger the trace text fade after the card blooms for extra grace.
+
+Next:
+- Quality: integration test driving the full Now flow via the store; copy-lint test for forbidden vocabulary.

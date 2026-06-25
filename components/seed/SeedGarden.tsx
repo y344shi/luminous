@@ -14,7 +14,13 @@ export default function SeedGarden() {
   const visible = seeds.filter((s) => s.status !== "archived");
 
   if (visible.length === 0) {
-    return <EmptyState text={copy.garden.empty} />;
+    return (
+      <EmptyState
+        icon="🌱"
+        text={copy.garden.empty}
+        action={{ label: "种下第一个愿望", href: "/add" }}
+      />
+    );
   }
 
   return (

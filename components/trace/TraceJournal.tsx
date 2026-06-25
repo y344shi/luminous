@@ -21,7 +21,14 @@ export default function TraceJournal() {
   const hydrated = useStore((s) => s.hydrated);
 
   if (!hydrated) return null;
-  if (traces.length === 0) return <EmptyState text={copy.traces.empty} />;
+  if (traces.length === 0)
+    return (
+      <EmptyState
+        icon="🪵"
+        text={copy.traces.empty}
+        action={{ label: "现在别消失", href: "/now" }}
+      />
+    );
 
   const groups = groupByDate(traces);
 

@@ -144,12 +144,11 @@ export default function NowFlow() {
   if (step === "list") {
     if (opps.length === 0) {
       return (
-        <div className="flex flex-col gap-4">
-          <EmptyState text={`${copy.now.noneTitle}\n${copy.now.noneBody}`} />
-          <SoftButton full variant="ghost" onClick={() => router.push("/add")}>
-            去种一个新愿望
-          </SoftButton>
-        </div>
+        <EmptyState
+          icon="🍃"
+          text={`${copy.now.noneTitle}\n${copy.now.noneBody}`}
+          action={{ label: "去种一个新愿望", href: "/add" }}
+        />
       );
     }
     const o = opps[activeIndex];
@@ -192,7 +191,7 @@ export default function NowFlow() {
   // step === "trace"
   return (
     <div className="flex flex-col gap-5">
-      <BreathingCard rise className="min-h-[160px] items-center justify-center text-center">
+      <BreathingCard className="tdd-bloom min-h-[160px] items-center justify-center text-center">
         <p className="flex h-full min-h-[120px] items-center justify-center whitespace-pre-line px-2 text-[18px] leading-relaxed text-[var(--text)]">
           {traceText || `${copy.now.later}。\n愿望还在，等下一个契机。`}
         </p>
