@@ -25,7 +25,8 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 - [ ] Extract `packages/core` + `packages/design` ahead of iOS.
 - [ ] Prisma schema + server storage adapter (Phase 2), offline-first.
 
-- [ ] Per-theme contrast audit (esp. `--text-muted` on `--surface-soft`) across all 5 themes; tune tokens where WCAG AA fails.
+- [x] Per-theme contrast audit (esp. `--text-muted` on `--surface-soft`) across all 5 themes; tune tokens where WCAG AA fails. _(Cycle 13)_
+- [ ] Accent-as-small-text contrast: the active bottom-nav label / links use `--accent` directly on `--surface`, which is < 4.5 in light themes. Consider an `--accent-text` (darker) variant for text-sized accent, keeping `--accent` vivid for fills.
 
 ## Self-review lenses to run (Cycle 10)
 Product designer · ISFP user · tired user at 3AM · technical maintainer · future iOS dev → write `docs/morning-review.md`.

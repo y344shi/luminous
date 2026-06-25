@@ -291,3 +291,26 @@ What still feels wrong / not done yet:
 
 Next:
 - Platform: extract `packages/core` + `packages/design` ahead of iOS, or a per-theme contrast audit.
+
+---
+
+## Cycle 13: Per-theme contrast audit + token tuning (WCAG)
+
+What changed:
+- Measured every text/bg token pair across all 5 themes. Found widespread failures: `textMuted` 2.0–2.9 (target ≥3.0), several `textSecondary`-on-surfaceSoft < 4.5, and the **primary button label** failing badly (light text on muted accents — dusk_garden 2.11).
+- Tuned tokens without changing the brief's accent palette: darkened `textSecondary` + `textMuted` in the 4 light themes (lightened muted slightly in soft_ritual), and added a new `--on-accent` token (a dark foreground) so the primary button label reads on the accent fill in every theme. `SoftButton` primary now uses `--on-accent`.
+- Kept `globals.css` (runtime) and `themes.ts` (switcher/test source) in sync; added `onAccent` to `ThemeTokens` + `themeToCssVars`.
+- New `tests/contrast.test.ts`: 35 assertions (5 themes × 7 pairs) — textPrimary/secondary ≥4.5, muted ≥3.0, on-accent ≥4.5. Permanent guard against future token drift.
+
+Why:
+- Readability is accessibility. The audit found real problems a user would feel — especially an unreadable primary CTA in dusk_garden. Solving via `--on-accent` (dark label) preserves each theme's specified accent color.
+
+What was tested:
+- `npm test` → 90/90 (11 files, +35 contrast); `npm run typecheck` clean; `npm run build` green. Copy-lint still passes (dark button text introduces no forbidden words).
+
+What still feels wrong / not done yet:
+- Accent used as *small text* (active nav label, links) is still < 4.5 on light surfaces — logged a follow-up for an `--accent-text` variant.
+- Decorative borders/accent-soft fills weren't audited (non-text).
+
+Next:
+- `--accent-text` for accent-sized text, or extract `packages/core` + `packages/design` ahead of iOS.

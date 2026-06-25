@@ -41,6 +41,12 @@ Product/engineering decisions, with reasons and tradeoffs. Append as we go.
 ### D9: `transit` added to `SemanticTime`
 - **Reason:** The brief's mock data uses it as a preferred-time window for tiny actions, though the type omitted it. Treated as a soft "on the move" context.
 
+### D12: `--on-accent` token instead of recoloring accents for button contrast
+- **Reason:** Light text on the brief's muted accents fails WCAG (dusk_garden 2.11). The two ways to fix it are (a) darken every accent — which changes the brief's palette and each theme's identity — or (b) put a dark label on the accent fill. Chose (b): a per-theme `--on-accent` token used by `SoftButton` primary.
+- **Tradeoff:** The primary CTA now has a dark label rather than white — calmer and on-brand for these soft accents, and it passes ≥4.5 in all 5 themes.
+- **Also:** darkened `textSecondary`/`textMuted` in light themes to clear AA (≥4.5 / ≥3.0). A `contrast.test.ts` (35 assertions) locks it. `globals.css` is runtime source; `themes.ts` mirrors it for the switcher swatches + the test.
+- **Known gap:** accent used as *small text* (active nav label) still < 4.5 on light surfaces — deferred to a future `--accent-text` variant.
+
 ### D11: The bare word 任务 is allowed; todo *framing* is what's forbidden
 - **Reason:** The garden subtitle "这些不是任务" is core copy — it names the thing the app refuses to be. Banning the substring 任务 would forbid the very sentence that expresses the philosophy.
 - **What's forbidden instead:** todo mechanics/framing (待办, 任务列表, 完成任务, todo, deadline, overdue, 优先级, 完成率, streak, 打卡) and shaming (失败, you must/failed).

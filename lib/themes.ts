@@ -9,6 +9,8 @@ export type ThemeTokens = {
   textMuted: string;
   accent: string;
   accentSoft: string;
+  /** Foreground color for text/icons placed ON the accent (e.g. primary button). */
+  onAccent: string;
   border: string;
 };
 
@@ -18,10 +20,11 @@ export const themes: Record<ThemeName, ThemeTokens> = {
     surface: "#FFFDF8",
     surfaceSoft: "#F1EADF",
     textPrimary: "#26231F",
-    textSecondary: "#746C60",
-    textMuted: "#A49A8A",
+    textSecondary: "#6B6357",
+    textMuted: "#827868",
     accent: "#7D9A7A",
     accentSoft: "#DDE8D8",
+    onAccent: "#211E19",
     border: "#E6DCCC",
   },
   dusk_garden: {
@@ -29,10 +32,11 @@ export const themes: Record<ThemeName, ThemeTokens> = {
     surface: "#FAF7F2",
     surfaceSoft: "#E7E1EC",
     textPrimary: "#252A35",
-    textSecondary: "#687083",
-    textMuted: "#9AA1B2",
+    textSecondary: "#565E6E",
+    textMuted: "#666E80",
     accent: "#D7A35F",
     accentSoft: "#F2DFC1",
+    onAccent: "#221A12",
     border: "#D8D5DF",
   },
   minimal_ios: {
@@ -40,10 +44,11 @@ export const themes: Record<ThemeName, ThemeTokens> = {
     surface: "#FFFFFF",
     surfaceSoft: "#EFEFF3",
     textPrimary: "#111111",
-    textSecondary: "#666666",
-    textMuted: "#999999",
+    textSecondary: "#5E5E5E",
+    textMuted: "#79797F",
     accent: "#6E8FBF",
     accentSoft: "#E7EEF8",
+    onAccent: "#0E2236",
     border: "#E5E5EA",
   },
   field_notebook: {
@@ -51,10 +56,11 @@ export const themes: Record<ThemeName, ThemeTokens> = {
     surface: "#FFFDF4",
     surfaceSoft: "#E3EAD8",
     textPrimary: "#243024",
-    textSecondary: "#65715F",
-    textMuted: "#9AA18F",
+    textSecondary: "#586353",
+    textMuted: "#727B66",
     accent: "#758B5A",
     accentSoft: "#DDE8C8",
+    onAccent: "#131A0E",
     border: "#D7DDC8",
   },
   soft_ritual: {
@@ -63,9 +69,10 @@ export const themes: Record<ThemeName, ThemeTokens> = {
     surfaceSoft: "#40372F",
     textPrimary: "#FFF3E0",
     textSecondary: "#D9C7AE",
-    textMuted: "#A99883",
+    textMuted: "#B5A48E",
     accent: "#D6A45F",
     accentSoft: "#5A442C",
+    onAccent: "#2A2012",
     border: "#51463C",
   },
 };
@@ -117,6 +124,7 @@ export function themeToCssVars(name: ThemeName): Record<string, string> {
     "--text-muted": t.textMuted,
     "--accent": t.accent,
     "--accent-soft": t.accentSoft,
+    "--on-accent": t.onAccent,
     "--border": t.border,
     "--shadow-card": shadow.card,
   };
