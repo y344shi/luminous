@@ -152,3 +152,26 @@ What still feels wrong / not done yet:
 
 Next:
 - Quality section: copy-lint test (forbidden vocab) and/or a Now-flow integration test; then product depth (seed detail page).
+
+---
+
+## Cycle 7: Now-flow integration test (core loop, end to end)
+
+What changed:
+- New `tests/nowFlow.test.tsx` renders the real `NowFlow` with Testing Library (jsdom), mocking `next/navigation`, and drives the whole loop through the live store:
+  1. mood + energy → recommend → opportunity card → 完成了 → a `今天没有消失…` trace is created & persisted (partial=false).
+  2. partial path → trace created with partial=true and **never** shaming (`/失败|浪费|没用/` absent).
+  3. skipped path → **no** trace created, gentle "愿望还在" message shown.
+
+Why:
+- Unit tests covered each piece; nothing yet proved the actual wired UI loop. This is the brief's #1 invariant ("the core loop must never break") now guarded by a test that exercises components + store together.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 39/39 (7 files); `npm run build` green.
+
+What still feels wrong / not done yet:
+- Asserts on text via `.toBeTruthy()` (no jest-dom matchers) — adequate, slightly verbose.
+- Doesn't yet exercise the self-written-trace edit path or late-night gating in the UI.
+
+Next:
+- Copy-lint test (forbidden vocabulary across copy + rendered screens); then `data-theme` persistence test; then product depth.
