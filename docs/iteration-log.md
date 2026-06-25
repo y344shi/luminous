@@ -34,3 +34,29 @@ What still feels wrong / not done yet:
 
 Next:
 - Cron-driven agentic iteration: polish themes, add location/weather context to Now, PWA manifest, richer empty states, accessibility pass, and a Now→trace animation.
+
+---
+
+## Cycle 2: PWA — installable, offline-capable shell
+
+What changed:
+- Added `app/manifest.ts` → served at `/manifest.webmanifest` (name, standalone, portrait, warm-paper theme color, categories).
+- Generated on-brand PNG icons with `sharp` (192, 512, maskable-512, apple-touch-180) into `public/icons/` — a sage sprout under a soft dusk light on warm paper.
+- Added `public/sw.js`: network-first for navigations (offline falls back to cached shell), cache-first for `/icons/` + `/_next/static/`. Fails soft; caches nothing sensitive.
+- `ServiceWorkerRegister` client component registers the SW in production only (offline is an enhancement, never a blocker).
+- Wired `manifest`, `icons`, and apple-touch into root metadata.
+
+Why:
+- First "high value, low risk" item in next-steps. Makes the app installable to the home screen and openable offline — the natural bridge toward the iOS target, with zero new runtime deps.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 31/31; `npm run build` → `/manifest.webmanifest` now a route, all compile.
+- Runtime smoke (`next start`): manifest serves valid JSON; `/sw.js` → 200 `application/javascript`; `/icons/icon-512.png` → 200.
+
+What still feels wrong / not done yet:
+- SW registers only in prod, so dev never exercises offline — acceptable; verify on a deployed/`next start` instance.
+- No "add to home screen" hint UI; relying on browser/OS affordance.
+- Icons are abstract; may want a more distinctive mark later.
+
+Next:
+- Now-screen one-tap context chips (我在外面 / 天气不错 / 在电脑前) feeding locationHint + weather; then auto-offer soft_ritual at late night.

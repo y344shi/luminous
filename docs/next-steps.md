@@ -3,7 +3,7 @@
 Prioritized backlog for overnight agentic cycles and the morning review.
 
 ## High value, low risk (do first)
-- [ ] PWA manifest + icons + service worker (add-to-home-screen).
+- [x] PWA manifest + icons + service worker (add-to-home-screen). _(Cycle 2)_
 - [ ] Now screen: one-tap context chips for "我在外面" / "天气不错" / "在电脑前" feeding `locationHint` + `isOutdoorWeatherGood`.
 - [ ] Auto-offer `soft_ritual` theme at late night (non-forcing).
 - [ ] Richer empty states + gentle Now→trace transition animation.

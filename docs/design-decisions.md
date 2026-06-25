@@ -40,3 +40,9 @@ Product/engineering decisions, with reasons and tradeoffs. Append as we go.
 
 ### D9: `transit` added to `SemanticTime`
 - **Reason:** The brief's mock data uses it as a preferred-time window for tiny actions, though the type omitted it. Treated as a soft "on the move" context.
+
+### D10: PWA via Next metadata `manifest.ts` + a hand-written `sw.js`, no PWA plugin
+- **Reason:** Zero new runtime deps; full control over the (deliberately tiny, fail-soft) caching strategy. Service worker registers in production only, so it can never interfere with dev/HMR.
+- **Alternatives:** `next-pwa`/Serwist.
+- **Tradeoff:** We maintain the SW by hand, but it's ~40 lines and easy to reason about. Offline is treated strictly as an enhancement — registration failures are swallowed.
+- **Icons:** generated at build-time-once with `sharp` (already present transitively) from an inline SVG, kept in the warm-paper palette with content inside the maskable safe zone.

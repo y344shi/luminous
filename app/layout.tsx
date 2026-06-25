@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AppProvider from "@/components/AppProvider";
 import AppShell from "@/components/layout/AppShell";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,7 +18,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "今天别消失",
   description: "一个 AI 生活锚点 app。抓住一个小瞬间，今天就没有完全消失。",
+  manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "今天别消失", statusBarStyle: "default" },
+  icons: {
+    icon: "/icons/icon-192.png",
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -43,6 +49,7 @@ export default function RootLayout({
         <AppProvider>
           <AppShell>{children}</AppShell>
         </AppProvider>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

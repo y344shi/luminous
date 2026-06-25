@@ -2,14 +2,14 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 1)
+## Status (Cycle 2)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
 | Unit tests | `npm test` | ✅ 31/31 pass (5 files) |
-| Production build | `npm run build` | ✅ 7 routes compile (static) |
-| Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds` → 200 |
+| Production build | `npm run build` | ✅ 8 routes (incl. `/manifest.webmanifest`) |
+| Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 
 ## Coverage by area
 
