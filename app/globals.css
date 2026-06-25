@@ -1,0 +1,140 @@
+@import "tailwindcss";
+
+/* ── Theme tokens ───────────────────────────────────────────────
+   Themes change feeling, not layout. Each sets the same variables.
+   Default (no data-theme yet) mirrors warm_paper to avoid a flash. */
+:root,
+[data-theme="warm_paper"] {
+  --bg: #f8f4ec;
+  --surface: #fffdf8;
+  --surface-soft: #f1eadf;
+  --text: #26231f;
+  --text-secondary: #746c60;
+  --text-muted: #a49a8a;
+  --accent: #7d9a7a;
+  --accent-soft: #dde8d8;
+  --border: #e6dccc;
+  --shadow-card: 0 8px 30px rgba(60, 45, 30, 0.06);
+}
+
+[data-theme="dusk_garden"] {
+  --bg: #eef0f4;
+  --surface: #faf7f2;
+  --surface-soft: #e7e1ec;
+  --text: #252a35;
+  --text-secondary: #687083;
+  --text-muted: #9aa1b2;
+  --accent: #d7a35f;
+  --accent-soft: #f2dfc1;
+  --border: #d8d5df;
+  --shadow-card: 0 8px 30px rgba(40, 45, 70, 0.08);
+}
+
+[data-theme="minimal_ios"] {
+  --bg: #f7f7f8;
+  --surface: #ffffff;
+  --surface-soft: #efeff3;
+  --text: #111111;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+  --accent: #6e8fbf;
+  --accent-soft: #e7eef8;
+  --border: #e5e5ea;
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="field_notebook"] {
+  --bg: #f1f4ea;
+  --surface: #fffdf4;
+  --surface-soft: #e3ead8;
+  --text: #243024;
+  --text-secondary: #65715f;
+  --text-muted: #9aa18f;
+  --accent: #758b5a;
+  --accent-soft: #dde8c8;
+  --border: #d7ddc8;
+  --shadow-card: 0 8px 30px rgba(40, 60, 30, 0.07);
+}
+
+[data-theme="soft_ritual"] {
+  --bg: #27231f;
+  --surface: #332d27;
+  --surface-soft: #40372f;
+  --text: #fff3e0;
+  --text-secondary: #d9c7ae;
+  --text-muted: #a99883;
+  --accent: #d6a45f;
+  --accent-soft: #5a442c;
+  --border: #51463c;
+  --shadow-card: 0 10px 36px rgba(0, 0, 0, 0.35);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-soft: var(--surface-soft);
+  --color-text: var(--text);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-border: var(--border);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background 600ms ease, color 600ms ease;
+}
+
+/* Gentle entrance — nothing snappy or aggressive. */
+@keyframes tdd-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tdd-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.012);
+  }
+}
+
+.tdd-rise {
+  animation: tdd-rise 600ms ease both;
+}
+
+.tdd-breathe {
+  animation: tdd-breathe 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tdd-rise,
+  .tdd-breathe,
+  body {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Calm scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}

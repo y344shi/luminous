@@ -1,0 +1,93 @@
+// Centralized copy system. Warm, gentle, never shaming. Never todo-app language.
+
+export const copy = {
+  appTitle: "今天别消失",
+  appTagline: "不用计划一整天。只要抓住一个小瞬间。",
+
+  home: {
+    question: "今天想不想留下一个小痕迹？",
+    subtitle: "不用计划一整天。\n只要抓住一个小瞬间。",
+    primary: "现在别消失",
+    traceHeading: "今日痕迹",
+    traceEmpty: "还没有，但可以很小。",
+    seedsHeading: "最近的小愿望",
+    seedsEmpty: "还没有愿望。冒出来一个，就丢进来。",
+  },
+
+  add: {
+    prompt: "把刚刚冒出来的小愿望丢进来……",
+    placeholder: "我想记几个法语单词。\n我想找个地方坐一会。\n我想去市中心走走。\n我想亲手看懂一点代码。",
+    caught: "我帮你接住了这个愿望：",
+    minLabel: "最低完成：",
+    fitLabel: "适合：",
+    save: "保存这个愿望",
+    edit: "改一改",
+    again: "再丢一个",
+  },
+
+  garden: {
+    title: "愿望花园",
+    subtitle: "这些不是任务。\n它们只是还在等一个合适的时刻。",
+    empty: "花园还空着。\n冒出来一个小愿望，就把它种进来。",
+  },
+
+  now: {
+    moodQuestion: "你现在大概是什么状态？",
+    energyQuestion: "现在还有多少力气？",
+    freeQuestion: "大概有多少空？",
+    findButton: "看看现在适合做什么",
+    reasonLabel: "为什么现在适合：",
+    minLabel: "最低目标：",
+    start: "开始一点点",
+    swap: "换一个",
+    later: "今天先这样",
+    noneTitle: "现在不用做什么。",
+    noneBody: "愿望都还在，等下一个契机。",
+  },
+
+  completion: {
+    prompt: "做到了吗？",
+    done: "完成了",
+    partial: "做了一点",
+    skipped: "没做，但我知道了",
+    skippedMsg: "没关系。愿望还在，等下一个契机。",
+  },
+
+  traces: {
+    title: "今日痕迹",
+    subtitle: "不是成就列表。\n只是你曾经真实在场的瞬间。",
+    empty: "还没有痕迹。\n今天做了一点点真实的事，就会出现在这里。",
+  },
+
+  settings: {
+    title: "设置",
+    themeLabel: "外观",
+    aiLabel: "AI 模式",
+    quietLabel: "安静时段",
+    maxRemindersLabel: "每天最多递几次契机",
+    resetLabel: "清空本地数据",
+    resetConfirm: "确定要清空所有愿望和痕迹吗？这一步无法撤销。",
+    privacy: "这个 app 不应该吵你。\n它只应该在合适的时候轻轻递一个契机。",
+  },
+
+  lateNight: {
+    title: "现在已经很晚了。",
+    body: "今天不用补救人生。\n你不需要把整个晚上抢回来。\n\n选一个止损动作：\n喝水、洗漱、关机、上床。\n\n完成一个，今天就没有完全消失。",
+  },
+
+  tracePrefix: "今天没有消失，因为",
+} as const;
+
+// Forbidden vocabulary — used by tests/lint to keep the tone safe.
+export const forbiddenWords = [
+  "任务",
+  "deadline",
+  "overdue",
+  "失败",
+  "高优先级",
+  "完成率",
+  "streak",
+  "打卡",
+  "you must",
+  "you failed",
+];

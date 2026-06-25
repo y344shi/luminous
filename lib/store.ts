@@ -1,0 +1,136 @@
+"use client";
+
+import { create } from "zustand";
+import type {
+  Seed,
+  DailyTrace,
+  Settings,
+  ThemeName,
+  Opportunity,
+  ContextSnapshot,
+  SeedStatus,
+} from "./types";
+import { storage, defaultSettings } from "./storage";
+import { seedMockGarden } from "./mockSeeds";
+import { localDateKey } from "./utils";
+
+type Store = {
+  hydrated: boolean;
+  seeds: Seed[];
+  traces: DailyTrace[];
+  settings: Settings;
+
+  // transient (not persisted)
+  lastContext: ContextSnapshot | null;
+  opportunities: Opportunity[];
+
+  hydrate: () => void;
+
+  addSeed: (seed: Seed) => void;
+  updateSeed: (id: string, patch: Partial<Seed>) => void;
+  setSeedStatus: (id: string, status: SeedStatus) => void;
+
+  addTrace: (trace: DailyTrace) => void;
+  tracesForToday: () => DailyTrace[];
+
+  setOpportunities: (opps: Opportunity[], ctx: ContextSnapshot) => void;
+  clearOpportunities: () => void;
+
+  setTheme: (theme: ThemeName) => void;
+  updateSettings: (patch: Partial<Settings>) => void;
+  resetAll: () => void;
+};
+
+export const useStore = create<Store>((set, get) => ({
+  hydrated: false,
+  seeds: [],
+  traces: [],
+  settings: defaultSettings,
+  lastContext: null,
+  opportunities: [],
+
+  hydrate: () => {
+    if (get().hydrated) return;
+    let seeds = storage.loadSeeds();
+    const settings = storage.loadSettings();
+    const theme = storage.loadTheme();
+    if (theme) settings.theme = theme;
+
+    // First run: plant a small mock garden so the app never feels empty/dead.
+    if (seeds.length === 0 && storage.loadTraces().length === 0) {
+      seeds = seedMockGarden();
+      storage.saveSeeds(seeds);
+    }
+
+    set({
+      hydrated: true,
+      seeds,
+      traces: storage.loadTraces(),
+      settings,
+    });
+  },
+
+  addSeed: (seed) => {
+    const seeds = [seed, ...get().seeds];
+    set({ seeds });
+    storage.saveSeeds(seeds);
+  },
+
+  updateSeed: (id, patch) => {
+    const seeds = get().seeds.map((s) =>
+      s.id === id ? { ...s, ...patch, updatedAt: new Date().toISOString() } : s
+    );
+    set({ seeds });
+    storage.saveSeeds(seeds);
+  },
+
+  setSeedStatus: (id, status) => {
+    get().updateSeed(id, { status });
+  },
+
+  addTrace: (trace) => {
+    const traces = [trace, ...get().traces];
+    set({ traces });
+    storage.saveTraces(traces);
+  },
+
+  tracesForToday: () => {
+    const today = localDateKey();
+    return get().traces.filter((t) => t.date === today);
+  },
+
+  setOpportunities: (opps, ctx) => set({ opportunities: opps, lastContext: ctx }),
+  clearOpportunities: () => set({ opportunities: [], lastContext: null }),
+
+  setTheme: (theme) => {
+    const settings = { ...get().settings, theme };
+    set({ settings });
+    storage.saveTheme(theme);
+    storage.saveSettings(settings);
+  },
+
+  updateSettings: (patch) => {
+    const settings = { ...get().settings, ...patch };
+    set({ settings });
+    storage.saveSettings(settings);
+    if (patch.theme) storage.saveTheme(patch.theme);
+  },
+
+  resetAll: () => {
+    storage.clearAll();
+    const seeds = seedMockGarden();
+    storage.saveSeeds(seeds);
+    set({
+      seeds,
+      traces: [],
+      settings: defaultSettings,
+      opportunities: [],
+      lastContext: null,
+    });
+  },
+}));
+
+export function findSeed(seeds: Seed[], id?: string): Seed | undefined {
+  if (!id) return undefined;
+  return seeds.find((s) => s.id === id);
+}
