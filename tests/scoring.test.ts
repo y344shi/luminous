@@ -76,6 +76,41 @@ describe("scoring — duration fit", () => {
   });
 });
 
+describe("scoring — location & weather context", () => {
+  it("outdoor location + good weather surfaces the outdoor sitting seed", () => {
+    const seeds = garden();
+    const ranked = rankSeeds(
+      seeds,
+      ctx({
+        mood: "okay",
+        energy: "low",
+        semanticTime: "afternoon",
+        locationHint: "outdoor",
+        isOutdoorWeatherGood: true,
+      }),
+      { rng: fixedRng, limit: 3 }
+    );
+    expect(ranked[0].seed.title).toBe("坐一会野外");
+  });
+
+  it("being at the computer lets a computer-bound creation seed rank well", () => {
+    const seeds = garden();
+    const ranked = rankSeeds(
+      seeds,
+      ctx({
+        mood: "avoidant",
+        energy: "medium",
+        semanticTime: "evening",
+        locationHint: "computer",
+        deviceContext: { isMobile: false, isAtComputer: true },
+      }),
+      { rng: fixedRng, limit: 3 }
+    );
+    const titles = ranked.map((r) => r.seed.title);
+    expect(titles.some((t) => t === "夺回一点方向盘" || t === "亲手理解一个模块")).toBe(true);
+  });
+});
+
 describe("scoring — serendipity", () => {
   it("does not always return the same top seed under varied rng", () => {
     const seeds = garden();

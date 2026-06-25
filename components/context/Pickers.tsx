@@ -1,6 +1,6 @@
 "use client";
 
-import type { Mood, Energy } from "@/lib/types";
+import type { Mood, Energy, LocationType } from "@/lib/types";
 import { cx } from "@/lib/utils";
 
 export const moodOptions: { value: Mood; label: string }[] = [
@@ -28,6 +28,40 @@ export const freeOptions: { value: number | undefined; label: string }[] = [
   { value: 90, label: "1 小时以上" },
   { value: undefined, label: "不知道" },
 ];
+
+export const locationOptions: { value: LocationType; label: string }[] = [
+  { value: "home", label: "在家" },
+  { value: "computer", label: "电脑前" },
+  { value: "outdoor", label: "在外面" },
+  { value: "downtown", label: "市中心" },
+  { value: "transit", label: "路上" },
+];
+
+/** A single on/off pill, e.g. the "天气不错" toggle. */
+export function ToggleChip({
+  active,
+  children,
+  onClick,
+}: {
+  active: boolean;
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      className={cx(
+        "rounded-full border px-4 py-2 text-[14px] transition-all duration-200 active:scale-[0.97]",
+        active
+          ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--text)]"
+          : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)]"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
 
 function Chip({
   active,

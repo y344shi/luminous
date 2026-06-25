@@ -60,3 +60,27 @@ What still feels wrong / not done yet:
 
 Next:
 - Now-screen one-tap context chips (我在外面 / 天气不错 / 在电脑前) feeding locationHint + weather; then auto-offer soft_ritual at late night.
+
+---
+
+## Cycle 3: Now-screen place & weather context
+
+What changed:
+- Added an optional "你现在在哪？（可跳过）" location chip group to the Now flow (在家 / 电脑前 / 在外面 / 市中心 / 路上); tapping the selected chip again clears it.
+- A conditional "外面天气不错" toggle appears only when location is outdoor/downtown, feeding `isOutdoorWeatherGood`.
+- `NowFlow` now passes `locationHint`, weather, and derives `isAtComputer` from the location — replacing the hardcoded `isAtComputer: true` assumption (resolves open-question #3 partially).
+- New `ToggleChip` + `locationOptions` in `Pickers.tsx`.
+- 2 new scoring tests: outdoor+good-weather surfaces "坐一会野外" first; at-computer lets a computer-bound creation seed rank.
+
+Why:
+- Location and weather already drove `triggerBonus`/`locationFit` in scoring, but the UI had no way to supply them — so the most context-aware recommendations were unreachable. This connects the existing engine to real user input with minimal, skippable friction (ISFP-safe).
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 33/33; `npm run build` green.
+
+What still feels wrong / not done yet:
+- Location is self-reported only; no geolocation (intentional for now — coarse, private).
+- Weather toggle is manual; a future coarse weather API could prefill it.
+
+Next:
+- Auto-offer `soft_ritual` theme at late night (non-forcing).

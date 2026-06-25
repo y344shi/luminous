@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Mood, Energy, Opportunity } from "@/lib/types";
+import type { Mood, Energy, Opportunity, LocationType } from "@/lib/types";
 import { useStore, findSeed } from "@/lib/store";
 import { buildContext } from "@/lib/context";
 import { recommend } from "@/lib/scoring";
@@ -14,9 +14,11 @@ import EmptyState from "@/components/design/EmptyState";
 import OpportunityCard from "./OpportunityCard";
 import {
   ChipGroup,
+  ToggleChip,
   moodOptions,
   energyOptions,
   freeOptions,
+  locationOptions,
 } from "@/components/context/Pickers";
 
 type Step = "context" | "list" | "completion" | "trace";
@@ -33,6 +35,8 @@ export default function NowFlow() {
   const [energy, setEnergy] = useState<Energy>();
   const [freeMinutes, setFreeMinutes] = useState<number | undefined>(undefined);
   const [freeTouched, setFreeTouched] = useState(false);
+  const [locationHint, setLocationHint] = useState<LocationType | undefined>(undefined);
+  const [weatherGood, setWeatherGood] = useState(false);
 
   const [opps, setOpps] = useState<Opportunity[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -52,7 +56,9 @@ export default function NowFlow() {
       mood: mood!,
       energy: energy!,
       freeMinutes: freeTouched ? freeMinutes : undefined,
-      isAtComputer: true,
+      locationHint,
+      isOutdoorWeatherGood: weatherGood || undefined,
+      isAtComputer: locationHint === "computer",
     });
     const result = recommend(seeds, ctx, { limit: 3 });
     setOpps(result);
@@ -114,6 +120,19 @@ export default function NowFlow() {
             }}
             isEqual={(a, b) => freeTouched && a === b}
           />
+        </section>
+        <section className="flex flex-col gap-3">
+          <p className="text-[15px] text-[var(--text)]">{copy.now.placeQuestion}</p>
+          <ChipGroup
+            options={locationOptions}
+            value={locationHint}
+            onChange={(v) => setLocationHint((cur) => (cur === v ? undefined : v))}
+          />
+          {(locationHint === "outdoor" || locationHint === "downtown") && (
+            <ToggleChip active={weatherGood} onClick={() => setWeatherGood((w) => !w)}>
+              {copy.now.weatherLabel}
+            </ToggleChip>
+          )}
         </section>
         <SoftButton full onClick={handleFind} disabled={!ready}>
           {copy.now.findButton}

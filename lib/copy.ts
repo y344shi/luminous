@@ -35,6 +35,8 @@ export const copy = {
     moodQuestion: "你现在大概是什么状态？",
     energyQuestion: "现在还有多少力气？",
     freeQuestion: "大概有多少空？",
+    placeQuestion: "你现在在哪？（可跳过）",
+    weatherLabel: "外面天气不错",
     findButton: "看看现在适合做什么",
     reasonLabel: "为什么现在适合：",
     minLabel: "最低目标：",
