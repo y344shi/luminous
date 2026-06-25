@@ -88,6 +88,8 @@ export const copy = {
     quietHelp: "这段时间它完全不打扰你。",
     quietFrom: "从",
     quietTo: "到",
+    quietNow: "现在正处在安静时段，它不会主动打扰你。",
+    quietNotNow: "现在不在安静时段。",
     maxRemindersLabel: "每天最多递几次契机",
     resetLabel: "清空本地数据",
     resetConfirm: "确定要清空所有愿望和痕迹吗？这一步无法撤销。",

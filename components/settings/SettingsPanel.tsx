@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useStore } from "@/lib/store";
 import { copy } from "@/lib/copy";
 import { cx } from "@/lib/utils";
+import { isQuietNow } from "@/lib/reminders";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 import ThemeSwitcher from "@/components/design/ThemeSwitcher";
@@ -51,6 +53,12 @@ export default function SettingsPanel() {
   const settings = useStore((s) => s.settings);
   const updateSettings = useStore((s) => s.updateSettings);
   const resetAll = useStore((s) => s.resetAll);
+
+  // Client-only so the live quiet state can't cause a hydration mismatch.
+  const [quietNow, setQuietNow] = useState<boolean | null>(null);
+  useEffect(() => {
+    setQuietNow(isQuietNow(settings, new Date()));
+  }, [settings.quietHoursStart, settings.quietHoursEnd, settings]);
 
   if (!hydrated) return null;
 
@@ -107,6 +115,11 @@ export default function SettingsPanel() {
             />
           </div>
           <p className="text-[12px] text-[var(--text-muted)]">{copy.settings.quietHelp}</p>
+          {quietNow !== null && (
+            <p className="text-[12px] text-[var(--text-secondary)]">
+              {quietNow ? copy.settings.quietNow : copy.settings.quietNotNow}
+            </p>
+          )}
         </BreathingCard>
       </Section>
 

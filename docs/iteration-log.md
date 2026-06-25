@@ -359,3 +359,24 @@ What still feels wrong / not done yet:
 
 Next:
 - `isQuietNow` + reminder budget helper, or extract `packages/core`/`packages/design`, or wire the live model call when a key exists.
+
+---
+
+## Cycle 16: Quiet-hours logic + reminder budget (+ live indicator)
+
+What changed:
+- New pure `lib/reminders.ts`: `isQuietNow(settings, now)` (hour-granular, handles windows that wrap past midnight; `start === end` = no quiet), `remindersRemaining(settings, sentToday)` (never negative), and `canRemindNow(...)` = not-quiet AND budget-left.
+- Gave it a real consumer now (not just future notifications): the Settings quiet section shows a live line — "现在正处在安静时段，它不会主动打扰你。" / "现在不在安静时段。" — computed client-side to avoid hydration mismatch. The quiet-hours setting now visibly *means* something.
+- New `tests/reminders.test.ts` (5): wrap-around + same-day + degenerate windows; budget clamping; the combined gate.
+
+Why:
+- Cycle 11 added the quiet-hours UI but nothing read it. This turns the stored setting into real, tested logic and shows the user its current effect — closing the loop short of actual notifications (which don't exist yet).
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 109/109 (13 files); `npm run build` green.
+
+What still feels wrong / not done yet:
+- `canRemindNow` has no production caller yet — there are still no reminders/notifications to gate. It's ready and tested for when PWA/local notifications land.
+
+Next:
+- Extract `packages/core` + `packages/design` ahead of iOS, or a Prisma schema (Phase 2), or the key-gated live model call.
