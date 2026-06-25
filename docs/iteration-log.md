@@ -656,3 +656,26 @@ What still feels wrong / not done yet:
 
 Next:
 - Round-2 P2: remember last mood/energy in the Now flow (persist + pre-select).
+
+---
+
+## Cycle 30: Remember last mood/energy in Now
+
+What changed:
+- Persist the last mood/energy chosen in the Now flow: new `tdd.lastPick` storage key + `LastPick` type, store state `lastPick` (loaded on hydrate), and a `rememberPick(mood, energy)` action called when the user runs a recommendation.
+- `NowFlow` pre-selects the remembered mood/energy on mount (a `useEffect` that only fills a still-empty choice via `prev ?? …`, so it never overrides a fresh selection). A returning user can go straight to "看看现在适合做什么".
+- Cleared on `resetAll`; included in `clearAll`'s key sweep.
+- New tests: store `rememberPick` persists; `NowFlow` integration — remembered pick shows `aria-pressed` chips and is immediately ready.
+
+Why:
+- Morning-review round 2 (ISFP lens): the Now flow re-quizzed mood + energy every visit. Remembering removes two decisions for a returning user — fewer taps, less "being tested" — while still letting them change their mind.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 161/161 (20 files); `npm run build` green.
+
+What still feels wrong / not done yet:
+- Pre-selects but doesn't auto-run; the user still taps "看看……" — intentional (state can change moment to moment).
+- Free-time and location aren't remembered (more situational); deliberately left per-visit.
+
+Next:
+- Round-2 P2: first-open intro card introducing Seed / Trace / "别消失".

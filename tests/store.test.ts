@@ -61,6 +61,14 @@ describe("store — first-run samples note", () => {
   });
 });
 
+describe("store — remembers last mood/energy pick", () => {
+  it("rememberPick updates state and persists", () => {
+    useStore.getState().rememberPick("tired", "low");
+    expect(useStore.getState().lastPick).toEqual({ mood: "tired", energy: "low" });
+    expect(storage.loadLastPick()).toEqual({ mood: "tired", energy: "low" });
+  });
+});
+
 describe("store — settings", () => {
   it("persists quiet hours and max reminders", () => {
     useStore.getState().updateSettings({

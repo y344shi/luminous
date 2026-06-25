@@ -16,7 +16,7 @@ import NowFlow from "@/components/opportunity/NowFlow";
 beforeEach(() => {
   window.localStorage.clear();
   push.mockReset();
-  useStore.setState({ seeds: seedMockGarden(), traces: [], hydrated: true });
+  useStore.setState({ seeds: seedMockGarden(), traces: [], hydrated: true, lastPick: {} });
 });
 
 describe("Now flow (integration) — the core loop end to end", () => {
@@ -78,6 +78,17 @@ describe("Now flow (integration) — the core loop end to end", () => {
       expect(screen.getByRole("heading", { name: peekLabel })).toBeTruthy();
     }
     // the start action remains available throughout
+    expect(screen.getByText("开始一点点")).toBeTruthy();
+    cleanup();
+  });
+
+  it("pre-selects the remembered mood/energy on mount", () => {
+    useStore.setState({ lastPick: { mood: "tired", energy: "low" } });
+    render(<NowFlow />);
+    expect(screen.getByRole("button", { name: "累" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: "低" }).getAttribute("aria-pressed")).toBe("true");
+    // ready immediately → can find without re-picking
+    fireEvent.click(screen.getByText("看看现在适合做什么"));
     expect(screen.getByText("开始一点点")).toBeTruthy();
     cleanup();
   });

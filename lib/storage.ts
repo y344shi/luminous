@@ -1,5 +1,7 @@
-import type { Seed, DailyTrace, Settings, ThemeName } from "./types";
+import type { Seed, DailyTrace, Settings, ThemeName, Mood, Energy } from "./types";
 import { deserializeSeeds, deserializeTraces } from "./serialize";
+
+export type LastPick = { mood?: Mood; energy?: Energy };
 
 export const STORAGE_KEYS = {
   seeds: "tdd.seeds",
@@ -8,6 +10,7 @@ export const STORAGE_KEYS = {
   settings: "tdd.settings",
   ritualOffer: "tdd.ritualOfferDismissed",
   samplesPlanted: "tdd.samplesPlanted",
+  lastPick: "tdd.lastPick",
 } as const;
 
 export const defaultSettings: Settings = {
@@ -81,6 +84,13 @@ export const storage = {
   },
   saveSamplesPlanted(v: boolean): void {
     write(STORAGE_KEYS.samplesPlanted, v);
+  },
+  /** The last mood/energy the user picked in the Now flow, to pre-select next time. */
+  loadLastPick(): LastPick {
+    return read<LastPick>(STORAGE_KEYS.lastPick, {});
+  },
+  saveLastPick(pick: LastPick): void {
+    write(STORAGE_KEYS.lastPick, pick);
   },
   clearAll(): void {
     if (!isBrowser()) return;

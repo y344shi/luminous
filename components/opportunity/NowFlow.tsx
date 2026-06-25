@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Mood, Energy, Opportunity, LocationType } from "@/lib/types";
 import { useStore, findSeed } from "@/lib/store";
@@ -30,6 +30,9 @@ export default function NowFlow() {
   const addTrace = useStore((s) => s.addTrace);
   const updateTrace = useStore((s) => s.updateTrace);
   const updateSeed = useStore((s) => s.updateSeed);
+  const hydrated = useStore((s) => s.hydrated);
+  const lastPick = useStore((s) => s.lastPick);
+  const rememberPick = useStore((s) => s.rememberPick);
 
   const [step, setStep] = useState<Step>("context");
   const [mood, setMood] = useState<Mood>();
@@ -54,8 +57,17 @@ export default function NowFlow() {
 
   const ready = mood != null && energy != null;
 
+  // Pre-select the last mood/energy the user picked, so they aren't re-quizzed.
+  // Only fills a still-empty choice; never overrides a fresh selection.
+  useEffect(() => {
+    if (!hydrated) return;
+    if (lastPick.mood) setMood((prev) => prev ?? lastPick.mood);
+    if (lastPick.energy) setEnergy((prev) => prev ?? lastPick.energy);
+  }, [hydrated, lastPick.mood, lastPick.energy]);
+
   function handleFind() {
     if (!ready) return;
+    rememberPick(mood!, energy!);
     const ctx = buildContext({
       mood: mood!,
       energy: energy!,

@@ -2,17 +2,18 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 29)
+## Status (Cycle 30)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 159/159 pass (20 files) |
+| Unit + integration | `npm test` | ✅ 161/161 pass (20 files) |
 | Production build | `npm run build` | ✅ 10 routes (incl. dynamic `/api/seeds/parse`, `/seeds/[id]`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 | CI workflow | YAML validate | ✅ parses; ⚠️ not executable in this env (no GitHub runner) |
 
-New in Cycle 29: `exportTraces.test.ts` — `formatTracesForExport` empty/header/newest-first grouping/bullet formatting.
+New in Cycle 30: `store.test.ts` + `nowFlow.test.tsx` — remembered mood/energy persists and pre-selects on the Now flow.
+Cycle 29: `exportTraces.test.ts` — trace export formatter.
 Cycle 27: `corePurity.test.ts` — `lib/` framework-free guard (16 assertions).
 Cycle 26: CI workflow added (path-scoped).
 Cycle 24: `store.test.ts` — first-run samples flag lifecycle.

@@ -9,8 +9,10 @@ import type {
   Opportunity,
   ContextSnapshot,
   SeedStatus,
+  Mood,
+  Energy,
 } from "./types";
-import { storage, defaultSettings } from "./storage";
+import { storage, defaultSettings, type LastPick } from "./storage";
 import { seedMockGarden } from "./mockSeeds";
 import { localDateKey } from "./utils";
 
@@ -20,6 +22,7 @@ type Store = {
   traces: DailyTrace[];
   settings: Settings;
   samplesPlanted: boolean;
+  lastPick: LastPick;
 
   // transient (not persisted)
   lastContext: ContextSnapshot | null;
@@ -37,6 +40,7 @@ type Store = {
 
   setOpportunities: (opps: Opportunity[], ctx: ContextSnapshot) => void;
   clearOpportunities: () => void;
+  rememberPick: (mood: Mood, energy: Energy) => void;
 
   setTheme: (theme: ThemeName) => void;
   updateSettings: (patch: Partial<Settings>) => void;
@@ -50,6 +54,7 @@ export const useStore = create<Store>((set, get) => ({
   traces: [],
   settings: defaultSettings,
   samplesPlanted: false,
+  lastPick: {},
   lastContext: null,
   opportunities: [],
 
@@ -75,6 +80,7 @@ export const useStore = create<Store>((set, get) => ({
       traces: storage.loadTraces(),
       settings,
       samplesPlanted,
+      lastPick: storage.loadLastPick(),
     });
   },
 
@@ -121,6 +127,12 @@ export const useStore = create<Store>((set, get) => ({
   setOpportunities: (opps, ctx) => set({ opportunities: opps, lastContext: ctx }),
   clearOpportunities: () => set({ opportunities: [], lastContext: null }),
 
+  rememberPick: (mood, energy) => {
+    const lastPick = { mood, energy };
+    set({ lastPick });
+    storage.saveLastPick(lastPick);
+  },
+
   setTheme: (theme) => {
     const settings = { ...get().settings, theme };
     set({ settings });
@@ -150,6 +162,7 @@ export const useStore = create<Store>((set, get) => ({
       traces: [],
       settings: defaultSettings,
       samplesPlanted: true,
+      lastPick: {},
       opportunities: [],
       lastContext: null,
     });
