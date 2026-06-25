@@ -2,17 +2,18 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 28 — docs-only self-review round 2; numbers unchanged from Cycle 27)
+## Status (Cycle 29)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 154/154 pass (19 files) |
+| Unit + integration | `npm test` | ✅ 159/159 pass (20 files) |
 | Production build | `npm run build` | ✅ 10 routes (incl. dynamic `/api/seeds/parse`, `/seeds/[id]`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 | CI workflow | YAML validate | ✅ parses; ⚠️ not executable in this env (no GitHub runner) |
 
-New in Cycle 27: `corePurity.test.ts` — `lib/` (minus `store.ts`) imports no React/Next/Zustand and isn't a client component (iOS-readiness precondition; 16 assertions).
+New in Cycle 29: `exportTraces.test.ts` — `formatTracesForExport` empty/header/newest-first grouping/bullet formatting.
+Cycle 27: `corePurity.test.ts` — `lib/` framework-free guard (16 assertions).
 Cycle 26: CI workflow added (path-scoped).
 Cycle 24: `store.test.ts` — first-run samples flag lifecycle.
 Cycle 23: `a11y.test.tsx` — form-label associations.

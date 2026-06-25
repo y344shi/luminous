@@ -81,6 +81,9 @@ export const copy = {
     edit: "改成自己的话",
     editSave: "就这样",
     editPlaceholder: "用你自己的话，写下今天没有消失的理由……",
+    export: "把你的痕迹存下来",
+    exported: "已经复制下来了",
+    exportFailed: "复制没成功，可以长按上面的文字手动复制",
   },
 
   settings: {

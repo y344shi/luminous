@@ -635,3 +635,24 @@ What was tested:
 
 Next:
 - Implement the round-2 P2s, starting with trace export (pure formatter + copy action — safe and testable).
+
+---
+
+## Cycle 29: Export / keep your traces
+
+What changed:
+- New pure `lib/exportTraces.ts` → `formatTracesForExport(traces, today?)`: renders the journal as plain text — a titled keepsake grouped by human date (reusing `friendlyDate`), newest first, bullet lines; `""` when empty. Deterministic (today injectable), framework-free (passes the core-purity guard).
+- New `TraceExport` client component on `/traces`: a "把你的痕迹存下来" button that copies the formatted journal to the clipboard ("已经复制下来了"); on clipboard failure it shows a gentle manual-copy hint. Hidden when there are no traces.
+- New copy under `copy.traces`; new `exportTraces.test.ts` (5): empty, header+text, newest-first grouping, bullet/trailing-newline.
+
+Why:
+- Morning-review round 2 (ownership/privacy lens): the traces are the user's "year rings", yet the only data action was destructive reset. Letting them keep their real moments fits the product's soul and costs no privacy (it's their own data, client-side, no network).
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 159/159 (20 files); `npm run build` green. Core-purity + copy-lint still pass with the new module/strings.
+
+What still feels wrong / not done yet:
+- Copy-only (no file download) — simplest and works in the PWA; a `.txt` download could be added later.
+
+Next:
+- Round-2 P2: remember last mood/energy in the Now flow (persist + pre-select).
