@@ -41,6 +41,12 @@ Product/engineering decisions, with reasons and tradeoffs. Append as we go.
 ### D9: `transit` added to `SemanticTime`
 - **Reason:** The brief's mock data uses it as a preferred-time window for tiny actions, though the type omitted it. Treated as a soft "on the move" context.
 
+### D14: "今天先这样" offers a rest trace — it doesn't record one automatically
+- **Question:** Should choosing to step back ("今天先这样") count as a trace?
+- **Reasoning:** The brief (§17) explicitly treats stopping as real ("因为你及时停下来了"), so it *can* count — but auto-recording every defer would dilute the journal and quietly turn "not now" into an obligation to log. So: the trace screen *offers* a one-tap "把「我今天选择了停下」记成一笔"; the user decides if stopping counts today.
+- **Distinction:** "没做，但我知道了" (skipped) still saves nothing — it's an acknowledgment, not a chosen rest. Only the "今天先这样" path gets the offer (`traceText === "" && !savedTraceId`).
+- **Tone:** the recorded line is recovery-category and non-shaming ("因为你及时停下来了").
+
 ### D13: Real-AI parser as a fail-soft server seam, mock-backed by default
 - **Reason:** The brief wants an isolated, key-free, coarse-input-only AI parser with a "real" mode — but no key exists in this env and the core loop must never break.
 - **Shape:** `lib/aiParser.parseSeed(text, mode)` is the only seam the UI knows. `mock` runs locally/offline. `real` calls `/api/seeds/parse`, which validates + size-limits input, reads no client key, and currently returns the local parse (`source: ai-pending` when a server key is present). Any failure → `parseSeedMock`.

@@ -721,3 +721,24 @@ What still feels wrong / not done yet:
 
 Next:
 - Last P3: optionally record a gentle recovery trace for "今天先这样" — a product-philosophy call; otherwise the actionable backlog is exhausted (only blocked/large platform items remain) and the loop should idle.
+
+---
+
+## Cycle 33: Optional rest trace for "今天先这样"
+
+What changed:
+- New `buildRestTrace()` in the trace generator: a recovery-category, non-shaming line "今天没有消失，因为你及时停下来了。".
+- On the Now "今天先这样" (onLater) path, the trace screen now *offers* a one-tap "把「我今天选择了停下」记成一笔" button (only when nothing was saved and it's the later path — not the skipped path). Tapping records the rest trace (and it can then be reworded via the existing edit affordance).
+- New copy `copy.now.recordRest`; decision **D14** documents the call; tests: generator (warm/recovery/non-shaming) + Now integration (later saves nothing by default, can record a rest trace).
+
+Why:
+- Morning-review round 2 (product-designer lens, P3): the brief (§17) treats stopping as a real act, but auto-logging every defer would turn "not now" into an obligation. Offering — not forcing — keeps the user in charge of whether resting counts today, true to the product's soul.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 170/170 (22 files); `npm run build` green.
+
+What still feels wrong / not done yet:
+- Nothing outstanding for this item.
+
+Next:
+- The actionable backlog is now fully exhausted: only blocked/large platform items remain (workspace lift, live DB needing `DATABASE_URL`, key-gated model call). Per the playbook, with nothing safely worth doing, the next ticks should idle quietly rather than manufacture churn — or do another self-review if enough has changed to warrant one.

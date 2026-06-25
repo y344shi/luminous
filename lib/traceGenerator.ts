@@ -51,6 +51,22 @@ export function generateTraceText(
   return `${prefix}你留下了一个真实的瞬间。`;
 }
 
+/**
+ * Choosing to stop is itself a real act (brief §17: "因为你及时停下来了").
+ * The "今天先这样" path can optionally record this — never automatically.
+ */
+export function buildRestTrace(opportunityId?: string, date: Date = new Date()): DailyTrace {
+  return {
+    id: uid("trace"),
+    date: localDateKey(date),
+    opportunityId,
+    text: `${copy.tracePrefix}你及时停下来了。`,
+    category: "recovery",
+    partial: false,
+    createdAt: nowIso(),
+  };
+}
+
 export function buildTrace(
   seed: Seed | undefined,
   kind: CompletionKind,

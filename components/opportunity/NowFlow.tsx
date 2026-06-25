@@ -6,7 +6,7 @@ import type { Mood, Energy, Opportunity, LocationType } from "@/lib/types";
 import { useStore, findSeed } from "@/lib/store";
 import { buildContext } from "@/lib/context";
 import { recommend } from "@/lib/scoring";
-import { buildTrace, type CompletionKind } from "@/lib/traceGenerator";
+import { buildTrace, buildRestTrace, type CompletionKind } from "@/lib/traceGenerator";
 import { copy } from "@/lib/copy";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
@@ -107,6 +107,13 @@ export default function NowFlow() {
     setTraceText(trace.text);
     setSavedTraceId(trace.id);
     setStep("trace");
+  }
+
+  function recordRest() {
+    const trace = buildRestTrace();
+    addTrace(trace);
+    setTraceText(trace.text);
+    setSavedTraceId(trace.id);
   }
 
   function saveEditedTrace() {
@@ -267,6 +274,13 @@ export default function NowFlow() {
       )}
       {!editing && (
         <div className="flex flex-col gap-2">
+          {/* The "今天先这样" path saves nothing by default — offer to record
+              the choice to stop as its own gentle trace (brief §17). */}
+          {!canEdit && traceText === "" && (
+            <SoftButton full variant="soft" onClick={recordRest}>
+              {copy.now.recordRest}
+            </SoftButton>
+          )}
           {canEdit && (
             <button
               onClick={() => {

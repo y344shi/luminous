@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateTraceText, buildTrace } from "@/lib/traceGenerator";
+import { generateTraceText, buildTrace, buildRestTrace } from "@/lib/traceGenerator";
 import { materializeSeed, mockSeeds } from "@/lib/mockSeeds";
 import { copy } from "@/lib/copy";
 
@@ -25,6 +25,16 @@ describe("traceGenerator", () => {
   it("skipped returns a gentle, non-disappear message", () => {
     const text = generateTraceText(seed, "skipped");
     expect(text).toBe(copy.completion.skippedMsg);
+  });
+
+  it("buildRestTrace records 'stopping' warmly, as recovery, not shaming", () => {
+    const t = buildRestTrace(undefined, new Date("2026-06-25T23:30:00"));
+    expect(t.text.startsWith(copy.tracePrefix)).toBe(true);
+    expect(t.text).toContain("停下来");
+    expect(t.text).not.toMatch(/失败|放弃|浪费/);
+    expect(t.category).toBe("recovery");
+    expect(t.partial).toBe(false);
+    expect(t.date).toBe("2026-06-25");
   });
 
   it("buildTrace tags date and partial flag", () => {

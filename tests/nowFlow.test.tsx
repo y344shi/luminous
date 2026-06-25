@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { useStore } from "@/lib/store";
 import { seedMockGarden } from "@/lib/mockSeeds";
+import { copy } from "@/lib/copy";
 
 // next/navigation isn't available outside the Next runtime — stub what NowFlow uses.
 const push = vi.fn();
@@ -103,6 +104,24 @@ describe("Now flow (integration) — the core loop end to end", () => {
 
     expect(useStore.getState().traces.length).toBe(0);
     expect(screen.getByText(/愿望还在/)).toBeTruthy();
+    cleanup();
+  });
+
+  it("'今天先这样' saves nothing by default but can record a rest trace", () => {
+    render(<NowFlow />);
+    fireEvent.click(screen.getByText("累"));
+    fireEvent.click(screen.getByText("低"));
+    fireEvent.click(screen.getByText("看看现在适合做什么"));
+    fireEvent.click(screen.getByText("今天先这样")); // onLater
+
+    // nothing saved yet, gentle message + the optional record affordance
+    expect(useStore.getState().traces.length).toBe(0);
+    fireEvent.click(screen.getByText(copy.now.recordRest));
+
+    const traces = useStore.getState().traces;
+    expect(traces.length).toBe(1);
+    expect(traces[0].text).toContain("停下来");
+    expect(traces[0].category).toBe("recovery");
     cleanup();
   });
 });

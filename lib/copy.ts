@@ -67,6 +67,7 @@ export const copy = {
     start: "开始一点点",
     swap: "换一个",
     later: "今天先这样",
+    recordRest: "把「我今天选择了停下」记成一笔",
     noneTitle: "现在不用做什么。",
     noneBody: "愿望都还在，等下一个契机。",
   },
