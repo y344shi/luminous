@@ -2,16 +2,17 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 9)
+## Status (Cycle 10)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 49/49 pass (9 files) |
-| Production build | `npm run build` | ✅ 8 routes (incl. `/manifest.webmanifest`) |
-| Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
+| Unit + integration | `npm test` | ✅ 51/51 pass (9 files) |
+| Production build | `npm run build` | ✅ 9 routes (incl. `/manifest.webmanifest`, dynamic `/seeds/[id]`) |
+| Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 
-New in Cycle 9: `theme.test.tsx` — `AppProvider` applies `<html data-theme>`; `setTheme` updates DOM + persists; persisted theme restored on hydrate.
+New in Cycle 10: `store.test.ts` grows to cover seed-detail actions — edit title/minimumAction persists; full sleep→wake→archive→restore lifecycle.
+Cycle 9: `theme.test.tsx` — `AppProvider` applies `<html data-theme>`; `setTheme` updates DOM + persists.
 Cycle 8: `copyLint.test.tsx` — copy dict + 6 rendered screens free of forbidden vocab.
 Cycle 7: `nowFlow.test.tsx` — full core loop through the live store.
 Cycle 6: `store.test.ts` — `updateTrace` rewrites + persists.

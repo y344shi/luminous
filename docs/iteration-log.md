@@ -221,3 +221,28 @@ What still feels wrong / not done yet:
 
 Next:
 - Product depth: seed detail page `/seeds/[id]` (edit / sleep / archive), or the Settings quiet-hours + max-reminders UI; or the accessibility pass.
+
+---
+
+## Cycle 10: Seed detail page (tend the garden)
+
+What changed:
+- New dynamic route `app/seeds/[id]/page.tsx` (awaits the Next 16 Promise `params`) rendering a client `SeedDetail`.
+- `SeedDetail` lets you gently tend a wish: edit its **title** + **minimum action** (Save is disabled until something changes), and move it through soft lifecycle states — **让它先睡一会 / 唤醒它 / 轻轻收起来 / 放回花园**. Tone stays caring, never task-management.
+- Seed cards in the garden are now tappable (wrapped in `Link`, subtle press scale).
+- Graceful "这个愿望好像已经不在花园里了" state for unknown/archived ids.
+- New copy under `copy.seedDetail`; 3 new store tests (edit persists; full sleep→wake→archive→restore lifecycle).
+
+Why:
+- The garden was read-only. Wishes evolve — you refine them, let them rest, or quietly retire them. This gives the user agency over their garden without importing todo-app mechanics (no delete-with-prejudice, no overdue; archived seeds just leave the garden softly).
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 51/51 (9 files); `npm run build` green (`/seeds/[id]` dynamic).
+- Runtime smoke: `/seeds/seed_test123` and `/seeds` both 200.
+
+What still feels wrong / not done yet:
+- Editing only title + minimum action; doesn't re-run the parser to re-derive categories/energy/time.
+- No confirm on archive (it's reversible via 放回花园, so low-stakes — intentional).
+
+Next:
+- Settings quiet-hours + max-reminders UI (model exists), or the accessibility pass.

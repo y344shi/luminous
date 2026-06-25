@@ -37,3 +37,32 @@ describe("store.updateTrace", () => {
     expect(useStore.getState().traces.find((t) => t.id === b.id)?.text).toBe(b.text);
   });
 });
+
+describe("store — seed lifecycle (detail page actions)", () => {
+  it("edits a seed's title and minimum action and persists", () => {
+    const seed = materializeSeed(mockSeeds[0]);
+    useStore.getState().addSeed(seed);
+
+    useStore.getState().updateSeed(seed.id, { title: "新标题", minimumAction: "做最小的一步" });
+
+    const updated = useStore.getState().seeds.find((s) => s.id === seed.id);
+    expect(updated?.title).toBe("新标题");
+    expect(updated?.minimumAction).toBe("做最小的一步");
+    expect(storage.loadSeeds().find((s) => s.id === seed.id)?.title).toBe("新标题");
+  });
+
+  it("moves a seed through sleep → wake → archive → restore", () => {
+    const seed = materializeSeed(mockSeeds[2]);
+    useStore.getState().addSeed(seed);
+    const status = () => useStore.getState().seeds.find((s) => s.id === seed.id)?.status;
+
+    useStore.getState().setSeedStatus(seed.id, "sleeping");
+    expect(status()).toBe("sleeping");
+    useStore.getState().setSeedStatus(seed.id, "active");
+    expect(status()).toBe("active");
+    useStore.getState().setSeedStatus(seed.id, "archived");
+    expect(status()).toBe("archived");
+    useStore.getState().setSeedStatus(seed.id, "active");
+    expect(status()).toBe("active");
+  });
+});

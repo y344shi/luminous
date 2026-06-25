@@ -16,7 +16,7 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 - [ ] Accessibility pass: focus states, aria labels, contrast in every theme.
 
 ## Product depth
-- [ ] Seed detail page `/seeds/[id]` (edit, sleep, archive).
+- [x] Seed detail page `/seeds/[id]` (edit, sleep, archive). _(Cycle 10)_
 - [ ] Quiet-hours + max-reminders UI in Settings (model exists).
 - [ ] Real-AI parser behind `aiMode: "real"` (server route, coarse input only).
 

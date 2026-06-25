@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useStore } from "@/lib/store";
 import SeedCard from "./SeedCard";
 import EmptyState from "@/components/design/EmptyState";
@@ -26,7 +27,9 @@ export default function SeedGarden() {
   return (
     <div className="flex flex-col gap-3">
       {visible.map((seed) => (
-        <SeedCard key={seed.id} seed={seed} />
+        <Link key={seed.id} href={`/seeds/${seed.id}`} className="block active:scale-[0.99] transition-transform">
+          <SeedCard seed={seed} />
+        </Link>
       ))}
     </div>
   );

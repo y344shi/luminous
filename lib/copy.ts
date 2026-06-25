@@ -31,6 +31,22 @@ export const copy = {
     empty: "花园还空着。\n冒出来一个小愿望，就把它种进来。",
   },
 
+  seedDetail: {
+    back: "← 回到花园",
+    titleLabel: "这个愿望",
+    minLabel: "最低完成",
+    save: "保存修改",
+    saved: "已经记下了。",
+    sleep: "让它先睡一会",
+    wake: "唤醒它",
+    archive: "轻轻收起来",
+    restore: "放回花园",
+    notFound: "这个愿望好像已经不在花园里了。",
+    statusActive: "在等一个时机",
+    statusSleeping: "正在睡着",
+    statusArchived: "已经收起来了",
+  },
+
   now: {
     moodQuestion: "你现在大概是什么状态？",
     energyQuestion: "现在还有多少力气？",
