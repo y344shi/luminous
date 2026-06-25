@@ -2,16 +2,17 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 19)
+## Status (Cycle 20)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 119/119 pass (15 files) |
+| Unit + integration | `npm test` | ✅ 125/125 pass (16 files) |
 | Production build | `npm run build` | ✅ 10 routes (incl. dynamic `/api/seeds/parse`, `/seeds/[id]`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 
-New in Cycle 19: `confirmSheet.test.tsx` — soft confirm gates reset (cancel keeps data, confirm replants), and `window.confirm` is never called.
+New in Cycle 20: `tokenSync.test.ts` — parses `globals.css` `[data-theme]` blocks and asserts they match `themes.ts` (no silent token drift).
+Cycle 19: `confirmSheet.test.tsx` — soft confirm gates reset; `window.confirm` never called.
 Cycle 17: `serialize.test.ts` — validates/coerces on load.
 Cycle 16: `reminders.test.ts` — quiet-window + budget logic.
 Cycle 15: `apiParse.test.ts` — `/api/seeds/parse` draft + 400/413 guards.

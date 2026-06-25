@@ -448,3 +448,22 @@ What still feels wrong / not done yet:
 
 Next:
 - P1: token-sync guard test (`globals.css` `[data-theme]` ↔ `themes.ts`), then the P2 polish items.
+
+---
+
+## Cycle 20: Token-sync guard test (globals.css ↔ themes.ts)
+
+What changed:
+- New `tests/tokenSync.test.ts`: reads `app/globals.css`, parses each `[data-theme="…"]` block's `--var: value;` declarations, and asserts they equal `themeToCssVars(name)` from `themes.ts` for every color token (—shadow-card excluded: per-theme in CSS, shared constant in TS). Also asserts every theme has a block.
+
+Why:
+- The maintainer lens (morning review, P1) flagged that runtime colors (`globals.css`) and the TS token source (`themes.ts`, used by the switcher swatches + the contrast test) duplicate values with nothing asserting they match — a silent-drift risk. If they diverge, the contrast test could pass while the actual app fails (or vice-versa). This closes that gap.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 125/125 (16 files); `npm run build` green. (Fixed an `import.meta.url` file-scheme error under the vitest transform by reading via `process.cwd()`.)
+
+What still feels wrong / not done yet:
+- The two token sources still must be hand-edited together — the test only *catches* drift, it doesn't generate one from the other. A future build step could generate `globals.css` blocks from `themes.ts` (single source of truth).
+
+Next:
+- P2 polish: human trace dates, `/now` late-night offer, Add textarea label, first-run garden note, CI, opportunity peeks.
