@@ -18,7 +18,7 @@ describe("AmbientBubbles", () => {
     // the lead + at least one bubble button from the mock garden
     expect(screen.getByText(copy.home.bubblesLead)).toBeTruthy();
     // the opt-in movement sense + correctable location are offered
-    expect(screen.getByText(copy.home.senseMove)).toBeTruthy();
+    expect(screen.getByText(copy.home.senseWhere)).toBeTruthy();
     expect(screen.getByText(copy.home.locationCorrect)).toBeTruthy();
     cleanup();
   });

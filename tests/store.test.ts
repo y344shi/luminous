@@ -80,6 +80,18 @@ describe("store — first-run samples note", () => {
   });
 });
 
+describe("store — home location", () => {
+  it("setHomeLocation persists and clears via reset", () => {
+    window.localStorage.clear();
+    useStore.setState({ homeLocation: null });
+    useStore.getState().setHomeLocation({ lat: 45.502, lng: -73.567 });
+    expect(useStore.getState().homeLocation).toEqual({ lat: 45.502, lng: -73.567 });
+    expect(storage.loadHome()).toEqual({ lat: 45.502, lng: -73.567 });
+    useStore.getState().setHomeLocation(null);
+    expect(storage.loadHome()).toBeNull();
+  });
+});
+
 describe("store — first-open intro", () => {
   it("defaults to unseen and dismissIntro persists", () => {
     window.localStorage.clear();

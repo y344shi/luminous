@@ -13,6 +13,7 @@ import type {
   Energy,
 } from "./types";
 import { storage, defaultSettings, type LastPick } from "./storage";
+import type { Coords } from "./geo";
 import { seedMockGarden } from "./mockSeeds";
 import { localDateKey } from "./utils";
 
@@ -24,6 +25,7 @@ type Store = {
   samplesPlanted: boolean;
   lastPick: LastPick;
   introSeen: boolean;
+  homeLocation: Coords | null;
 
   // transient (not persisted)
   lastContext: ContextSnapshot | null;
@@ -48,6 +50,7 @@ type Store = {
   updateSettings: (patch: Partial<Settings>) => void;
   dismissSamplesNote: () => void;
   dismissIntro: () => void;
+  setHomeLocation: (c: Coords | null) => void;
   resetAll: () => void;
 };
 
@@ -59,6 +62,7 @@ export const useStore = create<Store>((set, get) => ({
   samplesPlanted: false,
   lastPick: {},
   introSeen: false,
+  homeLocation: null,
   lastContext: null,
   opportunities: [],
 
@@ -86,6 +90,7 @@ export const useStore = create<Store>((set, get) => ({
       samplesPlanted,
       lastPick: storage.loadLastPick(),
       introSeen: storage.loadIntroSeen(),
+      homeLocation: storage.loadHome(),
     });
   },
 
@@ -171,6 +176,11 @@ export const useStore = create<Store>((set, get) => ({
     storage.saveIntroSeen(true);
   },
 
+  setHomeLocation: (c) => {
+    set({ homeLocation: c });
+    storage.saveHome(c);
+  },
+
   resetAll: () => {
     storage.clearAll();
     const seeds = seedMockGarden();
@@ -183,6 +193,7 @@ export const useStore = create<Store>((set, get) => ({
       samplesPlanted: true,
       lastPick: {},
       introSeen: false,
+      homeLocation: null,
       opportunities: [],
       lastContext: null,
     });

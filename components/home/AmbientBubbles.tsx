@@ -5,6 +5,7 @@ import type { LocationType, Opportunity } from "@/lib/types";
 import { useStore, findSeed } from "@/lib/store";
 import { recommend } from "@/lib/scoring";
 import { buildAmbientContext, guessLocation, ambientLabel } from "@/lib/ambient";
+import { roundCoarse, isAtHome, isMovingSpeed, type Coords } from "@/lib/geo";
 import { buildTrace, type CompletionKind } from "@/lib/traceGenerator";
 import { categoryMeta } from "@/lib/categoryMeta";
 import { copy } from "@/lib/copy";
@@ -16,7 +17,7 @@ import { ChipGroup, locationOptions } from "@/components/context/Pickers";
 const floatClass = ["tdd-float-a", "tdd-float-b", "tdd-float-c"];
 const bubbleSize = ["text-[15px]", "text-[16px]", "text-[15px]", "text-[17px]"];
 
-type SenseState = "idle" | "sensing" | "moving" | "still" | "fail";
+type SenseState = "idle" | "sensing" | "moving" | "home" | "away" | "offerHome" | "fail";
 
 function isMobileDevice(): boolean {
   if (typeof navigator === "undefined") return false;
@@ -29,12 +30,15 @@ export default function AmbientBubbles() {
   const lastPick = useStore((s) => s.lastPick);
   const addTrace = useStore((s) => s.addTrace);
   const setSeedStatus = useStore((s) => s.setSeedStatus);
+  const homeLocation = useStore((s) => s.homeLocation);
+  const setHomeLocation = useStore((s) => s.setHomeLocation);
 
   const [mounted, setMounted] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [location, setLocation] = useState<LocationType>("anywhere");
   const [sense, setSense] = useState<SenseState>("idle");
+  const [pendingCoords, setPendingCoords] = useState<Coords | null>(null);
 
   const [selected, setSelected] = useState<Opportunity | null>(null);
   const [doneSeedIds, setDoneSeedIds] = useState<string[]>([]);
@@ -114,14 +118,14 @@ export default function AmbientBubbles() {
         <p className="px-1 text-[14px] text-[var(--text-secondary)]">{copy.home.bubblesEmpty}</p>
       )}
 
-      {/* Movement sense (opt-in) + correctable location */}
+      {/* Location/movement sense (opt-in geolocation) + correctable fallback */}
       <div className="flex flex-col gap-2 pt-1">
         {sense === "idle" && (
           <button
-            onClick={senseMovement}
+            onClick={senseLocation}
             className="self-start text-[12px] text-[var(--text-muted)] underline-offset-4 hover:underline"
           >
-            {copy.home.senseMove}
+            {copy.home.senseWhere}
           </button>
         )}
         {sense !== "idle" && (
@@ -130,10 +134,26 @@ export default function AmbientBubbles() {
               ? copy.home.sensing
               : sense === "moving"
                 ? copy.home.sensedMoving
-                : sense === "still"
-                  ? copy.home.sensedStill
-                  : copy.home.sensedFail}
+                : sense === "home"
+                  ? copy.home.sensedHome
+                  : sense === "away"
+                    ? copy.home.sensedAway
+                    : sense === "offerHome"
+                      ? copy.home.sensedUnknownHome
+                      : copy.home.sensedFail}
           </p>
+        )}
+        {sense === "offerHome" && pendingCoords && (
+          <button
+            onClick={() => {
+              setHomeLocation(pendingCoords);
+              setLocation("home");
+              setSense("home");
+            }}
+            className="self-start rounded-full bg-[var(--accent-soft)] px-4 py-2 text-[13px] text-[var(--text)]"
+          >
+            {copy.home.setHome}
+          </button>
         )}
         <details className="group">
           <summary className="cursor-pointer list-none text-[12px] text-[var(--text-muted)]">
@@ -179,33 +199,36 @@ export default function AmbientBubbles() {
     </section>
   );
 
-  function senseMovement() {
+  function senseLocation() {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setSense("fail");
       return;
     }
     setSense("sensing");
-    let best: number | null = null;
-    const id = navigator.geolocation.watchPosition(
+    navigator.geolocation.getCurrentPosition(
       (pos) => {
-        if (pos.coords.speed != null) best = Math.max(best ?? 0, pos.coords.speed);
+        const coords = roundCoarse({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        if (isMovingSpeed(pos.coords.speed)) {
+          setLocation("transit");
+          setSense("moving");
+          return;
+        }
+        if (homeLocation) {
+          if (isAtHome(homeLocation, coords)) {
+            setLocation("home");
+            setSense("home");
+          } else {
+            setLocation("outdoor");
+            setSense("away");
+          }
+        } else {
+          // No home saved yet — offer to remember this spot as home.
+          setPendingCoords(coords);
+          setSense("offerHome");
+        }
       },
-      () => {
-        navigator.geolocation.clearWatch(id);
-        setSense("fail");
-      },
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 6000 }
+      () => setSense("fail"),
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 8000 }
     );
-    window.setTimeout(() => {
-      navigator.geolocation.clearWatch(id);
-      if (best != null && best > 1.2) {
-        setLocation("transit");
-        setSense("moving");
-      } else if (best != null) {
-        setSense("still");
-      } else {
-        setSense("fail");
-      }
-    }, 5000);
   }
 }

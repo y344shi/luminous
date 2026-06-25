@@ -1,5 +1,6 @@
 import type { Seed, DailyTrace, Settings, ThemeName, Mood, Energy } from "./types";
 import { deserializeSeeds, deserializeTraces } from "./serialize";
+import type { Coords } from "./geo";
 
 export type LastPick = { mood?: Mood; energy?: Energy };
 
@@ -12,6 +13,7 @@ export const STORAGE_KEYS = {
   samplesPlanted: "tdd.samplesPlanted",
   lastPick: "tdd.lastPick",
   introSeen: "tdd.introSeen",
+  home: "tdd.home",
 } as const;
 
 export const defaultSettings: Settings = {
@@ -99,6 +101,13 @@ export const storage = {
   },
   saveIntroSeen(v: boolean): void {
     write(STORAGE_KEYS.introSeen, v);
+  },
+  /** A coarse, on-device "home" location used to sense at-home vs away. */
+  loadHome(): Coords | null {
+    return read<Coords | null>(STORAGE_KEYS.home, null);
+  },
+  saveHome(c: Coords | null): void {
+    write(STORAGE_KEYS.home, c);
   },
   clearAll(): void {
     if (!isBrowser()) return;

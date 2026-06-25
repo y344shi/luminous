@@ -842,3 +842,31 @@ What still feels wrong / not done yet:
   (quiet-hours/budget logic already exists via `canRemindNow`).
 - Location is still a guess unless the user corrects it; a "set home once" step
   would let it be sensed — logged as a follow-up.
+
+---
+
+## Cycle 36: Sense "home" (location detected, not just guessed)
+
+What changed:
+- New pure `lib/geo.ts`: `roundCoarse` (coords rounded ~110m before storing),
+  `haversineMeters`, `isAtHome` (radius check), `isMovingSpeed`.
+- Saved-home plumbing: storage `tdd.home` + `loadHome/saveHome`; store
+  `homeLocation` + `setHomeLocation` (loaded on hydrate, cleared on reset).
+- `AmbientBubbles`: the opt-in sense is now "感知我现在在哪" → one `getCurrentPosition`:
+  moving (speed) → 路上; near saved home → 在家; away → 在外面; and if no home is
+  saved yet, it offers "把这里设成家" (stores the coarse coords). Location still
+  one-tap-correctable.
+- New copy; `geo.test.ts` (4) + store home test.
+
+Why:
+- Follow-up to the user's request: make location *sensed*, not only guessed.
+  Privacy kept strict — coords are rounded coarse, compared only on-device, and
+  never sent anywhere; the whole thing is opt-in behind a tap (permission prompt
+  only then).
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 192/192 (26 files); `npm run build` green.
+
+Next:
+- Cycle 37: gentle nudges (notification layer honoring quiet-hours + budget),
+  with true Web Push wired behind a VAPID env key (dormant without a backend).
