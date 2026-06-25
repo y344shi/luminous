@@ -803,3 +803,42 @@ deferred by the brief itself (§32 "Do not start iOS tonight"; §35 "don't chase
 database perfection before local MVP"). To continue later: re-create the cron, or
 just ask — provide a `DATABASE_URL` / `ANTHROPIC_API_KEY`, or green-light the
 `packages/*` workspace lift, and that work can proceed directly.
+
+---
+
+## Cycle 35: Proactive ambient home with floating bubbles (user request)
+
+What changed:
+- New `lib/ambient.ts` (pure): `guessLocation`, `ambientLabel` (周X · 时段 · 在哪),
+  `buildAmbientContext` (mood=unknown), `isWorkday`. Senses time-of-day,
+  weekday/weekend, and at-computer-vs-mobile with **no permission**.
+- New `components/home/AmbientBubbles.tsx`: on opening Home it builds the ambient
+  context and floats the top recommendations as gently drifting bubbles
+  (`tdd-float-*`). Tapping a bubble opens a soft sheet → 完成了 / 做了一点 / 先放着,
+  recording a trace inline (completed → seed sleeps; bubble pops). Includes a
+  correctable location (reuses the location chips) and an **opt-in** geolocation
+  movement sense (`watchPosition` speed → 路上). Everything stays on-device.
+- Rendered on Home above "现在别消失" (the mood/energy flow stays for when you
+  want to be specific).
+- New copy under `copy.home`; float keyframes + reduced-motion guard.
+- Tests: `ambient.test.ts` (8 — location guess, label incl. weekend time-of-day,
+  context) + `ambientBubbles.test.tsx` (1 — senses moment + floats bubbles).
+
+Why:
+- User asked for opportunities to surface proactively — to auto-know whether
+  they're home / moving, whether it's lunch or evening, weekday or not, and float
+  a few bubbles on Home. This delivers the no-permission parts fully (time, day,
+  device) and makes location/movement a correctable guess + opt-in sense, true to
+  the brief's coarse-context, privacy-first rule (no GPS leaves the device).
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 186/186 (24 files); `npm run build` green.
+- Verified live in the browser: Home showed "周四 · 午休时间 · 在电脑前" with
+  lunch/at-computer bubbles (法语词 / 理解模块 / 夺回方向盘 / 发一句真话).
+
+What still feels wrong / not done yet:
+- It surfaces bubbles *in-app*; true push (notify when the app is closed) needs
+  Web Push + a service-worker handler + permission — logged as a follow-up
+  (quiet-hours/budget logic already exists via `canRemindNow`).
+- Location is still a guess unless the user corrects it; a "set home once" step
+  would let it be sensed — logged as a follow-up.

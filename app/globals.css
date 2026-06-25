@@ -172,11 +172,31 @@ body {
   animation: tdd-pulse 4.5s ease-in-out infinite;
 }
 
+/* Gently drifting opportunity bubbles on Home — soft, never busy. */
+@keyframes tdd-float-a {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-10px) translateX(4px); }
+}
+@keyframes tdd-float-b {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-14px) translateX(-3px); }
+}
+@keyframes tdd-float-c {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-7px) translateX(6px); }
+}
+.tdd-float-a { animation: tdd-float-a 7s ease-in-out infinite; }
+.tdd-float-b { animation: tdd-float-b 9s ease-in-out infinite; }
+.tdd-float-c { animation: tdd-float-c 8s ease-in-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   .tdd-rise,
   .tdd-breathe,
   .tdd-bloom,
   .tdd-pulse,
+  .tdd-float-a,
+  .tdd-float-b,
+  .tdd-float-c,
   body {
     animation: none !important;
     transition: none !important;

@@ -2,6 +2,12 @@
 
 Prioritized backlog for overnight agentic cycles and the morning review.
 
+## Done — proactive ambient home (user request, Cycle 35)
+- [x] Auto-sense time-of-day / weekday / device on Home (no permission) and float opportunity bubbles tied to that context.
+- [x] Correctable location guess + opt-in geolocation movement sense.
+- [ ] **Follow-up** Persist a "home" location (set once) so location can be sensed, not just guessed; richer movement (DeviceMotion) — both opt-in, coarse only.
+- [ ] **Follow-up** Web Push so bubbles can actually *push* a gentle nudge when `canRemindNow` (needs service-worker push + permission); honor quiet-hours + max-reminders (logic already built).
+
 ## High value, low risk (do first)
 - [x] PWA manifest + icons + service worker (add-to-home-screen). _(Cycle 2)_
 - [x] Now screen: one-tap context chips for "我在外面" / "天气不错" / "在电脑前" feeding `locationHint` + `isOutdoorWeatherGood`. _(Cycle 3)_

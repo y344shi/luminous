@@ -2,16 +2,18 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 34)
+## Status (Cycle 35)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 176/176 pass (23 files) |
+| Unit + integration | `npm test` | ✅ 186/186 pass (24 files) |
 | Production build | `npm run build` | ✅ 10 routes (incl. dynamic `/api/seeds/parse`, `/seeds/[id]`) |
-| Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
-| Live model path | — | ⚠️ dormant (no `ANTHROPIC_API_KEY` in env); validator + no-key fallback tested, network path not runtime-tested |
+| Runtime smoke | dev + headless Chrome | ✅ ambient Home renders "周X · 时段 · 在哪" + floating bubbles |
+| Live model path | — | ⚠️ dormant (no `ANTHROPIC_API_KEY`); validator + no-key fallback tested |
 | CI workflow | YAML validate | ✅ parses; ⚠️ not executable in this env (no GitHub runner) |
+
+New in Cycle 35: `ambient.test.ts` (location guess, weekday/time label, ambient context) + `ambientBubbles.test.tsx` (senses moment + floats bubbles).
 
 New in Cycle 34: `seedAiPrompt.test.ts` — `parseModelDraft` (valid/fenced/missing/bogus) + prompt tone guard; `apiParse.test.ts` source now `ai|mock`.
 Cycle 33: `traceGenerator.test.ts` (buildRestTrace) + Now "今天先这样" rest-trace.
