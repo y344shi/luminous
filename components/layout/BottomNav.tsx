@@ -29,7 +29,7 @@ export default function BottomNav() {
               aria-current={active ? "page" : undefined}
               className={cx(
                 "flex flex-1 flex-col items-center gap-1 py-3 text-[12px] transition-colors",
-                active ? "text-[var(--accent)]" : "text-[var(--text-muted)]"
+                active ? "text-[var(--accent-text)]" : "text-[var(--text-muted)]"
               )}
             >
               <span

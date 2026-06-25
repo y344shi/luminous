@@ -9,6 +9,8 @@ export type ThemeTokens = {
   textMuted: string;
   accent: string;
   accentSoft: string;
+  /** Darker accent for accent-COLORED text (links, active nav) on light surfaces. */
+  accentText: string;
   /** Foreground color for text/icons placed ON the accent (e.g. primary button). */
   onAccent: string;
   border: string;
@@ -24,6 +26,7 @@ export const themes: Record<ThemeName, ThemeTokens> = {
     textMuted: "#827868",
     accent: "#7D9A7A",
     accentSoft: "#DDE8D8",
+    accentText: "#4C6549",
     onAccent: "#211E19",
     border: "#E6DCCC",
   },
@@ -36,6 +39,7 @@ export const themes: Record<ThemeName, ThemeTokens> = {
     textMuted: "#666E80",
     accent: "#D7A35F",
     accentSoft: "#F2DFC1",
+    accentText: "#7A5822",
     onAccent: "#221A12",
     border: "#D8D5DF",
   },
@@ -48,6 +52,7 @@ export const themes: Record<ThemeName, ThemeTokens> = {
     textMuted: "#79797F",
     accent: "#6E8FBF",
     accentSoft: "#E7EEF8",
+    accentText: "#3F6196",
     onAccent: "#0E2236",
     border: "#E5E5EA",
   },
@@ -60,6 +65,7 @@ export const themes: Record<ThemeName, ThemeTokens> = {
     textMuted: "#727B66",
     accent: "#758B5A",
     accentSoft: "#DDE8C8",
+    accentText: "#4E6438",
     onAccent: "#131A0E",
     border: "#D7DDC8",
   },
@@ -72,6 +78,7 @@ export const themes: Record<ThemeName, ThemeTokens> = {
     textMuted: "#B5A48E",
     accent: "#D6A45F",
     accentSoft: "#5A442C",
+    accentText: "#D6A45F",
     onAccent: "#2A2012",
     border: "#51463C",
   },
@@ -124,6 +131,7 @@ export function themeToCssVars(name: ThemeName): Record<string, string> {
     "--text-muted": t.textMuted,
     "--accent": t.accent,
     "--accent-soft": t.accentSoft,
+    "--accent-text": t.accentText,
     "--on-accent": t.onAccent,
     "--border": t.border,
     "--shadow-card": shadow.card,

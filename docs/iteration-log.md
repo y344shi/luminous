@@ -314,3 +314,25 @@ What still feels wrong / not done yet:
 
 Next:
 - `--accent-text` for accent-sized text, or extract `packages/core` + `packages/design` ahead of iOS.
+
+---
+
+## Cycle 14: `--accent-text` token (legible accent-colored text)
+
+What changed:
+- Added a per-theme `--accent-text` token — a darker accent reserved for accent-COLORED text (active bottom-nav label, the ThemeSwitcher active dot), while `--accent` stays vivid for fills/dots/focus ring.
+- Solved values to clear AA on both surface and background in every theme (dusk darkened to #7A5822 for margin; soft_ritual keeps its amber since it sits on dark).
+- Updated `BottomNav` active label + `ThemeSwitcher` dot to `--accent-text`; synced `globals.css`, `themes.ts` (type + objects + `themeToCssVars`).
+- Extended `contrast.test.ts` with `accentText` on surface + background (now 50 contrast assertions; 100 tests total).
+
+Why:
+- Finishes the contrast story from Cycle 13: accent-as-text was the one remaining < 4.5 case. Separating "accent as fill" from "accent as text" is the standard, clean fix and keeps the vivid brand color for fills.
+
+What was tested:
+- `npm test` → 100/100 (11 files); `npm run typecheck` clean; `npm run build` green.
+
+What still feels wrong / not done yet:
+- The contrast guard covers text/accent roles; decorative borders and accent-soft fills remain unaudited (low risk).
+
+Next:
+- Platform: extract `packages/core` + `packages/design` ahead of iOS, or product depth (real-AI parser scaffold behind aiMode, server-side, coarse input only).

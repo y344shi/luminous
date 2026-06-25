@@ -28,6 +28,9 @@ const checks: [keyof typeof themes.warm_paper, keyof typeof themes.warm_paper, n
   ["textMuted", "surface", 3.0],
   ["textMuted", "surfaceSoft", 3.0],
   ["onAccent", "accent", 4.5],
+  // accent used as TEXT (active nav label, links) on its backdrops
+  ["accentText", "surface", 4.5],
+  ["accentText", "background", 4.5],
 ];
 
 describe("theme contrast (WCAG)", () => {

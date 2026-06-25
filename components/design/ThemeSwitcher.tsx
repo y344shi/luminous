@@ -36,7 +36,7 @@ export default function ThemeSwitcher() {
               <span className="text-[15px] font-medium text-[var(--text)]">{meta.label}</span>
               <span className="text-[12px] text-[var(--text-secondary)]">{meta.feeling}</span>
             </span>
-            {active && <span className="ml-auto text-[var(--accent)]">●</span>}
+            {active && <span className="ml-auto text-[var(--accent-text)]">●</span>}
           </button>
         );
       })}
