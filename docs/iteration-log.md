@@ -336,3 +336,26 @@ What still feels wrong / not done yet:
 
 Next:
 - Platform: extract `packages/core` + `packages/design` ahead of iOS, or product depth (real-AI parser scaffold behind aiMode, server-side, coarse input only).
+
+---
+
+## Cycle 15: Real-AI parser seam (server route + safe fallback)
+
+What changed:
+- New isolation layer `lib/aiParser.ts`: a single `parseSeed(text, mode)` seam. `mock` → local rule parser (default, offline). `real` → POST `/api/seeds/parse`, with **any** failure falling back to `parseSeedMock` so Add can never break.
+- New server route `app/api/seeds/parse/route.ts` (nodejs runtime): validates input (400 on empty/invalid JSON, 413 on >500 chars — a coarse-input guard), reads no client key, sends nothing but the wish text, and returns the local parse with `source: mock | ai-pending`. The live model call is a documented, `ANTHROPIC_API_KEY`-gated TODO (can't be exercised without a key here).
+- `AddSeedFlow` now calls the seam based on `settings.aiMode` with a soft "正在接住……" state; default (mock) UX is unchanged and fully offline.
+- New `tests/apiParse.test.ts` (4): valid draft, 400 empty, 400 bad JSON, 413 over-long.
+
+Why:
+- The brief wants the AI parser *isolated*, key-free, and coarse-input-only, with a "real AI mode". This establishes that seam end to end and safely, without a network dependency or any secret — and keeps the core loop intact when offline or when the route fails.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 104/104 (12 files); `npm run build` green (`/api/seeds/parse` dynamic).
+
+What still feels wrong / not done yet:
+- No live model call yet (gated on a key absent from this env) — logged as an explicit follow-up.
+- `parseSeed` real-path fetch isn't unit-tested (no server in jsdom); the route handler itself is tested directly.
+
+Next:
+- `isQuietNow` + reminder budget helper, or extract `packages/core`/`packages/design`, or wire the live model call when a key exists.

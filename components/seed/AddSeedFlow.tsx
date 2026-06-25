@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { parseSeedMock, draftToSeed, type SeedDraft } from "@/lib/seedParser";
+import { draftToSeed, type SeedDraft } from "@/lib/seedParser";
+import { parseSeed } from "@/lib/aiParser";
 import { useStore } from "@/lib/store";
 import { copy } from "@/lib/copy";
 import { categoryMeta, durationLabel } from "@/lib/categoryMeta";
@@ -23,13 +24,20 @@ const semanticTimeLabel: Record<string, string> = {
 export default function AddSeedFlow() {
   const router = useRouter();
   const addSeed = useStore((s) => s.addSeed);
+  const aiMode = useStore((s) => s.settings.aiMode);
   const [text, setText] = useState("");
   const [draft, setDraft] = useState<SeedDraft | null>(null);
   const [saved, setSaved] = useState(false);
+  const [catching, setCatching] = useState(false);
 
-  function handleCatch() {
-    if (!text.trim()) return;
-    setDraft(parseSeedMock(text));
+  async function handleCatch() {
+    if (!text.trim() || catching) return;
+    setCatching(true);
+    try {
+      setDraft(await parseSeed(text, aiMode));
+    } finally {
+      setCatching(false);
+    }
   }
 
   function handleSave() {
@@ -101,8 +109,8 @@ export default function AddSeedFlow() {
         rows={5}
         className="w-full resize-none rounded-[24px] border border-[var(--border)] bg-[var(--surface)] p-5 text-[16px] leading-relaxed text-[var(--text)] placeholder:text-[var(--text-muted)] shadow-[var(--shadow-card)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)]"
       />
-      <SoftButton full onClick={handleCatch} disabled={!text.trim()}>
-        把这个愿望先接住
+      <SoftButton full onClick={handleCatch} disabled={!text.trim() || catching}>
+        {catching ? "正在接住……" : "把这个愿望先接住"}
       </SoftButton>
     </div>
   );

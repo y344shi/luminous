@@ -18,12 +18,13 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 ## Product depth
 - [x] Seed detail page `/seeds/[id]` (edit, sleep, archive). _(Cycle 10)_
 - [x] Quiet-hours + max-reminders UI in Settings (model exists). _(Cycle 11 — UI done; enforcement still pending, see below)_
-- [ ] Real-AI parser behind `aiMode: "real"` (server route, coarse input only).
+- [x] Real-AI parser behind `aiMode: "real"` (server route, coarse input only). _(Cycle 15 — seam + route + fallback shipped; live model call is a documented, key-gated TODO)_
 - [ ] Enforce quiet-hours + max-reminders once local notifications exist (a `isQuietNow(settings, date)` helper + reminder budget). Currently the settings are stored & editable but nothing reads them yet.
 
 ## Platform
 - [ ] Extract `packages/core` + `packages/design` ahead of iOS.
 - [ ] Prisma schema + server storage adapter (Phase 2), offline-first.
+- [ ] Wire the live model call in `/api/seeds/parse` when `ANTHROPIC_API_KEY` is set: call Claude with ONLY the wish text, validate the response against the `SeedDraft` shape, fall back to `parseSeedMock` on any error. No key in this env, so left as a seam.
 
 - [x] Per-theme contrast audit (esp. `--text-muted` on `--surface-soft`) across all 5 themes; tune tokens where WCAG AA fails. _(Cycle 13)_
 - [x] Accent-as-small-text contrast: added `--accent-text` (darker) variant for text-sized accent, keeping `--accent` vivid for fills. _(Cycle 14)_

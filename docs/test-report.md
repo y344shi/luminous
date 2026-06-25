@@ -2,16 +2,17 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 14)
+## Status (Cycle 15)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 100/100 pass (11 files) |
-| Production build | `npm run build` | ✅ 9 routes (incl. `/manifest.webmanifest`, dynamic `/seeds/[id]`) |
+| Unit + integration | `npm test` | ✅ 104/104 pass (12 files) |
+| Production build | `npm run build` | ✅ 10 routes (incl. dynamic `/api/seeds/parse`, `/seeds/[id]`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 
-Cycle 14: `contrast.test.ts` grows to 50 assertions (5 themes × 9 pairs) — adds `accentText` on surface + background ≥4.5.
+New in Cycle 15: `apiParse.test.ts` — `/api/seeds/parse` returns a small SeedDraft; 400 on empty/bad-JSON; 413 on >500 chars.
+Cycle 14: `contrast.test.ts` — 50 WCAG assertions across 5 themes.
 Cycle 13: contrast tuning — primary/secondary ≥4.5, muted ≥3.0, on-accent ≥4.5.
 Cycle 12: `a11y.test.tsx` — mood chips `aria-pressed`; steppers + AI toggle accessible labels.
 Cycle 11: `store.test.ts` — `updateSettings` persists quiet hours + max reminders.
