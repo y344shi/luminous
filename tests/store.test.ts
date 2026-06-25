@@ -26,6 +26,25 @@ describe("store.updateTrace", () => {
     );
   });
 
+  it("removeTrace deletes one trace and persists", () => {
+    const a = buildTrace(materializeSeed(mockSeeds[0]), "completed");
+    const b = buildTrace(materializeSeed(mockSeeds[1]), "completed");
+    useStore.getState().addTrace(a);
+    useStore.getState().addTrace(b);
+    useStore.getState().removeTrace(a.id);
+    expect(useStore.getState().traces.find((t) => t.id === a.id)).toBeUndefined();
+    expect(useStore.getState().traces.find((t) => t.id === b.id)).toBeTruthy();
+    expect(storage.loadTraces().some((t) => t.id === a.id)).toBe(false);
+  });
+
+  it("caps the journal at 500 traces (drops oldest)", () => {
+    useStore.setState({ traces: [] });
+    for (let i = 0; i < 505; i++) {
+      useStore.getState().addTrace(buildTrace(materializeSeed(mockSeeds[0]), "partial"));
+    }
+    expect(useStore.getState().traces.length).toBe(500);
+  });
+
   it("leaves other traces untouched", () => {
     const a = buildTrace(materializeSeed(mockSeeds[0]), "completed");
     const b = buildTrace(materializeSeed(mockSeeds[1]), "partial");

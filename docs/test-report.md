@@ -2,17 +2,18 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 31)
+## Status (Cycle 32)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit + integration | `npm test` | ✅ 164/164 pass (21 files) |
+| Unit + integration | `npm test` | ✅ 168/168 pass (22 files) |
 | Production build | `npm run build` | ✅ 10 routes (incl. dynamic `/api/seeds/parse`, `/seeds/[id]`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds`, `/seeds/[id]` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 | CI workflow | YAML validate | ✅ parses; ⚠️ not executable in this env (no GitHub runner) |
 
-New in Cycle 31: `introCard.test.tsx` + `store.test.ts` — first-open intro shows then dismisses (persisted); hidden once seen.
+New in Cycle 32: `store.test.ts` (removeTrace + 500-cap) and `traceDelete.test.tsx` (soft-confirm delete flow: confirm removes, cancel keeps).
+Cycle 31: `introCard.test.tsx` — first-open intro.
 Cycle 30: remembered mood/energy persistence + pre-select.
 Cycle 29: `exportTraces.test.ts` — trace export formatter.
 Cycle 27: `corePurity.test.ts` — `lib/` framework-free guard (16 assertions).

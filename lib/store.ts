@@ -37,6 +37,7 @@ type Store = {
 
   addTrace: (trace: DailyTrace) => void;
   updateTrace: (id: string, patch: Partial<DailyTrace>) => void;
+  removeTrace: (id: string) => void;
   tracesForToday: () => DailyTrace[];
 
   setOpportunities: (opps: Opportunity[], ctx: ContextSnapshot) => void;
@@ -112,13 +113,22 @@ export const useStore = create<Store>((set, get) => ({
   },
 
   addTrace: (trace) => {
-    const traces = [trace, ...get().traces];
+    // Keep the journal bounded so localStorage can't grow without limit.
+    const MAX_TRACES = 500;
+    let traces = [trace, ...get().traces];
+    if (traces.length > MAX_TRACES) traces = traces.slice(0, MAX_TRACES);
     set({ traces });
     storage.saveTraces(traces);
   },
 
   updateTrace: (id, patch) => {
     const traces = get().traces.map((t) => (t.id === id ? { ...t, ...patch } : t));
+    set({ traces });
+    storage.saveTraces(traces);
+  },
+
+  removeTrace: (id) => {
+    const traces = get().traces.filter((t) => t.id !== id);
     set({ traces });
     storage.saveTraces(traces);
   },

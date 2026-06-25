@@ -45,7 +45,7 @@ Prioritized backlog for overnight agentic cycles and the morning review.
 - [x] **P2** Export/keep traces — a pure `formatTracesForExport()` + a copy-to-clipboard action ("把你的痕迹存下来"). _(Cycle 29)_
 - [x] **P2** Remember last mood/energy in the Now flow (persist + pre-select) so a returning user isn't re-quizzed each time. _(Cycle 30)_
 - [x] **P2** First-open intro card (dismissible) introducing Seed / Trace / "别消失", reusing the samples-note dismissal pattern. _(Cycle 31)_
-- [ ] **P3** Per-trace delete / tidy affordance + an eventual journal size cap (traces are append-only and unbounded).
+- [x] **P3** Per-trace delete / tidy affordance + an eventual journal size cap (traces are append-only and unbounded). _(Cycle 32)_
 - [ ] **P3** Optionally record a gentle recovery trace for "今天先这样" (onLater currently saves nothing).
 
 ## Self-review lenses to run (Cycle 10)

@@ -700,3 +700,24 @@ What still feels wrong / not done yet:
 
 Next:
 - Only P3s (per-trace delete + size cap; optional "今天先这样" recovery trace) and the blocked/large platform items remain. Next tick: a P3, or idle if nothing is safely worth it.
+
+---
+
+## Cycle 32: Per-trace delete (gentle) + journal size cap
+
+What changed:
+- `store.removeTrace(id)` deletes a single trace and persists; `addTrace` now caps the journal at 500 (drops oldest) so localStorage can't grow unbounded.
+- `TraceCard` gains an optional, deliberately subtle "×" affordance (muted, low-opacity, `aria-label="擦掉这一条痕迹"`); `TraceJournal` owns the delete state and routes it through the existing soft `ConfirmSheet` ("擦掉这一条痕迹？ / 擦掉 / 留着") — never a native dialog.
+- New copy under `copy.traces`; tests: store remove + cap; journal delete flow (confirm removes, cancel keeps).
+
+Why:
+- Morning-review round 2 (maintainer lens): the journal was append-only and unbounded with no tidy affordance. Kept the tone right — the traces are warm "year rings", so deletion is phrased as gently "擦掉" with a soft confirm, not a task-list ✕-with-prejudice, and stays opt-in/subtle so the journal still reads as a record, not a manager.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 168/168 (22 files); `npm run build` green.
+
+What still feels wrong / not done yet:
+- No undo after delete (the soft confirm is the safety). The 500 cap is generous; could be configurable later.
+
+Next:
+- Last P3: optionally record a gentle recovery trace for "今天先这样" — a product-philosophy call; otherwise the actionable backlog is exhausted (only blocked/large platform items remain) and the loop should idle.

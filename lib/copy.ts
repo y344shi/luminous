@@ -89,6 +89,11 @@ export const copy = {
     export: "把你的痕迹存下来",
     exported: "已经复制下来了",
     exportFailed: "复制没成功，可以长按上面的文字手动复制",
+    deleteAria: "擦掉这一条痕迹",
+    deleteTitle: "擦掉这一条痕迹？",
+    deleteBody: "它会从今日痕迹里消失。这一步无法撤回。",
+    deleteYes: "擦掉",
+    deleteNo: "留着",
   },
 
   settings: {
