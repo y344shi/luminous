@@ -4,6 +4,7 @@ import SoftButton from "@/components/design/SoftButton";
 import TodayTracePreview from "@/components/trace/TodayTracePreview";
 import RecentSeeds from "@/components/seed/RecentSeeds";
 import LateNightThemeOffer from "@/components/design/LateNightThemeOffer";
+import IntroCard from "@/components/IntroCard";
 
 export default function HomePage() {
   return (
@@ -19,6 +20,8 @@ export default function HomePage() {
           {copy.home.subtitle}
         </p>
       </header>
+
+      <IntroCard />
 
       <LateNightThemeOffer />
 

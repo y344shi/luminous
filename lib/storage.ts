@@ -11,6 +11,7 @@ export const STORAGE_KEYS = {
   ritualOffer: "tdd.ritualOfferDismissed",
   samplesPlanted: "tdd.samplesPlanted",
   lastPick: "tdd.lastPick",
+  introSeen: "tdd.introSeen",
 } as const;
 
 export const defaultSettings: Settings = {
@@ -91,6 +92,13 @@ export const storage = {
   },
   saveLastPick(pick: LastPick): void {
     write(STORAGE_KEYS.lastPick, pick);
+  },
+  /** Whether the user has seen the first-open intro. */
+  loadIntroSeen(): boolean {
+    return read<boolean>(STORAGE_KEYS.introSeen, false);
+  },
+  saveIntroSeen(v: boolean): void {
+    write(STORAGE_KEYS.introSeen, v);
   },
   clearAll(): void {
     if (!isBrowser()) return;

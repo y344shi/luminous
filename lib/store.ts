@@ -23,6 +23,7 @@ type Store = {
   settings: Settings;
   samplesPlanted: boolean;
   lastPick: LastPick;
+  introSeen: boolean;
 
   // transient (not persisted)
   lastContext: ContextSnapshot | null;
@@ -45,6 +46,7 @@ type Store = {
   setTheme: (theme: ThemeName) => void;
   updateSettings: (patch: Partial<Settings>) => void;
   dismissSamplesNote: () => void;
+  dismissIntro: () => void;
   resetAll: () => void;
 };
 
@@ -55,6 +57,7 @@ export const useStore = create<Store>((set, get) => ({
   settings: defaultSettings,
   samplesPlanted: false,
   lastPick: {},
+  introSeen: false,
   lastContext: null,
   opportunities: [],
 
@@ -81,6 +84,7 @@ export const useStore = create<Store>((set, get) => ({
       settings,
       samplesPlanted,
       lastPick: storage.loadLastPick(),
+      introSeen: storage.loadIntroSeen(),
     });
   },
 
@@ -152,6 +156,11 @@ export const useStore = create<Store>((set, get) => ({
     storage.saveSamplesPlanted(false);
   },
 
+  dismissIntro: () => {
+    set({ introSeen: true });
+    storage.saveIntroSeen(true);
+  },
+
   resetAll: () => {
     storage.clearAll();
     const seeds = seedMockGarden();
@@ -163,6 +172,7 @@ export const useStore = create<Store>((set, get) => ({
       settings: defaultSettings,
       samplesPlanted: true,
       lastPick: {},
+      introSeen: false,
       opportunities: [],
       lastContext: null,
     });

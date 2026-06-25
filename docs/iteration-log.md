@@ -679,3 +679,24 @@ What still feels wrong / not done yet:
 
 Next:
 - Round-2 P2: first-open intro card introducing Seed / Trace / "别消失".
+
+---
+
+## Cycle 31: First-open intro card
+
+What changed:
+- New `IntroCard` on Home: a calm, one-time, dismissible card framing the idea — "把脑子里一闪而过的小愿望丢进来，它们会变成一颗颗种子。当你想做点什么，我帮你挑一个现在刚好合适的小动作。做了一点，也算——今天就留下一道痕迹。[开始吧]".
+- Persisted `introSeen` flag (storage `tdd.introSeen` + store state, loaded on hydrate, set on dismiss, reset on `resetAll`).
+- New copy `copy.intro`; tests: store lifecycle (default unseen → dismiss persists) + component (shows then disappears after 开始吧; hidden once seen).
+
+Why:
+- Morning-review round 2 (product-designer lens): new users met a pre-seeded garden with no framing of what a Seed/Trace is or why "别消失". One gentle card builds trust without a heavy onboarding flow — and it's dismissible, ISFP-respecting.
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 164/164 (21 files); `npm run build` green. Copy-lint + core-purity still pass.
+
+What still feels wrong / not done yet:
+- On a brand-new install the Home shows the intro and `/seeds` shows the samples note — two gentle explainers, but on different screens, so not crowded.
+
+Next:
+- Only P3s (per-trace delete + size cap; optional "今天先这样" recovery trace) and the blocked/large platform items remain. Next tick: a P3, or idle if nothing is safely worth it.

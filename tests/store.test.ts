@@ -61,6 +61,17 @@ describe("store — first-run samples note", () => {
   });
 });
 
+describe("store — first-open intro", () => {
+  it("defaults to unseen and dismissIntro persists", () => {
+    window.localStorage.clear();
+    useStore.setState({ introSeen: false });
+    expect(storage.loadIntroSeen()).toBe(false);
+    useStore.getState().dismissIntro();
+    expect(useStore.getState().introSeen).toBe(true);
+    expect(storage.loadIntroSeen()).toBe(true);
+  });
+});
+
 describe("store — remembers last mood/energy pick", () => {
   it("rememberPick updates state and persists", () => {
     useStore.getState().rememberPick("tired", "low");
