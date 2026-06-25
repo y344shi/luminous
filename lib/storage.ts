@@ -5,6 +5,7 @@ export const STORAGE_KEYS = {
   traces: "tdd.traces",
   theme: "tdd.theme",
   settings: "tdd.settings",
+  ritualOffer: "tdd.ritualOfferDismissed",
 } as const;
 
 export const defaultSettings: Settings = {
@@ -63,6 +64,13 @@ export const storage = {
   },
   saveTheme(theme: ThemeName): void {
     write(STORAGE_KEYS.theme, theme);
+  },
+  /** Date string (localDateKey) the late-night theme offer was last dismissed. */
+  loadRitualOfferDismissed(): string | null {
+    return read<string | null>(STORAGE_KEYS.ritualOffer, null);
+  },
+  saveRitualOfferDismissed(dateKey: string): void {
+    write(STORAGE_KEYS.ritualOffer, dateKey);
   },
   clearAll(): void {
     if (!isBrowser()) return;

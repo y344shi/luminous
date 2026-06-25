@@ -40,6 +40,14 @@ describe("storage", () => {
     expect(storage.loadTheme()).toBeNull();
   });
 
+  it("persists the late-night theme-offer dismissal token", () => {
+    expect(storage.loadRitualOfferDismissed()).toBeNull();
+    storage.saveRitualOfferDismissed("2026-06-25");
+    expect(storage.loadRitualOfferDismissed()).toBe("2026-06-25");
+    storage.clearAll();
+    expect(storage.loadRitualOfferDismissed()).toBeNull();
+  });
+
   it("survives corrupt JSON gracefully", () => {
     window.localStorage.setItem(STORAGE_KEYS.seeds, "{not valid json");
     expect(storage.loadSeeds()).toEqual([]);

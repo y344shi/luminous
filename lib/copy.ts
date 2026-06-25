@@ -75,6 +75,9 @@ export const copy = {
   lateNight: {
     title: "现在已经很晚了。",
     body: "今天不用补救人生。\n你不需要把整个晚上抢回来。\n\n选一个止损动作：\n喝水、洗漱、关机、上床。\n\n完成一个，今天就没有完全消失。",
+    themeOffer: "要不要把灯光调暗一点，换上睡前的样子？",
+    themeAccept: "换上睡前的灯光",
+    themeDismiss: "不用了",
   },
 
   tracePrefix: "今天没有消失，因为",

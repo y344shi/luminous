@@ -84,3 +84,26 @@ What still feels wrong / not done yet:
 
 Next:
 - Auto-offer `soft_ritual` theme at late night (non-forcing).
+
+---
+
+## Cycle 4: Gentle late-night theme offer
+
+What changed:
+- New `LateNightThemeOffer` card on Home: at late night (and only if the theme isn't already `soft_ritual`), it softly asks "要不要把灯光调暗一点，换上睡前的样子？" with one tap to accept and one to dismiss.
+- Non-forcing + non-nagging: dismissal is remembered for the rest of tonight via a per-date token (`storage.{load,save}RitualOfferDismissed`); accepting just calls `setTheme("soft_ritual")`.
+- Time is computed in `useEffect` (client-only) to avoid SSR/client hydration mismatch.
+- New copy under `copy.lateNight` (offer/accept/dismiss). 1 new storage test (34/34).
+
+Why:
+- Soft Ritual is purpose-built for the late-night stop-loss moment (warm dark, candle amber). Offering — never forcing — it honors the brief's late-night care and ISFP autonomy ("可以跳过").
+
+What was tested:
+- `npm run typecheck` clean; `npm test` → 34/34; `npm run build` green.
+
+What still feels wrong / not done yet:
+- Offer only appears on Home; could also surface within the Now late-night card.
+- "Tonight" is approximated by calendar date, so a dismissal before midnight won't carry past 00:00 — acceptable.
+
+Next:
+- Richer empty states + a gentle Now→trace transition animation.

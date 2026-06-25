@@ -3,6 +3,7 @@ import { copy } from "@/lib/copy";
 import SoftButton from "@/components/design/SoftButton";
 import TodayTracePreview from "@/components/trace/TodayTracePreview";
 import RecentSeeds from "@/components/seed/RecentSeeds";
+import LateNightThemeOffer from "@/components/design/LateNightThemeOffer";
 
 export default function HomePage() {
   return (
@@ -18,6 +19,8 @@ export default function HomePage() {
           {copy.home.subtitle}
         </p>
       </header>
+
+      <LateNightThemeOffer />
 
       <Link href="/now" className="block">
         <SoftButton full className="tdd-breathe py-4 text-[17px]">

@@ -2,16 +2,17 @@
 
 Updated each cycle. Reflects the latest run.
 
-## Status (Cycle 3)
+## Status (Cycle 4)
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Typecheck | `npm run typecheck` | ✅ clean |
-| Unit tests | `npm test` | ✅ 33/33 pass (5 files) |
+| Unit tests | `npm test` | ✅ 34/34 pass (5 files) |
 | Production build | `npm run build` | ✅ 8 routes (incl. `/manifest.webmanifest`) |
 | Runtime smoke | `next start` + curl | ✅ `/`, `/now`, `/seeds` → 200; manifest valid JSON; `/sw.js` → 200; icons → 200 |
 
-New in Cycle 3: `scoring.test.ts` — outdoor+good-weather surfaces "坐一会野外"; at-computer surfaces a computer-bound creation seed.
+New in Cycle 4: `storage.test.ts` — late-night theme-offer dismissal token persists + clears.
+Cycle 3: `scoring.test.ts` — outdoor+good-weather surfaces "坐一会野外"; at-computer surfaces a computer-bound creation seed.
 
 ## Coverage by area
 
