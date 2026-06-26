@@ -82,3 +82,34 @@ export function ambientLabel(now: Date, locationHint: LocationType): string {
 export function isWorkday(now: Date): boolean {
   return !isWeekend(now);
 }
+
+/**
+ * What the central orb shows: an artistic read of the user's *sensed* situation,
+ * so the app's context-awareness is visible. A glowing desk / grass field /
+ * highway / café / night sky for where you seem to be, right now.
+ */
+export function orbScene(
+  location: LocationType,
+  now: Date
+): { glyph: string; label: string } {
+  const hour = now.getHours();
+  const lateNight = hour >= 23 || hour < 5;
+  switch (location) {
+    case "transit":
+      return { glyph: "🛣️", label: "在路上" };
+    case "outdoor":
+      return { glyph: "🌿", label: "野外" };
+    case "downtown":
+      return { glyph: "☕", label: "街区" };
+    case "computer":
+      return { glyph: "🖥️", label: "在电脑前" };
+    case "home":
+      return lateNight
+        ? { glyph: "🌙", label: "夜里 · 在家" }
+        : { glyph: "🛋️", label: "在家" };
+    case "work":
+      return { glyph: "🗂️", label: "在公司" };
+    default:
+      return lateNight ? { glyph: "🌙", label: "夜里" } : { glyph: "✨", label: "此刻" };
+  }
+}

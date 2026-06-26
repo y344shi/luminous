@@ -27,7 +27,11 @@ Lock file: `scratchpad/tick.lock` (in the session scratchpad dir).
 5. **Commit.** `git add dreams/seize_the_day && git commit` on branch
    `seize-the-day/overnight-build` with a `Cycle N: …` subject (+ the standard
    Co-Authored-By trailer). Never commit `node_modules`/`.next`.
-6. **Release lock.** `rm -f scratchpad/tick.lock`.
+6. **Push to luminous.** From the repo root, mirror the app to its own GitHub repo:
+   `git -C /home/yuxua/foundation subtree push --prefix=dreams/seize_the_day luminous main`
+   (remote `luminous` = git@github.com:y344shi/luminous.git, SSH key works). If it
+   rejects on a non-fast-forward, that's fine to skip a tick — log it, continue.
+7. **Release lock.** `rm -f scratchpad/tick.lock`.
 
 ## Stop conditions
 - If `docs/next-steps.md` has no unchecked items left, do a self-review cycle:

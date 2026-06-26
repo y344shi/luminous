@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { guessLocation, ambientLabel, buildAmbientContext, isWorkday } from "@/lib/ambient";
+import { guessLocation, ambientLabel, buildAmbientContext, isWorkday, orbScene } from "@/lib/ambient";
 
 // 2026-06-24 is a Wednesday; 2026-06-27 is a Saturday.
 const wedAfternoon = new Date(2026, 5, 24, 15, 0, 0);
@@ -29,6 +29,20 @@ describe("ambient — human label", () => {
   });
   it("omits an empty/unknown place", () => {
     expect(ambientLabel(wedAfternoon, "anywhere")).toBe("周三 · 下午");
+  });
+});
+
+describe("ambient — orb scene (visible AI read of the situation)", () => {
+  it("maps the sensed place to a glowing scene + label", () => {
+    expect(orbScene("computer", wedAfternoon)).toEqual({ glyph: "🖥️", label: "在电脑前" });
+    expect(orbScene("outdoor", wedAfternoon)).toEqual({ glyph: "🌿", label: "野外" });
+    expect(orbScene("transit", wedAfternoon)).toEqual({ glyph: "🛣️", label: "在路上" });
+    expect(orbScene("downtown", wedAfternoon)).toEqual({ glyph: "☕", label: "街区" });
+  });
+  it("late night softens home + unknown into a moon", () => {
+    expect(orbScene("home", wedLateNight)).toEqual({ glyph: "🌙", label: "夜里 · 在家" });
+    expect(orbScene("anywhere", wedLateNight)).toEqual({ glyph: "🌙", label: "夜里" });
+    expect(orbScene("home", wedEvening)).toEqual({ glyph: "🛋️", label: "在家" });
   });
 });
 

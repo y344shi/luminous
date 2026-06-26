@@ -287,6 +287,38 @@ body {
   pointer-events: none;
 }
 
+/* Apple-ish "liquid glass": deep blur + saturation, a crisp light rim, a glossy
+   top specular and a soft inner floor shadow. Looks lit, not just translucent. */
+.glass-liquid {
+  background:
+    radial-gradient(140% 110% at 30% 18%, color-mix(in srgb, white 26%, transparent), transparent 46%),
+    radial-gradient(130% 130% at 50% 50%, color-mix(in srgb, var(--surface) 60%, transparent), color-mix(in srgb, var(--surface) 22%, transparent) 85%);
+  backdrop-filter: blur(14px) saturate(1.6) brightness(1.06);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6) brightness(1.06);
+  border: 1px solid color-mix(in srgb, white 22%, transparent);
+  box-shadow:
+    inset 0 1.5px 1px color-mix(in srgb, white 75%, transparent),
+    inset 0 -14px 22px color-mix(in srgb, var(--text) 14%, transparent),
+    inset 0 0 22px color-mix(in srgb, var(--accent) 12%, transparent),
+    0 14px 34px color-mix(in srgb, var(--text) 16%, transparent),
+    0 0 0 0.5px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* Depth dimming for the scattered, less-recommended bubbles in the back. */
+.glass-faint {
+  opacity: 0.62;
+  filter: blur(0.4px) saturate(0.92);
+}
+
+/* The central orb breathes a soft halo of the accent — the sensed scene glows. */
+.orb-glow {
+  box-shadow:
+    inset 0 1.5px 1px color-mix(in srgb, white 75%, transparent),
+    inset 0 -14px 22px color-mix(in srgb, var(--text) 14%, transparent),
+    0 0 34px color-mix(in srgb, var(--accent) 38%, transparent),
+    0 14px 40px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
 /* A finished wish doesn't pop — it dissolves into light. */
 @keyframes tdd-dissolve {
   to { opacity: 0; transform: scale(1.6); filter: blur(7px); }

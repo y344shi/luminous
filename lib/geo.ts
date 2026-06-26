@@ -39,3 +39,23 @@ export function isAtHome(
 export function isMovingSpeed(speed: number | null | undefined, thresholdMs = 1.2): boolean {
   return speed != null && speed > thresholdMs;
 }
+
+/**
+ * True compass bearing (degrees, 0 = north, clockwise) from point `a` to `b`.
+ * Used by the navigation layer to point a real arrow at e.g. the nearest cafe.
+ */
+export function bearingDeg(a: Coords, b: Coords): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const la1 = toRad(a.lat);
+  const la2 = toRad(b.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const y = Math.sin(dLng) * Math.cos(la2);
+  const x = Math.cos(la1) * Math.sin(la2) - Math.sin(la1) * Math.cos(la2) * Math.cos(dLng);
+  return (Math.atan2(y, x) * (180 / Math.PI) + 360) % 360;
+}
+
+/** Friendly distance label: "120 m", "1.4 km". */
+export function distanceLabel(meters: number): string {
+  if (meters < 950) return `${Math.round(meters / 10) * 10} m`;
+  return `${(meters / 1000).toFixed(1)} km`;
+}

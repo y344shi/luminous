@@ -2,6 +2,42 @@
 
 Prioritized backlog for overnight agentic cycles and the morning review.
 
+## ★ Luminous overnight focus — dreamy glass field + nav layer (user request)
+The Home is now a physics bubble field (`BubbleField` + `lib/bubblePhysics.ts`).
+Keep pushing it toward the user's vision. Each cycle, also run the push step in
+the tick playbook (`git subtree push --prefix=dreams/seize_the_day luminous main`).
+
+- [x] First cut: scattered glass bubbles (top = bigger/brighter near orb; lesser =
+      smaller/dimmer across the screen), soft collisions, opt-in gyro gravity that
+      clusters them, dissolve-on-complete. _(this commit)_
+- [x] **Orb states the parsed situation**: the central orb glows the AI's read of
+      where you are (🖥️ desk / 🌿 grass / 🛣️ highway / ☕ café / 🌙 night), via
+      `ambient.orbScene`. _(this commit — emoji first cut)_
+- [ ] **Make the orb scene truly artistic**: replace the emoji with a small live
+      SVG/canvas scene (a glowing desk lamp, a grass field swaying, headlights on a
+      highway, a café window) that morphs as the sensed context changes — so the
+      orb feels like the AI *seeing* the user's world.
+- [ ] **Apple "liquid glass" polish**: stronger refraction (SVG `feDisplacementMap`
+      or layered specular), crisper edge light, gentle chromatic rim, true depth
+      blur on back bubbles. Make the orb feel like a real glass marble.
+- [ ] **Dreamier**: slower drift, soft bloom/glow, parallax by depth, faint
+      twinkle, maybe a subtle grain. Reduce visual noise; one calm mood.
+- [ ] **Gyro/gravity tuning**: smooth tilt → gravity, settle/cluster feel, a
+      "shake to scatter" gesture; calibrate so flat = calm float, tilt = slide.
+      Verify on a real phone (DeviceOrientation permission on iOS).
+- [ ] **Performance**: cap bubble count, pause rAF when tab hidden, avoid layout
+      thrash (transforms only), test on mid phones.
+- [ ] **Floating nav layer (the "AI map")**: a translucent map drifting *behind*
+      the bubbles showing real nearby attractions (cafés / a Starbucks). Privacy +
+      key-free: opt-in geolocation → query **OpenStreetMap Overpass** for nearby
+      `amenity=cafe`/`brand=Starbucks`; compute **true bearing + distance**
+      (`geo.bearingDeg`/`distanceLabel`, already added) and show a real direction
+      arrow + distance to the nearest one, as abstract floating glass markers.
+      Coarse coords only, on-device; nothing tracked. Consider OSRM (free) for an
+      actual walking route later.
+- [ ] Re-home the dismissed-intro layout so the field centres nicely (intro +
+      late-night cards currently push it down on first run).
+
 ## Done — proactive ambient home (user request, Cycle 35)
 - [x] Auto-sense time-of-day / weekday / device on Home (no permission) and float opportunity bubbles tied to that context.
 - [x] Correctable location guess + opt-in geolocation movement sense.
