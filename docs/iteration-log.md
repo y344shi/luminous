@@ -951,3 +951,11 @@ What still feels wrong / not done yet:
   `.goo-layer` of soft accent `.goo-blob`s is synced under the glass bubbles each
   frame; when bubbles drift/collide close, their blobs fuse into liquid bridges and
   part again. Layer sits behind the glass at 0.5 opacity. 214 tests green.
+
+---
+
+## glass 5 (A5): Dreamier ambience
+- Calmer motion (home-pull 0.55→0.42, jitter ±5→±3, damping 0.92→0.94) so the
+  field drifts slower. Added a `.dream-motes` layer (9 faint rising light dots,
+  staggered) and a soft `.dream-vignette` framing the field. Reduced-motion stills
+  the motes. 214 tests green; typecheck + build clean.

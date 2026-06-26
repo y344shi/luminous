@@ -71,6 +71,7 @@ export default function BubbleField() {
   const [dissolving, setDissolving] = useState<string | null>(null);
   const [justTrace, setJustTrace] = useState("");
   const [gyroOn, setGyroOn] = useState(false);
+  const [motes, setMotes] = useState<{ x: number; y: number; s: number; d: number; dur: number }[]>([]);
   const [sense, setSense] = useState<SenseState>("idle");
   const [pendingCoords, setPendingCoords] = useState<Coords | null>(null);
 
@@ -82,6 +83,15 @@ export default function BubbleField() {
     const mobile = isMobileDevice();
     setNow(d);
     setLocation(guessLocation(d, mobile));
+    setMotes(
+      Array.from({ length: 9 }, () => ({
+        x: rand(6, 94),
+        y: rand(10, 92),
+        s: rand(3, 7),
+        d: rand(0, 12),
+        dur: rand(11, 20),
+      }))
+    );
     setMounted(true);
   }, []);
 
@@ -175,11 +185,11 @@ export default function BubbleField() {
         for (const b of bodies) {
           const home = homesRef.current[b.id];
           if (home) {
-            b.vx += (home.x - b.x) * 0.55 * dt + rand(-5, 5) * dt;
-            b.vy += (home.y - b.y) * 0.55 * dt + rand(-5, 5) * dt;
+            b.vx += (home.x - b.x) * 0.42 * dt + rand(-3, 3) * dt;
+            b.vy += (home.y - b.y) * 0.42 * dt + rand(-3, 3) * dt;
           }
         }
-        step(bodies, { w, h, gx: 0, gy: 0, dt, anchor: orb(), damping: 0.92, restitution: 0.6 });
+        step(bodies, { w, h, gx: 0, gy: 0, dt, anchor: orb(), damping: 0.94, restitution: 0.55 });
       }
       const { px, py } = pointerRef.current;
       for (const b of bodies) {
@@ -252,6 +262,23 @@ export default function BubbleField() {
 
   return (
     <div ref={wrapRef} className="relative h-[72dvh] w-full">
+      {/* faint drifting motes of light */}
+      <div className="dream-motes" aria-hidden>
+        {motes.map((m, i) => (
+          <span
+            key={`mote_${i}`}
+            className="mote"
+            style={{
+              left: `${m.x}%`,
+              top: `${m.y}%`,
+              width: m.s,
+              height: m.s,
+              ["--mote-delay"]: `${m.d}s`,
+              ["--mote-dur"]: `${m.dur}s`,
+            } as React.CSSProperties}
+          />
+        ))}
+      </div>
       {/* liquid metaball layer — soft blobs under the glass that fuse when close */}
       <div className="goo-layer" aria-hidden>
         {shown.map((b) => (
@@ -339,6 +366,8 @@ export default function BubbleField() {
           </Link>
         </div>
       </div>
+
+      <div className="dream-vignette" aria-hidden />
 
       {/* tap-a-bubble sheet */}
       {selected && (() => {
