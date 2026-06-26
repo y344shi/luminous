@@ -943,3 +943,11 @@ What still feels wrong / not done yet:
   progressive blur (`blur((1-z)*2.6px)`) and pointer/device-tilt **parallax**
   (near bubbles shift more). Crisp in front, soft in back. Reduced-motion: static.
 - 214 tests green; typecheck + build clean. Branch luminous-glass.
+
+---
+
+## glass 4 (A4): Gooey coalesce (liquid metaballs)
+- New `#tdd-goo` filter (feGaussianBlur + alpha-threshold feColorMatrix). A
+  `.goo-layer` of soft accent `.goo-blob`s is synced under the glass bubbles each
+  frame; when bubbles drift/collide close, their blobs fuse into liquid bridges and
+  part again. Layer sits behind the glass at 0.5 opacity. 214 tests green.

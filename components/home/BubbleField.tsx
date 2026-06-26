@@ -53,6 +53,7 @@ export default function BubbleField() {
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const elsRef = useRef<Record<string, HTMLButtonElement | null>>({});
+  const blobsRef = useRef<Record<string, HTMLSpanElement | null>>({});
   const bodiesRef = useRef<Body[]>([]);
   const homesRef = useRef<Record<string, { x: number; y: number }>>({});
   const tiltRef = useRef<{ gamma: number | null; beta: number | null } | null>(null);
@@ -188,6 +189,8 @@ export default function BubbleField() {
         const ox = px * z * 26; // near bubbles parallax more
         const oy = py * z * 26;
         node.style.transform = `translate3d(${b.x - b.r + ox}px, ${b.y - b.r + oy}px, 0)`;
+        const blob = blobsRef.current[b.id];
+        if (blob) blob.style.transform = `translate3d(${b.x - b.r + ox}px, ${b.y - b.r + oy}px, 0)`;
       }
       rafRef.current = requestAnimationFrame(frame);
     }
@@ -249,6 +252,17 @@ export default function BubbleField() {
 
   return (
     <div ref={wrapRef} className="relative h-[72dvh] w-full">
+      {/* liquid metaball layer — soft blobs under the glass that fuse when close */}
+      <div className="goo-layer" aria-hidden>
+        {shown.map((b) => (
+          <span
+            key={`goo_${b.id}`}
+            ref={(n) => { blobsRef.current[b.id] = n; }}
+            className="goo-blob"
+            style={{ width: b.r * 2, height: b.r * 2 }}
+          />
+        ))}
+      </div>
       {/* drifting glass bubbles */}
       {shown.map((b) => (
         <button

@@ -26,6 +26,17 @@ export default function GlassFilters() {
             yChannelSelector="G"
           />
         </filter>
+        {/* Gooey metaballs — blur + alpha threshold so near blobs fuse like liquid. */}
+        <filter id="tdd-goo">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur" />
+          <feColorMatrix
+            in="blur"
+            type="matrix"
+            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -8"
+            result="goo"
+          />
+          <feBlend in="SourceGraphic" in2="goo" />
+        </filter>
       </defs>
     </svg>
   );
