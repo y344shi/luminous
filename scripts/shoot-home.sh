@@ -8,7 +8,7 @@ LABEL="${1:-home}"
 CHROME="/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
 [ -x "$CHROME" ] || { echo "no chrome; skip shot"; exit 0; }
 
-PORT=$(( 3400 + (RANDOM % 300) ))
+PORT=$(( 4300 + (RANDOM % 180) ))   # safe band; avoids Chrome unsafe ports (3659, 4045, 5060/61, 6000...)
 npm run build >/dev/null 2>&1 || { echo "build failed; skip shot"; exit 0; }
 npx next start -p "$PORT" >"/tmp/luminous-shoot-$PORT.log" 2>&1 &
 SV=$!

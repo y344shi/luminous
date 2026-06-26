@@ -111,10 +111,11 @@ Repo: `git@github.com:y344shi/luminous.git`  ·  app at `dreams/seize_the_day`
 | 2026-06-25 | `4643eb6` | Add project guide + overnight tick playbook for autonomous cycles |
 | 2026-06-25 | `730b76f` | Cycle 1: 《今天别消失》web MVP — full core loop alive |
 
-## branch `luminous-sense` — 48 commits
+## branch `luminous-sense` — 49 commits
 
 | date | commit | change |
 | --- | --- | --- |
+| 2026-06-26 | `beceffd` | sense 2: Parallax depth scene layer (pointer / device-tilt) |
 | 2026-06-26 | `ac4c13b` | sense 1: Scene wallpaper — richer mesh gradients + curated-image seam |
 | 2026-06-26 | `a714805` | Docs: regenerate TIMELINE.md |
 | 2026-06-26 | `88aa84b` | Overnight machine: 3-direction plan, committed-history rule, timeline, gallery, shots |
