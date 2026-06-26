@@ -936,3 +936,12 @@ What still feels wrong / not done yet:
   → do a little → a "✍ 今天没有消失…" line is written on the page. Same recommend +
   trace loop underneath. craft Home now uses it (a counter-aesthetic to glass).
 - New paperHome.test.tsx (2); 216 tests green; typecheck + build clean.
+
+---
+
+## craft 3 (C3): Gentle haptics + optional chime on complete
+- New pure `lib/feedback.ts`: `hapticComplete` (soft navigator.vibrate double-tap),
+  `chimeComplete` (brief rising sine via WebAudio), `completeFeedback(sound)` —
+  all guarded/fail-soft. New `soundEnabled` setting + a Settings toggle "完成时的
+  轻响" (off by default; haptic always, chime only when on). Wired into PaperHome +
+  NowFlow completions. New feedback.test.ts; 220 tests green; typecheck + build clean.

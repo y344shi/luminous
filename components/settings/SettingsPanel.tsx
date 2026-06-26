@@ -122,6 +122,30 @@ export default function SettingsPanel() {
         </BreathingCard>
       </Section>
 
+      <Section title={copy.settings.soundLabel}>
+        <BreathingCard className="flex items-center justify-between">
+          <span className="text-[15px] text-[var(--text)]">
+            {settings.soundEnabled ? copy.settings.soundOn : copy.settings.soundOff}
+          </span>
+          <button
+            onClick={() => updateSettings({ soundEnabled: !settings.soundEnabled })}
+            className={cx(
+              "relative h-7 w-12 rounded-full transition-colors",
+              settings.soundEnabled ? "bg-[var(--accent)]" : "bg-[var(--surface-soft)]"
+            )}
+            aria-label="切换完成时的轻响"
+            aria-pressed={settings.soundEnabled}
+          >
+            <span
+              className={cx(
+                "absolute top-1 h-5 w-5 rounded-full bg-[var(--surface)] transition-all",
+                settings.soundEnabled ? "left-6" : "left-1"
+              )}
+            />
+          </button>
+        </BreathingCard>
+      </Section>
+
       <Section title={copy.settings.nudgeLabel}>
         <BreathingCard className="flex flex-col gap-2">
           <div className="flex items-center justify-between">

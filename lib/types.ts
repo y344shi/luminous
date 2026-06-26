@@ -120,4 +120,5 @@ export type Settings = {
   quietHoursEnd: number; // hour 0-23
   maxRemindersPerDay: number;
   nudgesEnabled: boolean;
+  soundEnabled: boolean;
 };

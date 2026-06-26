@@ -8,6 +8,7 @@ import { recommend } from "@/lib/scoring";
 import { buildAmbientContext, guessLocation, ambientLabel } from "@/lib/ambient";
 import { buildTrace, type CompletionKind } from "@/lib/traceGenerator";
 import { copy } from "@/lib/copy";
+import { completeFeedback } from "@/lib/feedback";
 import { cx } from "@/lib/utils";
 import { CategoryGlyph } from "./glyphs";
 import BreathingCard from "@/components/design/BreathingCard";
@@ -32,6 +33,7 @@ export default function PaperHome() {
   const lastPick = useStore((s) => s.lastPick);
   const addTrace = useStore((s) => s.addTrace);
   const setSeedStatus = useStore((s) => s.setSeedStatus);
+  const soundEnabled = useStore((s) => s.settings.soundEnabled);
 
   const [mounted, setMounted] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
@@ -66,6 +68,7 @@ export default function PaperHome() {
     const trace = buildTrace(seed, kind, o.id);
     addTrace(trace);
     if (seed && kind === "completed") setSeedStatus(seed.id, "sleeping");
+    completeFeedback(soundEnabled);
     setJustTrace(trace.text);
     setDoneSeedIds((d) => [...d, o.seedId]);
   }
