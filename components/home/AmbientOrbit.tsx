@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import type { LocationType, Opportunity } from "@/lib/types";
 import { useStore, findSeed } from "@/lib/store";
 import { recommend } from "@/lib/scoring";
@@ -18,9 +17,9 @@ import SoftButton from "@/components/design/SoftButton";
 // Circular layout geometry (px).
 const BOX = 300;
 const CENTER = BOX / 2;
-const CENTER_DIAM = 136;
-const BUBBLE = 62;
-const RADIUS = CENTER / 1 - BUBBLE / 2 - 8; // bubbles sit just inside the edge
+const CENTER_DIAM = 138;
+const BUBBLE = 66;
+const RADIUS = CENTER - BUBBLE / 2 - 6;
 
 const floatClass = ["tdd-float-a", "tdd-float-b", "tdd-float-c"];
 type SenseState = "idle" | "sensing" | "moving" | "home" | "away" | "offerHome" | "fail";
@@ -31,13 +30,13 @@ function isMobileDevice(): boolean {
 }
 
 /**
- * The friction-free Home: a single breathing centre (the deliberate path, →/now)
- * surrounded by gently orbiting opportunity bubbles (the proactive path). Almost
- * no text; the only control is the ambient line, which you can tap to sense where
- * you are. Precise pickers live in /now — Home stays calm.
+ * Wishes are bubbles of light over a still field. A luminous central orb (your
+ * day, held → /now) floats in a slow aurora, ringed by iridescent glass bubbles
+ * (the wishes you could do now). Finishing one doesn't pop it — it dissolves
+ * into light, and a trace writes itself. Almost no text; the ambient line is the
+ * only control — tap it to sense where you are.
  */
 export default function AmbientOrbit() {
-  const router = useRouter();
   const hydrated = useStore((s) => s.hydrated);
   const seeds = useStore((s) => s.seeds);
   const lastPick = useStore((s) => s.lastPick);
@@ -54,6 +53,7 @@ export default function AmbientOrbit() {
   const [pendingCoords, setPendingCoords] = useState<Coords | null>(null);
   const [selected, setSelected] = useState<Opportunity | null>(null);
   const [doneSeedIds, setDoneSeedIds] = useState<string[]>([]);
+  const [dissolvingSeedId, setDissolvingSeedId] = useState<string | null>(null);
   const [justTrace, setJustTrace] = useState("");
 
   useEffect(() => {
@@ -78,15 +78,19 @@ export default function AmbientOrbit() {
   const n = Math.max(visible.length, 1);
 
   function complete(o: Opportunity, kind: CompletionKind) {
-    const seed = findSeed(seeds, o.seedId);
-    if (kind !== "skipped") {
-      const trace = buildTrace(seed, kind, o.id);
-      addTrace(trace);
-      if (seed && kind === "completed") setSeedStatus(seed.id, "sleeping");
-      setJustTrace(trace.text);
-      setDoneSeedIds((d) => [...d, o.seedId]);
-    }
     setSelected(null);
+    if (kind === "skipped") return;
+    const seed = findSeed(seeds, o.seedId);
+    const trace = buildTrace(seed, kind, o.id);
+    addTrace(trace);
+    if (seed && kind === "completed") setSeedStatus(seed.id, "sleeping");
+    // dissolve the bubble into light, then settle the trace
+    setDissolvingSeedId(o.seedId);
+    window.setTimeout(() => {
+      setDoneSeedIds((d) => [...d, o.seedId]);
+      setDissolvingSeedId(null);
+      setJustTrace(trace.text);
+    }, 720);
   }
 
   const senseText =
@@ -99,11 +103,11 @@ export default function AmbientOrbit() {
                 : null;
 
   return (
-    <div className="flex flex-col items-center gap-5">
+    <div className="relative z-10 flex flex-col items-center gap-6">
       {/* one quiet line — tap to sense where you are */}
       <button
         onClick={senseLocation}
-        className="text-[13px] tracking-wide text-[var(--text-secondary)] transition-opacity hover:opacity-80"
+        className="text-[12.5px] tracking-[0.12em] text-[var(--text-secondary)] transition-opacity hover:opacity-75"
       >
         {senseText ?? ambientLabel(now, location)}
       </button>
@@ -115,7 +119,7 @@ export default function AmbientOrbit() {
             setLocation("home");
             setSense("home");
           }}
-          className="rounded-full bg-[var(--accent-soft)] px-4 py-1.5 text-[12px] text-[var(--text)]"
+          className="glass rounded-full px-4 py-1.5 text-[12px] text-[var(--text)]"
         >
           {copy.home.setHome}
         </button>
@@ -123,47 +127,53 @@ export default function AmbientOrbit() {
 
       {/* the orbit */}
       <div className="relative" style={{ width: BOX, height: BOX, maxWidth: "92vw" }}>
-        {/* centre — the deliberate path */}
+        {/* centre — the day, held; tap to begin */}
         <Link
           href="/now"
           aria-label={copy.home.primary}
-          className="tdd-breathe absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--on-accent)] shadow-[var(--shadow-card)] transition-transform active:scale-[0.97]"
+          className="glass-orb tdd-breathe absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full transition-transform active:scale-[0.97]"
           style={{ width: CENTER_DIAM, height: CENTER_DIAM }}
         >
-          <span className="text-center text-[16px] font-medium leading-snug">
+          <span className="serif text-[26px] font-medium tracking-[0.18em] text-[var(--on-accent)]">
             现在
-            <br />
-            别消失
           </span>
         </Link>
 
-        {/* orbiting opportunities */}
+        {/* orbiting wishes */}
         {visible.map((o, i) => {
           const seed = findSeed(seeds, o.seedId);
           if (!seed) return null;
           const angle = (-90 + (360 / n) * i) * (Math.PI / 180);
           const left = CENTER + RADIUS * Math.cos(angle);
           const top = CENTER + RADIUS * Math.sin(angle);
+          const dissolving = dissolvingSeedId === o.seedId;
           return (
             <div
               key={o.id}
-              className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
-              style={{ left: `${(left / BOX) * 100}%`, top: `${(top / BOX) * 100}%` }}
+              className={cx(
+                "absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5",
+                floatClass[i % floatClass.length]
+              )}
+              style={{
+                left: `${(left / BOX) * 100}%`,
+                top: `${(top / BOX) * 100}%`,
+                animationDelay: `${i * 0.5}s`,
+              }}
             >
               <button
                 onClick={() => setSelected(o)}
                 aria-label={seed.title}
                 className={cx(
-                  "flex items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] transition-transform active:scale-[0.94]",
-                  floatClass[i % floatClass.length]
+                  "glass glass-iris flex items-center justify-center rounded-full transition-transform active:scale-[0.92]",
+                  dissolving && "tdd-dissolve"
                 )}
-                style={{ width: BUBBLE, height: BUBBLE, animationDelay: `${i * 0.5}s` }}
+                style={{ width: BUBBLE, height: BUBBLE }}
               >
-                <span className="text-[22px]" aria-hidden>
+                <span className="text-[24px]" aria-hidden>
                   {categoryMeta[seed.categories[0]]?.emoji}
                 </span>
               </button>
-              <span className="max-w-[78px] text-center text-[10px] leading-tight text-[var(--text-muted)]">
+              <span className="serif max-w-[84px] text-center text-[10.5px] leading-tight text-[var(--text-muted)]">
                 {seed.title}
               </span>
             </div>
@@ -171,18 +181,17 @@ export default function AmbientOrbit() {
         })}
       </div>
 
-      {/* the just-made trace, quietly */}
       {justTrace && (
-        <p className="tdd-rise max-w-[260px] text-center text-[14px] leading-relaxed text-[var(--text-secondary)]">
+        <p className="serif tdd-rise max-w-[270px] text-center text-[15px] leading-relaxed text-[var(--text-secondary)]">
           {justTrace}
         </p>
       )}
 
-      {/* one small way to add a wish */}
+      {/* one small way to catch a new wish */}
       <Link
         href="/add"
         aria-label="接住一个新愿望"
-        className="mt-1 flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[20px] text-[var(--text-secondary)] shadow-[var(--shadow-card)] transition-transform active:scale-[0.95]"
+        className="glass mt-1 flex h-11 w-11 items-center justify-center rounded-full text-[20px] text-[var(--text-secondary)] transition-transform active:scale-[0.95]"
       >
         +
       </Link>
@@ -197,7 +206,7 @@ export default function AmbientOrbit() {
             <BreathingCard rise className="relative m-3 flex w-full max-w-md flex-col gap-4" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)" }}>
               <div className="flex items-center gap-2">
                 <span className="text-xl">{categoryMeta[seed.categories[0]]?.emoji}</span>
-                <h3 className="text-[18px] font-medium text-[var(--text)]">{seed.title}</h3>
+                <h3 className="serif text-[19px] font-medium text-[var(--text)]">{seed.title}</h3>
               </div>
               <p className="text-[14px] leading-relaxed text-[var(--text-secondary)]">{selected.suggestedAction}</p>
               <div className="rounded-2xl bg-[var(--surface-soft)] p-3 text-[13px] leading-relaxed text-[var(--text-secondary)]">

@@ -870,3 +870,52 @@ What was tested:
 Next:
 - Cycle 37: gentle nudges (notification layer honoring quiet-hours + budget),
   with true Web Push wired behind a VAPID env key (dormant without a backend).
+
+---
+
+## Cycle 36: Sense "home" (location detected, not guessed)
+- `lib/geo.ts` (pure): coarse-rounded coords, haversine, isAtHome, isMovingSpeed.
+- Saved home in storage/store; the Home opt-in sense resolves 路上 / 在家 / 在外面
+  and offers "把这里设成家". Coords rounded ~110m, on-device only, opt-in.
+- `geo.test.ts` (4) + store home test.
+
+## Cycle 37: Gentle nudges (notification layer)
+- `lib/nudge.ts` (pure): daily count + `shouldNudge` (reuses `canRemindNow`).
+- `NudgeManager` (app-wide): nudges only when the app is backgrounded and a fitting,
+  non-quiet, in-budget moment passes; SW `notificationclick` + `push` handlers.
+- Settings "轻轻提醒" toggle (requests permission, honest copy). `nudge.test.ts` (8).
+- Honest limit: true closed-app push needs a backend + VAPID (SW handler ready).
+
+## Cycle 38: Friction-free circular Home
+- Stripped Home to a centred composition: a central action ringed by circular
+  opportunity bubbles; removed the trace/recent lists, big button, visible chips.
+- `AmbientOrbit` replaced `AmbientBubbles`. `ambientOrbit.test.tsx`.
+
+## Cycle 39: Artistic glass redesign — "bubbles of light over a still field"
+
+What changed:
+- Reimagined Home as a quiet atmosphere (frontend-design skill). Signature: a
+  luminous **glass orb** ("现在" → /now, the day held) breathing inside a slow
+  drifting **aurora**, ringed by **iridescent frosted-glass bubbles** (the wishes).
+- Real glassmorphism via `color-mix` on the theme tokens: frosted fills +
+  `backdrop-filter` blur, a masked **conic iridescent rim**, specular highlight on
+  the orb, large soft halos. A CJK **serif** (`--font-serif`) for the few words.
+- Finishing a wish doesn't pop it — it **dissolves into light** (`tdd-dissolve`),
+  then the trace settles in serif. All theme-aware (stunning in Soft Ritual dark).
+- New animations (`tdd-aurora`, `tdd-dissolve`) all respect `prefers-reduced-motion`.
+
+Why:
+- User: "too many buttons/fields … minimalist, centred, circular … artistic with
+  bubbles and transparency … surprise me as an artist." The glass-orb-in-aurora is
+  the one bold signature; everything else stays quiet (one serif wordmark, one
+  ambient line, one "+"). Precise pickers live in /now.
+
+What was tested:
+- typecheck clean; `npm test` → 200/200 (27 files); `npm run build` green.
+- Verified in the browser across warm-paper and soft_ritual (dark) — the dark
+  theme glows like candlelit glass.
+
+What still feels wrong / not done yet:
+- `backdrop-filter` / `color-mix` / conic-mask need a modern browser (graceful:
+  the translucent gradient still reads as glass if a filter is unsupported).
+- Could add a one-time page-load "settle" stagger for the bubbles.
