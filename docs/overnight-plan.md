@@ -36,7 +36,7 @@ push the branch. Small > grand. Revert rather than leave red.
 - [ ] B7. Poetic context read: one warm AI line for the moment ("周四的傍晚，电脑前的光").
 
 ## C · Calm Ritual  (branch `luminous-craft`)
-- [ ] C1. Committed-history discipline + Notion-loadable `docs/TIMELINE.md`, regenerated every cycle.
+- [x] C1. Committed-history discipline + Notion-loadable `docs/TIMELINE.md` (now with a Summary: commit count, branches, date span, plan/gallery links); `npm run timeline`; robust from any cwd. _(craft 1)_
 - [ ] C2. A second aesthetic: a "warm paper / field-notebook" Home — tactile, hand-drawn, slow — to compare against glass.
 - [ ] C3. Gentle haptics + optional soft chime on complete (`navigator.vibrate`).
 - [ ] C4. Shareable keepsake: render today's trace to a beautiful image card (canvas → PNG).

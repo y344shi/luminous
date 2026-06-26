@@ -919,3 +919,11 @@ What still feels wrong / not done yet:
 - `backdrop-filter` / `color-mix` / conic-mask need a modern browser (graceful:
   the translucent gradient still reads as glass if a filter is unsupported).
 - Could add a one-time page-load "settle" stagger for the bubbles.
+
+---
+
+## craft 1 (C1): Committed-history + richer Notion timeline
+- `scripts/gen-timeline.mjs` resolves the git toplevel (works from repo root or
+  project dir), and now writes a **Summary** (unique commits, branches, date
+  span, links to plan + gallery) above per-branch tables. Added `npm run timeline`.
+- Committed-history rule already in CLAUDE.md; this makes the artifact first-class.
