@@ -83,33 +83,30 @@ export function isWorkday(now: Date): boolean {
   return !isWeekend(now);
 }
 
+export type SceneKey = "desk" | "grass" | "highway" | "cafe" | "night" | "home" | "work" | "spark";
+
 /**
  * What the central orb shows: an artistic read of the user's *sensed* situation,
- * so the app's context-awareness is visible. A glowing desk / grass field /
- * highway / café / night sky for where you seem to be, right now.
+ * so the app's context-awareness is visible. Returns an icon key (rendered as a
+ * transparent line-art scene by the UI) + a label. Pure / React-free on purpose.
  */
-export function orbScene(
-  location: LocationType,
-  now: Date
-): { glyph: string; label: string } {
+export function orbScene(location: LocationType, now: Date): { icon: SceneKey; label: string } {
   const hour = now.getHours();
   const lateNight = hour >= 23 || hour < 5;
   switch (location) {
     case "transit":
-      return { glyph: "🛣️", label: "在路上" };
+      return { icon: "highway", label: "在路上" };
     case "outdoor":
-      return { glyph: "🌿", label: "野外" };
+      return { icon: "grass", label: "野外" };
     case "downtown":
-      return { glyph: "☕", label: "街区" };
+      return { icon: "cafe", label: "街区" };
     case "computer":
-      return { glyph: "🖥️", label: "在电脑前" };
+      return { icon: "desk", label: "在电脑前" };
     case "home":
-      return lateNight
-        ? { glyph: "🌙", label: "夜里 · 在家" }
-        : { glyph: "🛋️", label: "在家" };
+      return lateNight ? { icon: "night", label: "夜里 · 在家" } : { icon: "home", label: "在家" };
     case "work":
-      return { glyph: "🗂️", label: "在公司" };
+      return { icon: "work", label: "在公司" };
     default:
-      return lateNight ? { glyph: "🌙", label: "夜里" } : { glyph: "✨", label: "此刻" };
+      return lateNight ? { icon: "night", label: "夜里" } : { icon: "spark", label: "此刻" };
   }
 }

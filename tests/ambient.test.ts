@@ -33,16 +33,16 @@ describe("ambient — human label", () => {
 });
 
 describe("ambient — orb scene (visible AI read of the situation)", () => {
-  it("maps the sensed place to a glowing scene + label", () => {
-    expect(orbScene("computer", wedAfternoon)).toEqual({ glyph: "🖥️", label: "在电脑前" });
-    expect(orbScene("outdoor", wedAfternoon)).toEqual({ glyph: "🌿", label: "野外" });
-    expect(orbScene("transit", wedAfternoon)).toEqual({ glyph: "🛣️", label: "在路上" });
-    expect(orbScene("downtown", wedAfternoon)).toEqual({ glyph: "☕", label: "街区" });
+  it("maps the sensed place to a scene icon + label", () => {
+    expect(orbScene("computer", wedAfternoon)).toEqual({ icon: "desk", label: "在电脑前" });
+    expect(orbScene("outdoor", wedAfternoon)).toEqual({ icon: "grass", label: "野外" });
+    expect(orbScene("transit", wedAfternoon)).toEqual({ icon: "highway", label: "在路上" });
+    expect(orbScene("downtown", wedAfternoon)).toEqual({ icon: "cafe", label: "街区" });
   });
   it("late night softens home + unknown into a moon", () => {
-    expect(orbScene("home", wedLateNight)).toEqual({ glyph: "🌙", label: "夜里 · 在家" });
-    expect(orbScene("anywhere", wedLateNight)).toEqual({ glyph: "🌙", label: "夜里" });
-    expect(orbScene("home", wedEvening)).toEqual({ glyph: "🛋️", label: "在家" });
+    expect(orbScene("home", wedLateNight)).toEqual({ icon: "night", label: "夜里 · 在家" });
+    expect(orbScene("anywhere", wedLateNight)).toEqual({ icon: "night", label: "夜里" });
+    expect(orbScene("home", wedEvening)).toEqual({ icon: "home", label: "在家" });
   });
 });
 

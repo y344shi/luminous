@@ -2,15 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import type { LocationType, Opportunity, Seed } from "@/lib/types";
+import type { LocationType, Opportunity, SeedCategory } from "@/lib/types";
 import { useStore, findSeed } from "@/lib/store";
 import { recommend } from "@/lib/scoring";
 import { buildAmbientContext, guessLocation, ambientLabel, orbScene } from "@/lib/ambient";
 import { roundCoarse, isAtHome, isMovingSpeed, type Coords } from "@/lib/geo";
 import { buildTrace, type CompletionKind } from "@/lib/traceGenerator";
 import { step, gravityFromOrientation, type Body } from "@/lib/bubblePhysics";
-import { categoryMeta } from "@/lib/categoryMeta";
 import { copy } from "@/lib/copy";
+import { CategoryGlyph, SceneGlyph } from "./glyphs";
 import { cx } from "@/lib/utils";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
@@ -19,7 +19,7 @@ type Bubble = {
   id: string;
   seedId: string;
   title: string;
-  emoji: string;
+  category: SeedCategory;
   r: number;
   primary: boolean;
   opp?: Opportunity;
@@ -112,7 +112,7 @@ export default function BubbleField() {
       const angle = (-90 + (360 / Math.max(opps.length, 1)) * i) * (Math.PI / 180);
       const hx = w / 2 + Math.cos(angle) * (ORB_R + 64);
       const hy = h / 2 + Math.sin(angle) * (ORB_R + 64);
-      next.push({ id: o.id, seedId: o.seedId, title: seed.title, emoji: emojiOf(seed), r, primary: true, opp: o });
+      next.push({ id: o.id, seedId: o.seedId, title: seed.title, category: seed.categories[0], r, primary: true, opp: o });
       bodies.push({ id: o.id, x: hx, y: hy, vx: 0, vy: 0, r, m: r * r });
       homes[o.id] = { x: hx, y: hy };
     });
@@ -122,7 +122,7 @@ export default function BubbleField() {
       const r = rand(15, 22);
       const hx = rand(r + 6, w - r - 6);
       const hy = rand(r + 6, h - r - 6);
-      next.push({ id, seedId: seed.id, title: seed.title, emoji: emojiOf(seed), r, primary: false });
+      next.push({ id, seedId: seed.id, title: seed.title, category: seed.categories[0], r, primary: false });
       bodies.push({ id, x: hx, y: hy, vx: rand(-8, 8), vy: rand(-8, 8), r, m: r * r });
       homes[id] = { x: hx, y: hy };
     });
@@ -239,7 +239,7 @@ export default function BubbleField() {
           )}
           style={{ width: b.r * 2, height: b.r * 2 }}
         >
-          <span style={{ fontSize: b.r * 0.8 }} aria-hidden>{b.emoji}</span>
+          <CategoryGlyph category={b.category} size={Math.round(b.r)} />
         </button>
       ))}
 
@@ -250,9 +250,7 @@ export default function BubbleField() {
         className="glass-liquid orb-glow tdd-breathe absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full transition-transform active:scale-[0.97]"
         style={{ width: ORB_R * 2, height: ORB_R * 2 }}
       >
-        <span className="text-[40px] leading-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.18)]" aria-hidden>
-          {scene.glyph}
-        </span>
+        <SceneGlyph icon={scene.icon} size={44} />
         <span className="serif text-[11px] tracking-[0.14em] text-[var(--text-secondary)]">
           {scene.label}
         </span>
@@ -310,7 +308,7 @@ export default function BubbleField() {
             <button aria-label="关闭" onClick={() => setSelected(null)} className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
             <BreathingCard rise className="relative m-3 flex w-full max-w-md flex-col gap-4" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)" }}>
               <div className="flex items-center gap-2">
-                <span className="text-xl">{emojiOf(seed)}</span>
+                <CategoryGlyph category={seed.categories[0]} size={24} />
                 <h3 className="serif text-[19px] font-medium text-[var(--text)]">{seed.title}</h3>
               </div>
               <p className="text-[14px] leading-relaxed text-[var(--text-secondary)]">
@@ -351,6 +349,3 @@ export default function BubbleField() {
   }
 }
 
-function emojiOf(seed: Seed): string {
-  return categoryMeta[seed.categories[0]]?.emoji ?? "·";
-}
