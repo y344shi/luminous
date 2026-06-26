@@ -936,3 +936,13 @@ What still feels wrong / not done yet:
   light-blob layer — that translate by different amounts on pointer-move / device
   tilt (rAF-throttled), giving a cheap "3D" parallax. Reduced-motion → no parallax.
 - 216 tests green; typecheck + build clean. Branch luminous-sense.
+
+---
+
+## sense 3 (B3): Floating nav layer (real directions to a café)
+- New pure `lib/places.ts` (Overpass query / parse / nearest with true bearing +
+  distance / compass label) + `places.test.ts` (6). New `NavLayer`: opt-in
+  geolocation → Overpass (free, no key) → a glass chip with a true-bearing arrow
+  (rotates with the device compass, else north-up) + name + distance to the
+  nearest Starbucks/café. Coarse coords only, on-device, fail-soft. Wired into the
+  BubbleField controls. 222 tests green; typecheck + build clean.

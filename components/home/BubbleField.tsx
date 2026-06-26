@@ -11,6 +11,7 @@ import { buildTrace, type CompletionKind } from "@/lib/traceGenerator";
 import { step, gravityFromOrientation, type Body } from "@/lib/bubblePhysics";
 import { copy } from "@/lib/copy";
 import { CategoryGlyph, SceneGlyph } from "./glyphs";
+import NavLayer from "./NavLayer";
 import { cx } from "@/lib/utils";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
@@ -280,7 +281,8 @@ export default function BubbleField() {
             {justTrace}
           </p>
         )}
-        <div className="pointer-events-auto flex items-center gap-3">
+        <div className="pointer-events-auto flex flex-wrap items-center justify-center gap-3">
+          <NavLayer />
           {canGyro && !gyroOn && (
             <button
               onClick={enableMotion}

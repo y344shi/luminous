@@ -29,7 +29,7 @@ push the branch. Small > grand. Revert rather than leave red.
 ## B · Living World  (branch `luminous-sense`)
 - [x] B1. Scene wallpaper: richer layered mesh gradients per scene + a curated-image seam (`NEXT_PUBLIC_SCENE_IMAGES` JSON, no hardcoded key); photo layers over the gradient under a theme scrim when configured. _(sense 1)_
 - [x] B2. 3D/parallax scene layer: far gradient + near light layer drift by different amounts with pointer / device-tilt (rAF, reduced-motion safe) — depth without a 3D engine. _(sense 2)_
-- [ ] B3. Floating nav map: Overpass nearby cafés → true bearing + distance arrow to the nearest Starbucks, as glass markers.
+- [x] B3. Floating nav: opt-in geolocation → OpenStreetMap **Overpass** (key-free) nearby cafés → a glass chip with a real **true-bearing arrow** (rotates with the device compass) + name + distance to the nearest Starbucks. `lib/places.ts` pure + tested. _(sense 3)_
 - [ ] B4. Weather signal (open-meteo, key-free): scene + tint react to rain/sun/cloud.
 - [ ] B5. Time-of-day color grading across the whole field (dawn → noon → dusk → night).
 - [ ] B6. Orb as a living window: the scene icon becomes a tiny illustrated/animated world.
