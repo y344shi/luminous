@@ -310,6 +310,24 @@ body {
   filter: blur(0.4px) saturate(0.92);
 }
 
+/* Liquid-glass refraction: a drifting, displaced caustic highlight inside the
+   bubble (SVG #tdd-liquid). Reads as light bending through real glass. */
+.glass-refract {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(62% 52% at 34% 24%, rgba(255, 255, 255, 0.55), transparent 56%),
+    radial-gradient(80% 70% at 72% 82%, color-mix(in srgb, var(--accent) 34%, transparent), transparent 62%);
+  filter: url(#tdd-liquid);
+  mix-blend-mode: screen;
+  opacity: 0.85;
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass-refract { filter: none; }
+}
+
 /* The central orb breathes a soft halo of the accent — the sensed scene glows. */
 .orb-glow {
   box-shadow:

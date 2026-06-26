@@ -18,7 +18,7 @@ for visual work), keep the build green, commit, regenerate `docs/TIMELINE.md`,
 push the branch. Small > grand. Revert rather than leave red.
 
 ## A · Liquid Glass  (branch `luminous-glass`)
-- [ ] A1. Real refraction: an SVG `feTurbulence`+`feDisplacementMap` glass filter behind the bubbles so they bend the wallpaper.
+- [x] A1. Real refraction: SVG `feTurbulence`+`feDisplacementMap` (`GlassFilters` `#tdd-liquid`) warps a drifting caustic highlight inside each bubble + the orb (`.glass-refract`), reduced-motion safe. _(glass 1)_
 - [ ] A2. Caustic edge light: chromatic specular rim on orb + bubbles; a moving glint highlight.
 - [ ] A3. Depth field — parallax + progressive blur on far bubbles, crisp in front; size↔z.
 - [ ] A4. Gooey coalesce: SVG goo filter so slow-colliding bubbles merge/separate like liquid.

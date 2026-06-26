@@ -919,3 +919,11 @@ What still feels wrong / not done yet:
 - `backdrop-filter` / `color-mix` / conic-mask need a modern browser (graceful:
   the translucent gradient still reads as glass if a filter is unsupported).
 - Could add a one-time page-load "settle" stagger for the bubbles.
+
+---
+
+## glass 1 (A1): Liquid-glass refraction
+- New `GlassFilters` SVG `#tdd-liquid` (animated fractalNoise turbulence +
+  displacement). `.glass-refract` inner layer warps a caustic highlight inside
+  each bubble + the orb → light bends like real glass. Reduced-motion: filter off.
+- Rendered on Home; 214 tests green; typecheck + build clean. Branch luminous-glass.

@@ -235,10 +235,12 @@ export default function BubbleField() {
           className={cx(
             "absolute left-0 top-0 flex items-center justify-center rounded-full will-change-transform",
             b.primary ? "glass-liquid glass-iris" : "glass glass-faint",
+            "relative overflow-hidden",
             dissolving === b.id && "tdd-dissolve"
           )}
           style={{ width: b.r * 2, height: b.r * 2 }}
         >
+          <span className="glass-refract" aria-hidden />
           <CategoryGlyph category={b.category} size={Math.round(b.r)} />
         </button>
       ))}
@@ -247,9 +249,10 @@ export default function BubbleField() {
       <Link
         href="/now"
         aria-label={copy.home.primary}
-        className="glass-liquid orb-glow tdd-breathe absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full transition-transform active:scale-[0.97]"
+        className="glass-liquid orb-glow tdd-breathe absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 overflow-hidden rounded-full transition-transform active:scale-[0.97]"
         style={{ width: ORB_R * 2, height: ORB_R * 2 }}
       >
+        <span className="glass-refract" aria-hidden />
         <SceneGlyph icon={scene.icon} size={44} />
         <span className="serif text-[11px] tracking-[0.14em] text-[var(--text-secondary)]">
           {scene.label}
