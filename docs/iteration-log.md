@@ -945,3 +945,12 @@ What still feels wrong / not done yet:
   all guarded/fail-soft. New `soundEnabled` setting + a Settings toggle "完成时的
   轻响" (off by default; haptic always, chime only when on). Wired into PaperHome +
   NowFlow completions. New feedback.test.ts; 220 tests green; typecheck + build clean.
+
+---
+
+## craft 4 (C4): Shareable trace keepsake card
+- New pure `lib/keepsake.ts` (CJK-aware `wrapByWidth`, `keepsakeFilename`) +
+  keepsake.test.ts (4). New `KeepsakeButton` on /traces: draws today's latest
+  trace into a warm 1080×1350 card (paper gradient, sage glow, 「今天别消失」
+  wordmark, serif trace text, sprout mark, date, luminous) → PNG via Web Share
+  (files) or download. A memento, not a metric. 225 tests green.
