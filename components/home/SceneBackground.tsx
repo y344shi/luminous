@@ -3,6 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { guessLocation, orbScene } from "@/lib/ambient";
 import { sceneVisual, type SceneVisual } from "@/lib/sceneBackground";
+import { useStore } from "@/lib/store";
+import { roundCoarse } from "@/lib/geo";
+import {
+  buildOpenMeteoUrl,
+  parseOpenMeteo,
+  classifyWeather,
+  weatherTint,
+  type WeatherKind,
+} from "@/lib/weather";
 
 function isMobileDevice(): boolean {
   if (typeof navigator === "undefined") return false;
@@ -18,6 +27,8 @@ function isMobileDevice(): boolean {
  */
 export default function SceneBackground() {
   const [v, setV] = useState<SceneVisual | null>(null);
+  const [weather, setWeather] = useState<WeatherKind | null>(null);
+  const homeLocation = useStore((s) => s.homeLocation);
   const farRef = useRef<HTMLDivElement>(null);
   const nearRef = useRef<HTMLDivElement>(null);
 
@@ -26,6 +37,24 @@ export default function SceneBackground() {
     const scene = orbScene(guessLocation(now, isMobileDevice()), now);
     setV(sceneVisual(scene.icon));
   }, []);
+
+  // Coarse weather tint — only when a home location was already saved (consented).
+  useEffect(() => {
+    if (!homeLocation) return;
+    let cancelled = false;
+    fetch(buildOpenMeteoUrl(roundCoarse(homeLocation)))
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        const code = parseOpenMeteo(j);
+        if (!cancelled && code != null) setWeather(classifyWeather(code));
+      })
+      .catch(() => {
+        /* weather is a nicety; ignore failures */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [homeLocation]);
 
   useEffect(() => {
     if (!v) return;
@@ -89,6 +118,13 @@ export default function SceneBackground() {
           src={v.image}
           alt=""
           className="absolute inset-0 h-full w-full object-cover opacity-55 [filter:blur(2px)_saturate(1.05)] mix-blend-soft-light"
+        />
+      )}
+      {/* weather veil — a soft tint reacting to rain / cloud / snow / fog */}
+      {weather && weatherTint(weather) && (
+        <div
+          className="absolute inset-0 transition-opacity duration-[1500ms]"
+          style={{ background: weatherTint(weather) as string }}
         />
       )}
       {/* theme scrim — ties the wallpaper to the active theme + keeps legibility */}

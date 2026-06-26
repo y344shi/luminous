@@ -946,3 +946,13 @@ What still feels wrong / not done yet:
   (rotates with the device compass, else north-up) + name + distance to the
   nearest Starbucks/café. Coarse coords only, on-device, fail-soft. Wired into the
   BubbleField controls. 222 tests green; typecheck + build clean.
+
+---
+
+## sense 4 (B4): Weather-tinted scene (open-meteo, key-free)
+- New pure `lib/weather.ts` (open-meteo url / parse WMO code / classify /
+  tint veil / zh label) + `weather.test.ts` (5). SceneBackground now fetches
+  coarse weather **only when a home location is already saved** (consented), and
+  lays a soft tint over the scene: rain→cool blue, cloud→grey, snow→pale,
+  fog→wash, storm→dark, clear→warm glow. Fail-soft; never alters recommendations.
+  227 tests green; typecheck + build clean.
