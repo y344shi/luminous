@@ -954,3 +954,13 @@ What still feels wrong / not done yet:
   trace into a warm 1080×1350 card (paper gradient, sage glow, 「今天别消失」
   wordmark, serif trace text, sprout mark, date, luminous) → PNG via Web Share
   (files) or download. A memento, not a metric. 225 tests green.
+
+---
+
+## craft 5 (C5): Perf + a11y pass
+- Perf (shared BubbleField): the rAF loop now **pauses when document.hidden**
+  (visibilitychange) and resumes on return, resetting dt to avoid a jump — no
+  animating an off-screen tab. Already had the reduced-motion gate.
+- a11y (PaperHome): each note button has a descriptive aria-label (title + action),
+  the notes list is labelled, and the written-trace line is a polite role=status
+  region so it's announced. 225 tests green; typecheck + build clean.

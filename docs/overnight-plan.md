@@ -40,7 +40,7 @@ push the branch. Small > grand. Revert rather than leave red.
 - [x] C2. Warm-paper / field-notebook Home (`PaperHome`): a ruled-paper sheet, wishes as tilted hand-laid notes in a brush-script face (`.hand`), same loop underneath. A real counter-aesthetic to glass. _(craft 2)_
 - [x] C3. Gentle haptics + optional soft chime on complete (`lib/feedback.ts`): a soft `navigator.vibrate` double-tap always; a brief rising sine chime only when `soundEnabled` (new Settings toggle). Wired into PaperHome + NowFlow. _(craft 3)_
 - [x] C4. Shareable keepsake: today's trace → a warm canvas card (wordmark, serif text, sprout mark, date) exported as PNG via Web Share / download. `lib/keepsake.ts` pure wrap+filename, tested. _(craft 4)_
-- [ ] C5. Performance + a11y on the field: pause rAF when hidden, reduced-motion static layout, focus order, caps.
+- [x] C5. Perf + a11y: the shared bubble field now **pauses its rAF when the tab is hidden** (visibilitychange, dt-jump-safe) on top of the reduced-motion gate; PaperHome notes got descriptive `aria-label`s, a labelled list, and a polite trace status region. _(craft 5)_
 - [ ] C6. Extract `packages/core` + `packages/design`; stand up CI on luminous.
 - [ ] C7. PWA push groundwork (VAPID seam) so nudges can reach a closed app.
 

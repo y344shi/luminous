@@ -170,10 +170,23 @@ export default function BubbleField() {
       }
       rafRef.current = requestAnimationFrame(frame);
     }
-    if (!reduced && (wrapRef.current?.clientWidth ?? 0) > 0) {
-      rafRef.current = requestAnimationFrame(frame);
-    }
-    return () => cancelAnimationFrame(rafRef.current);
+    const canRun = () => !reduced && (wrapRef.current?.clientWidth ?? 0) > 0;
+    const start = () => {
+      if (!rafRef.current && canRun()) rafRef.current = requestAnimationFrame(frame);
+    };
+    const stop = () => {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+      last = 0; // avoid a dt jump when we resume
+    };
+    // Pause the loop when the tab is hidden — no point animating off-screen.
+    const onVisibility = () => (document.hidden ? stop() : start());
+    document.addEventListener("visibilitychange", onVisibility);
+    start();
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      stop();
+    };
   }, [mounted, gyroOn]);
 
   if (!mounted || !hydrated || !now) return null;

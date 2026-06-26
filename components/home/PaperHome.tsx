@@ -82,7 +82,7 @@ export default function PaperHome() {
 
       <p className="hand mt-6 pl-7 text-[16px] text-[var(--text-secondary)]">也许现在，可以做一点这些——</p>
 
-      <ul className="mt-3 flex flex-col gap-5 pl-7 pr-2">
+      <ul aria-label="也许现在可以做的小事" className="mt-3 flex flex-col gap-5 pl-7 pr-2">
         {shown.map((o, i) => {
           const seed = findSeed(seeds, o.seedId);
           if (!seed) return null;
@@ -90,6 +90,7 @@ export default function PaperHome() {
             <li key={o.id} style={{ transform: `rotate(${tilts[i % tilts.length]})` }}>
               <button
                 onClick={() => setSelected(o)}
+                aria-label={`${seed.title}，${o.suggestedAction}`}
                 className="paper-note tdd-rise flex w-full items-start gap-3 rounded-[4px] p-4 text-left transition-transform active:scale-[0.99]"
               >
                 <CategoryGlyph category={seed.categories[0]} size={22} className="mt-0.5 text-[var(--accent-text)]" />
@@ -104,7 +105,7 @@ export default function PaperHome() {
       </ul>
 
       {justTrace && (
-        <p className="hand tdd-rise mt-7 pl-7 text-[17px] leading-relaxed text-[var(--accent-text)]">
+        <p role="status" className="hand tdd-rise mt-7 pl-7 text-[17px] leading-relaxed text-[var(--accent-text)]">
           ✍ {justTrace}
         </p>
       )}

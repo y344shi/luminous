@@ -6,14 +6,15 @@ Repo: `git@github.com:y344shi/luminous.git`  ·  app at `dreams/seize_the_day`
 
 ## Summary
 
-- **59** unique commits across **4** branches
+- **62** unique commits across **4** branches
 - span: **2026-06-25 → 2026-06-26**
 - directions + plan: [`docs/overnight-plan.md`](overnight-plan.md) · gallery: [`docs/GALLERY.md`](GALLERY.md)
 
-## branch `luminous-craft` — 50 commits  ·  2026-06-25 → 2026-06-26
+## branch `luminous-craft` — 51 commits  ·  2026-06-25 → 2026-06-26
 
 | date | commit | change |
 | --- | --- | --- |
+| 2026-06-26 | `cafa9ef` | craft 4: Shareable trace keepsake card (canvas -> PNG) |
 | 2026-06-26 | `8b43bc7` | craft 3: Gentle haptics + optional soft chime on complete |
 | 2026-06-26 | `48806df` | craft 2: Warm-paper / field-notebook Home (PaperHome) |
 | 2026-06-26 | `43f77d8` | craft 1: Committed-history + richer Notion-loadable timeline |
@@ -65,10 +66,11 @@ Repo: `git@github.com:y344shi/luminous.git`  ·  app at `dreams/seize_the_day`
 | 2026-06-25 | `4643eb6` | Add project guide + overnight tick playbook for autonomous cycles |
 | 2026-06-25 | `730b76f` | Cycle 1: 《今天别消失》web MVP — full core loop alive |
 
-## branch `luminous-glass` — 51 commits  ·  2026-06-25 → 2026-06-26
+## branch `luminous-glass` — 52 commits  ·  2026-06-25 → 2026-06-26
 
 | date | commit | change |
 | --- | --- | --- |
+| 2026-06-26 | `9a2f310` | glass 5: Dreamier ambience (calmer drift + motes + vignette) |
 | 2026-06-26 | `1499b66` | glass 4: Gooey coalesce — liquid metaballs under the glass |
 | 2026-06-26 | `4016f7b` | glass 3: Depth field (z → progressive blur + parallax) |
 | 2026-06-26 | `8c630f9` | glass 2: Caustic edge light (hue-shifting rim + sweeping glint) |
@@ -121,10 +123,11 @@ Repo: `git@github.com:y344shi/luminous.git`  ·  app at `dreams/seize_the_day`
 | 2026-06-25 | `4643eb6` | Add project guide + overnight tick playbook for autonomous cycles |
 | 2026-06-25 | `730b76f` | Cycle 1: 《今天别消失》web MVP — full core loop alive |
 
-## branch `luminous-sense` — 52 commits  ·  2026-06-25 → 2026-06-26
+## branch `luminous-sense` — 53 commits  ·  2026-06-25 → 2026-06-26
 
 | date | commit | change |
 | --- | --- | --- |
+| 2026-06-26 | `b17a85e` | sense 5: Time-of-day color grading (dawn -> night) |
 | 2026-06-26 | `fdea9d5` | sense 4: Weather-tinted scene (open-meteo, key-free) |
 | 2026-06-26 | `c119f18` | sense 3: Floating nav layer — real bearing to the nearest cafe (Overpass) |
 | 2026-06-26 | `711d4c0` | sense: fix shoot-home port band (Chrome ERR_UNSAFE_PORT on 3659) + valid sense.png |
