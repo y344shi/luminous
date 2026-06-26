@@ -4,7 +4,15 @@ import IntroCard from "@/components/IntroCard";
 import BubbleField from "@/components/home/BubbleField";
 import SceneBackground from "@/components/home/SceneBackground";
 
-export default function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ shot?: string }>;
+}) {
+  // ?shot=1 → a clean capture (no first-run overlays) for the per-branch gallery.
+  const { shot } = await searchParams;
+  const clean = shot === "1";
+
   return (
     <div className="relative flex min-h-[82dvh] flex-col items-center overflow-hidden">
       <SceneBackground />
@@ -13,10 +21,12 @@ export default function HomePage() {
         {copy.appTitle}
       </p>
 
-      <div className="relative z-30 w-full">
-        <IntroCard />
-        <LateNightThemeOffer />
-      </div>
+      {!clean && (
+        <div className="relative z-30 w-full">
+          <IntroCard />
+          <LateNightThemeOffer />
+        </div>
+      )}
 
       <div className="relative z-10 w-full">
         <BubbleField />

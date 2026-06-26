@@ -30,6 +30,19 @@ Code path: `AddSeedFlow` → `parseSeedMock`/`draftToSeed` → `store` → `NowF
 - AI never commands, diagnoses, professes love, or pushes all-night work.
 - No hardcoded API keys. Only coarse context (no GPS/biometrics) ever leaves the device.
 
+## Committed history is a rule (every change)
+Every code-change idea — however small — is **committed**, never left loose in the
+working tree. The discipline:
+- Work on a **named branch** for the direction (see `docs/overnight-plan.md`), not detached.
+- After a green change (`typecheck && test && build`), **commit** with a clear
+  `Cycle N: …` (or `<dir> N: …`) subject + the Co-Authored-By trailer.
+- **Regenerate the timeline**: `node scripts/gen-timeline.mjs` → `docs/TIMELINE.md`
+  (Notion-loadable: branches, commits, dates). Commit it with the change.
+- **Push** the app to its luminous branch: from the repo root,
+  `git subtree push --prefix=dreams/seize_the_day luminous <branch>`.
+- Capture the look: `bash scripts/shoot-home.sh <dir>` → `docs/shots/<dir>.png`.
+- If a change can't go green, **revert** it — don't leave the tree red or dirty.
+
 ## Overnight autonomous iteration
 A 5-minute cron runs build cycles. Each tick follows `docs/tick-playbook.md`:
 pick the next item from `docs/next-steps.md`, implement (optionally via subagents),

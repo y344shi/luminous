@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/",
 }));
 
-import HomePage from "@/app/page";
+import BubbleField from "@/components/home/BubbleField";
 import SeedGarden from "@/components/seed/SeedGarden";
 import TraceJournal from "@/components/trace/TraceJournal";
 import SettingsPanel from "@/components/settings/SettingsPanel";
@@ -45,7 +45,7 @@ describe("copy-lint — tone never drifts into todo-app language", () => {
   });
 
   it.each([
-    ["Home", () => <HomePage />],
+    ["Home field", () => <BubbleField />],
     ["Seed garden", () => <SeedGarden />],
     ["Trace journal", () => <TraceJournal />],
     ["Settings", () => <SettingsPanel />],
