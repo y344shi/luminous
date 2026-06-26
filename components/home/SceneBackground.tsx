@@ -12,6 +12,7 @@ import {
   weatherTint,
   type WeatherKind,
 } from "@/lib/weather";
+import { dayPhase, dayGradeTint, type DayPhase } from "@/lib/dayGrade";
 
 function isMobileDevice(): boolean {
   if (typeof navigator === "undefined") return false;
@@ -28,6 +29,7 @@ function isMobileDevice(): boolean {
 export default function SceneBackground() {
   const [v, setV] = useState<SceneVisual | null>(null);
   const [weather, setWeather] = useState<WeatherKind | null>(null);
+  const [phase, setPhase] = useState<DayPhase | null>(null);
   const homeLocation = useStore((s) => s.homeLocation);
   const farRef = useRef<HTMLDivElement>(null);
   const nearRef = useRef<HTMLDivElement>(null);
@@ -36,6 +38,7 @@ export default function SceneBackground() {
     const now = new Date();
     const scene = orbScene(guessLocation(now, isMobileDevice()), now);
     setV(sceneVisual(scene.icon));
+    setPhase(dayPhase(now.getHours()));
   }, []);
 
   // Coarse weather tint — only when a home location was already saved (consented).
@@ -118,6 +121,13 @@ export default function SceneBackground() {
           src={v.image}
           alt=""
           className="absolute inset-0 h-full w-full object-cover opacity-55 [filter:blur(2px)_saturate(1.05)] mix-blend-soft-light"
+        />
+      )}
+      {/* time-of-day grading — the daily light arc, dawn → night */}
+      {phase && (
+        <div
+          className="absolute inset-0 mix-blend-soft-light transition-[background] duration-[2000ms]"
+          style={{ background: dayGradeTint(phase) }}
         />
       )}
       {/* weather veil — a soft tint reacting to rain / cloud / snow / fog */}

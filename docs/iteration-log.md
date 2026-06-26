@@ -956,3 +956,11 @@ What still feels wrong / not done yet:
   lays a soft tint over the scene: rain→cool blue, cloud→grey, snow→pale,
   fog→wash, storm→dark, clear→warm glow. Fail-soft; never alters recommendations.
   227 tests green; typecheck + build clean.
+
+---
+
+## sense 5 (B5): Time-of-day color grading
+- New pure `lib/dayGrade.ts` (`dayPhase(hour)` → dawn/morning/midday/golden/dusk/
+  night + soft-light tint + zh label) + dayGrade.test.ts (4). SceneBackground
+  blends the phase veil (mix-blend soft-light, 2s transition) over the wallpaper —
+  the daily light arc. Never alters recommendations. 231 tests green.
