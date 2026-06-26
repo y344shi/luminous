@@ -4,10 +4,11 @@ _Auto-generated from git (`scripts/gen-timeline.mjs`). Notion-loadable: import o
 
 Repo: `git@github.com:y344shi/luminous.git`  ·  app at `dreams/seize_the_day`
 
-## branch `luminous-craft` — 48 commits
+## branch `luminous-craft` — 49 commits
 
 | date | commit | change |
 | --- | --- | --- |
+| 2026-06-26 | `48806df` | craft 2: Warm-paper / field-notebook Home (PaperHome) |
 | 2026-06-26 | `43f77d8` | craft 1: Committed-history + richer Notion-loadable timeline |
 | 2026-06-26 | `a714805` | Docs: regenerate TIMELINE.md |
 | 2026-06-26 | `88aa84b` | Overnight machine: 3-direction plan, committed-history rule, timeline, gallery, shots |
@@ -57,10 +58,11 @@ Repo: `git@github.com:y344shi/luminous.git`  ·  app at `dreams/seize_the_day`
 | 2026-06-25 | `4643eb6` | Add project guide + overnight tick playbook for autonomous cycles |
 | 2026-06-25 | `730b76f` | Cycle 1: 《今天别消失》web MVP — full core loop alive |
 
-## branch `luminous-glass` — 48 commits
+## branch `luminous-glass` — 49 commits
 
 | date | commit | change |
 | --- | --- | --- |
+| 2026-06-26 | `8c630f9` | glass 2: Caustic edge light (hue-shifting rim + sweeping glint) |
 | 2026-06-26 | `20f997c` | glass 1: Liquid-glass refraction (SVG turbulence + displacement) |
 | 2026-06-26 | `a714805` | Docs: regenerate TIMELINE.md |
 | 2026-06-26 | `88aa84b` | Overnight machine: 3-direction plan, committed-history rule, timeline, gallery, shots |
@@ -110,10 +112,12 @@ Repo: `git@github.com:y344shi/luminous.git`  ·  app at `dreams/seize_the_day`
 | 2026-06-25 | `4643eb6` | Add project guide + overnight tick playbook for autonomous cycles |
 | 2026-06-25 | `730b76f` | Cycle 1: 《今天别消失》web MVP — full core loop alive |
 
-## branch `luminous-sense` — 48 commits
+## branch `luminous-sense` — 50 commits
 
 | date | commit | change |
 | --- | --- | --- |
+| 2026-06-26 | `711d4c0` | sense: fix shoot-home port band (Chrome ERR_UNSAFE_PORT on 3659) + valid sense.png |
+| 2026-06-26 | `beceffd` | sense 2: Parallax depth scene layer (pointer / device-tilt) |
 | 2026-06-26 | `ac4c13b` | sense 1: Scene wallpaper — richer mesh gradients + curated-image seam |
 | 2026-06-26 | `a714805` | Docs: regenerate TIMELINE.md |
 | 2026-06-26 | `88aa84b` | Overnight machine: 3-direction plan, committed-history rule, timeline, gallery, shots |

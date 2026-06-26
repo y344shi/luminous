@@ -20,7 +20,7 @@ push the branch. Small > grand. Revert rather than leave red.
 ## A · Liquid Glass  (branch `luminous-glass`)
 - [x] A1. Real refraction: SVG `feTurbulence`+`feDisplacementMap` (`GlassFilters` `#tdd-liquid`) warps a drifting caustic highlight inside each bubble + the orb (`.glass-refract`), reduced-motion safe. _(glass 1)_
 - [x] A2. Caustic edge light: the iridescent rim slowly hue-shifts (`tdd-rim-hue`) + a bright specular **glint** sweeps across each bubble + the orb (`.glass-glint`, staggered via `--gd`); reduced-motion safe. _(glass 2)_
-- [ ] A3. Depth field — parallax + progressive blur on far bubbles, crisp in front; size↔z.
+- [x] A3. Depth field: each bubble gets a `z` (primaries near/crisp, lesser ones far) → progressive blur + size, and pointer/tilt **parallax** scaled by z (near moves more). Reduced-motion → static. _(glass 3)_
 - [ ] A4. Gooey coalesce: SVG goo filter so slow-colliding bubbles merge/separate like liquid.
 - [ ] A5. Dreamier ambience: slower drift, soft bloom, faint drifting light motes, gentle vignette.
 - [ ] A6. Gyro polish: smoothed tilt→gravity, "shake to scatter", settle-to-cluster easing.

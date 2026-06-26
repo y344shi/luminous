@@ -21,6 +21,7 @@ type Bubble = {
   title: string;
   category: SeedCategory;
   r: number;
+  z: number;
   primary: boolean;
   opp?: Opportunity;
 };
@@ -57,6 +58,8 @@ export default function BubbleField() {
   const tiltRef = useRef<{ gamma: number | null; beta: number | null } | null>(null);
   const rafRef = useRef<number>(0);
   const sizeRef = useRef({ w: 0, h: 0 });
+  const pointerRef = useRef({ px: 0, py: 0 });
+  const zRef = useRef<Record<string, number>>({});
 
   const [mounted, setMounted] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
@@ -104,31 +107,37 @@ export default function BubbleField() {
     const next: Bubble[] = [];
     const bodies: Body[] = [];
     const homes: Record<string, { x: number; y: number }> = {};
+    const zmap: Record<string, number> = {};
 
     opps.forEach((o, i) => {
       const seed = findSeed(seeds, o.seedId);
       if (!seed) return;
       const r = 34 + (3 - i) * 3; // best slightly bigger
+      const z = 0.86 + (3 - i) * 0.04; // primaries sit near (crisp)
       const angle = (-90 + (360 / Math.max(opps.length, 1)) * i) * (Math.PI / 180);
       const hx = w / 2 + Math.cos(angle) * (ORB_R + 64);
       const hy = h / 2 + Math.sin(angle) * (ORB_R + 64);
-      next.push({ id: o.id, seedId: o.seedId, title: seed.title, category: seed.categories[0], r, primary: true, opp: o });
+      next.push({ id: o.id, seedId: o.seedId, title: seed.title, category: seed.categories[0], r, z, primary: true, opp: o });
       bodies.push({ id: o.id, x: hx, y: hy, vx: 0, vy: 0, r, m: r * r });
       homes[o.id] = { x: hx, y: hy };
+      zmap[o.id] = z;
     });
 
     ambientSeeds.forEach((seed) => {
       const id = `amb_${seed.id}`;
       const r = rand(15, 22);
+      const z = rand(0.25, 0.5); // lesser wishes drift far (soft)
       const hx = rand(r + 6, w - r - 6);
       const hy = rand(r + 6, h - r - 6);
-      next.push({ id, seedId: seed.id, title: seed.title, category: seed.categories[0], r, primary: false });
+      next.push({ id, seedId: seed.id, title: seed.title, category: seed.categories[0], r, z, primary: false });
       bodies.push({ id, x: hx, y: hy, vx: rand(-8, 8), vy: rand(-8, 8), r, m: r * r });
       homes[id] = { x: hx, y: hy };
+      zmap[id] = z;
     });
 
     bodiesRef.current = bodies;
     homesRef.current = homes;
+    zRef.current = zmap;
     setBubbles(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted, now, seeds, location, lastPick.energy]);
@@ -144,6 +153,13 @@ export default function BubbleField() {
       const { w, h } = sizeRef.current;
       return { x: w / 2, y: h / 2, r: ORB_R + 6 };
     };
+    const onPointer = (e: PointerEvent) => {
+      pointerRef.current = {
+        px: e.clientX / window.innerWidth - 0.5,
+        py: e.clientY / window.innerHeight - 0.5,
+      };
+    };
+    window.addEventListener("pointermove", onPointer, { passive: true });
     function frame(t: number) {
       const dt = Math.min(last ? (t - last) / 1000 : 0.016, 0.05);
       last = t;
@@ -164,16 +180,24 @@ export default function BubbleField() {
         }
         step(bodies, { w, h, gx: 0, gy: 0, dt, anchor: orb(), damping: 0.92, restitution: 0.6 });
       }
+      const { px, py } = pointerRef.current;
       for (const b of bodies) {
         const node = elsRef.current[b.id];
-        if (node) node.style.transform = `translate3d(${b.x - b.r}px, ${b.y - b.r}px, 0)`;
+        if (!node) continue;
+        const z = zRef.current[b.id] ?? 0.5;
+        const ox = px * z * 26; // near bubbles parallax more
+        const oy = py * z * 26;
+        node.style.transform = `translate3d(${b.x - b.r + ox}px, ${b.y - b.r + oy}px, 0)`;
       }
       rafRef.current = requestAnimationFrame(frame);
     }
     if (!reduced && (wrapRef.current?.clientWidth ?? 0) > 0) {
       rafRef.current = requestAnimationFrame(frame);
     }
-    return () => cancelAnimationFrame(rafRef.current);
+    return () => {
+      window.removeEventListener("pointermove", onPointer);
+      cancelAnimationFrame(rafRef.current);
+    };
   }, [mounted, gyroOn]);
 
   if (!mounted || !hydrated || !now) return null;
@@ -238,7 +262,7 @@ export default function BubbleField() {
             "relative overflow-hidden",
             dissolving === b.id && "tdd-dissolve"
           )}
-          style={{ width: b.r * 2, height: b.r * 2, ["--gd"]: `${(b.r % 5) * 1.7}s` } as React.CSSProperties}
+          style={{ width: b.r * 2, height: b.r * 2, ["--gd"]: `${(b.r % 5) * 1.7}s`, filter: `blur(${((1 - b.z) * 2.6).toFixed(2)}px) saturate(${(0.88 + b.z * 0.2).toFixed(2)})` } as React.CSSProperties}
         >
           <span className="glass-refract" aria-hidden />
           <CategoryGlyph category={b.category} size={Math.round(b.r)} />

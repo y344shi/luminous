@@ -935,3 +935,11 @@ What still feels wrong / not done yet:
   shimmer, and a bright specular **glint** sweeps across each primary bubble + the
   orb (`.glass-glint::before`, staggered per-bubble via `--gd`). Reduced-motion off.
 - 214 tests green; typecheck + build clean. Branch luminous-glass.
+
+---
+
+## glass 3 (A3): Depth field
+- Each bubble carries a `z` (primaries near ~0.9, lesser ones far ~0.3) driving a
+  progressive blur (`blur((1-z)*2.6px)`) and pointer/device-tilt **parallax**
+  (near bubbles shift more). Crisp in front, soft in back. Reduced-motion: static.
+- 214 tests green; typecheck + build clean. Branch luminous-glass.
