@@ -4,10 +4,11 @@ _Auto-generated from git (`scripts/gen-timeline.mjs`). Notion-loadable: import o
 
 Repo: `git@github.com:y344shi/luminous.git`  ·  app at `dreams/seize_the_day`
 
-## branch `seize-the-day/overnight-build` — 45 commits
+## branch `seize-the-day/overnight-build` — 46 commits
 
 | date | commit | change |
 | --- | --- | --- |
+| 2026-06-26 | `88aa84b` | Overnight machine: 3-direction plan, committed-history rule, timeline, gallery, shots |
 | 2026-06-26 | `d947dce` | Cycle 41: Lucide line-icons + scene-reflecting warm background |
 | 2026-06-26 | `7f5da00` | Cycle 40: Dreamy glass bubble physics field + orb scene + luminous push |
 | 2026-06-25 | `83601ab` | Cycle 39: Artistic glass redesign — bubbles of light over a still field |
