@@ -928,3 +928,11 @@ What still feels wrong / not done yet:
   (`NEXT_PUBLIC_SCENE_IMAGES` JSON → scene→url, no hardcoded key). When set, the
   photo layers over the gradient (soft-light, blurred) under the theme scrim;
   otherwise the gradient shows. New `sceneBackground.test.ts`. 216 tests green.
+
+---
+
+## sense 2 (B2): Parallax depth scene layer
+- SceneBackground now has two depth layers — a far scene-gradient and a nearer
+  light-blob layer — that translate by different amounts on pointer-move / device
+  tilt (rAF-throttled), giving a cheap "3D" parallax. Reduced-motion → no parallax.
+- 216 tests green; typecheck + build clean. Branch luminous-sense.

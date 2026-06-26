@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { guessLocation, orbScene } from "@/lib/ambient";
 import { sceneVisual, type SceneVisual } from "@/lib/sceneBackground";
 
@@ -10,13 +10,16 @@ function isMobileDevice(): boolean {
 }
 
 /**
- * A warm wallpaper behind the bubbles that reflects the sensed scene (desk /
- * grass / highway / café / night). A theme-tinted scrim keeps the glass and text
- * legible. Gradient base now; a high-res / 3D image can layer in later
- * (docs/scene-library.md). Computed client-side to avoid hydration mismatch.
+ * A warm wallpaper behind the bubbles that reflects the sensed scene, with a
+ * light **parallax depth**: a far gradient layer and a nearer light layer drift
+ * by different amounts as you move the pointer or tilt the device — a cheap "3D"
+ * without a heavy engine. A theme scrim keeps the glass + text legible. A curated
+ * photo can layer in (NEXT_PUBLIC_SCENE_IMAGES). Reduced-motion: no parallax.
  */
 export default function SceneBackground() {
   const [v, setV] = useState<SceneVisual | null>(null);
+  const farRef = useRef<HTMLDivElement>(null);
+  const nearRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const now = new Date();
@@ -24,15 +27,62 @@ export default function SceneBackground() {
     setV(sceneVisual(scene.icon));
   }, []);
 
+  useEffect(() => {
+    if (!v) return;
+    const reduced = !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    if (reduced) return;
+
+    let raf = 0;
+    let tx = 0;
+    let ty = 0; // -1..1
+    const apply = () => {
+      if (farRef.current) farRef.current.style.transform = `translate3d(${tx * -7}px, ${ty * -7}px, 0)`;
+      if (nearRef.current) nearRef.current.style.transform = `translate3d(${tx * 18}px, ${ty * 18}px, 0)`;
+      raf = 0;
+    };
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(apply);
+    };
+    const onPointer = (e: PointerEvent) => {
+      tx = e.clientX / window.innerWidth - 0.5;
+      ty = e.clientY / window.innerHeight - 0.5;
+      schedule();
+    };
+    const onTilt = (e: DeviceOrientationEvent) => {
+      tx = Math.max(-1, Math.min(1, (e.gamma ?? 0) / 45));
+      ty = Math.max(-1, Math.min(1, (e.beta ?? 0) / 45));
+      schedule();
+    };
+    window.addEventListener("pointermove", onPointer, { passive: true });
+    window.addEventListener("deviceorientation", onTilt);
+    return () => {
+      window.removeEventListener("pointermove", onPointer);
+      window.removeEventListener("deviceorientation", onTilt);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [v]);
+
   if (!v) return null;
 
   return (
     <div aria-hidden className="absolute inset-0 z-0 overflow-hidden">
+      {/* far layer — the scene wallpaper */}
       <div
-        className="absolute inset-0 transition-[background] duration-[1200ms] ease-in-out"
+        ref={farRef}
+        className="absolute inset-[-9%] transition-[background] duration-[1200ms] ease-in-out will-change-transform"
         style={{ background: v.gradient }}
       />
-      {/* curated photo for this scene, when configured (NEXT_PUBLIC_SCENE_IMAGES) */}
+      {/* near layer — soft light blobs that parallax more */}
+      <div
+        ref={nearRef}
+        className="absolute inset-[-14%] will-change-transform"
+        style={{
+          background:
+            "radial-gradient(26% 22% at 22% 24%, rgba(255,255,255,0.4), transparent 60%)," +
+            "radial-gradient(30% 26% at 82% 30%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 64%)",
+        }}
+      />
+      {/* curated photo for this scene, when configured */}
       {v.image && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
