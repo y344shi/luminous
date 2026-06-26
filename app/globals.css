@@ -328,6 +328,42 @@ body {
   .glass-refract { filter: none; }
 }
 
+/* Caustic edge: the iridescent rim slowly shifts hue, like light through glass. */
+@keyframes tdd-rim-hue {
+  to { filter: hue-rotate(360deg); }
+}
+.glass-iris::after {
+  animation: tdd-rim-hue 16s linear infinite;
+}
+
+/* A bright specular glint sweeps across the glass now and then. */
+@keyframes tdd-glint {
+  0% { transform: translateX(-130%) rotate(16deg); opacity: 0; }
+  10% { opacity: 0.85; }
+  26% { transform: translateX(130%) rotate(16deg); opacity: 0; }
+  100% { transform: translateX(130%) rotate(16deg); opacity: 0; }
+}
+.glass-glint::before {
+  content: "";
+  position: absolute;
+  inset: -25% -15%;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 42%,
+    rgba(255, 255, 255, 0.72) 50%,
+    transparent 58%
+  );
+  mix-blend-mode: screen;
+  animation: tdd-glint 9s ease-in-out infinite;
+  animation-delay: var(--gd, 0s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-iris::after { animation: none; }
+  .glass-glint::before { animation: none; opacity: 0; }
+}
+
 /* The central orb breathes a soft halo of the accent — the sensed scene glows. */
 .orb-glow {
   box-shadow:

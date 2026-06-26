@@ -4,10 +4,11 @@ _Auto-generated from git (`scripts/gen-timeline.mjs`). Notion-loadable: import o
 
 Repo: `git@github.com:y344shi/luminous.git`  ·  app at `dreams/seize_the_day`
 
-## branch `luminous-craft` — 47 commits
+## branch `luminous-craft` — 48 commits
 
 | date | commit | change |
 | --- | --- | --- |
+| 2026-06-26 | `43f77d8` | craft 1: Committed-history + richer Notion-loadable timeline |
 | 2026-06-26 | `a714805` | Docs: regenerate TIMELINE.md |
 | 2026-06-26 | `88aa84b` | Overnight machine: 3-direction plan, committed-history rule, timeline, gallery, shots |
 | 2026-06-26 | `d947dce` | Cycle 41: Lucide line-icons + scene-reflecting warm background |
@@ -56,10 +57,11 @@ Repo: `git@github.com:y344shi/luminous.git`  ·  app at `dreams/seize_the_day`
 | 2026-06-25 | `4643eb6` | Add project guide + overnight tick playbook for autonomous cycles |
 | 2026-06-25 | `730b76f` | Cycle 1: 《今天别消失》web MVP — full core loop alive |
 
-## branch `luminous-glass` — 47 commits
+## branch `luminous-glass` — 48 commits
 
 | date | commit | change |
 | --- | --- | --- |
+| 2026-06-26 | `20f997c` | glass 1: Liquid-glass refraction (SVG turbulence + displacement) |
 | 2026-06-26 | `a714805` | Docs: regenerate TIMELINE.md |
 | 2026-06-26 | `88aa84b` | Overnight machine: 3-direction plan, committed-history rule, timeline, gallery, shots |
 | 2026-06-26 | `d947dce` | Cycle 41: Lucide line-icons + scene-reflecting warm background |
@@ -108,10 +110,11 @@ Repo: `git@github.com:y344shi/luminous.git`  ·  app at `dreams/seize_the_day`
 | 2026-06-25 | `4643eb6` | Add project guide + overnight tick playbook for autonomous cycles |
 | 2026-06-25 | `730b76f` | Cycle 1: 《今天别消失》web MVP — full core loop alive |
 
-## branch `luminous-sense` — 47 commits
+## branch `luminous-sense` — 48 commits
 
 | date | commit | change |
 | --- | --- | --- |
+| 2026-06-26 | `ac4c13b` | sense 1: Scene wallpaper — richer mesh gradients + curated-image seam |
 | 2026-06-26 | `a714805` | Docs: regenerate TIMELINE.md |
 | 2026-06-26 | `88aa84b` | Overnight machine: 3-direction plan, committed-history rule, timeline, gallery, shots |
 | 2026-06-26 | `d947dce` | Cycle 41: Lucide line-icons + scene-reflecting warm background |

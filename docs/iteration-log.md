@@ -927,3 +927,11 @@ What still feels wrong / not done yet:
   displacement). `.glass-refract` inner layer warps a caustic highlight inside
   each bubble + the orb → light bends like real glass. Reduced-motion: filter off.
 - Rendered on Home; 214 tests green; typecheck + build clean. Branch luminous-glass.
+
+---
+
+## glass 2 (A2): Caustic edge light
+- The iridescent rim now slowly hue-rotates (`tdd-rim-hue`) for a living caustic
+  shimmer, and a bright specular **glint** sweeps across each primary bubble + the
+  orb (`.glass-glint::before`, staggered per-bubble via `--gd`). Reduced-motion off.
+- 214 tests green; typecheck + build clean. Branch luminous-glass.
