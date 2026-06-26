@@ -919,3 +919,12 @@ What still feels wrong / not done yet:
 - `backdrop-filter` / `color-mix` / conic-mask need a modern browser (graceful:
   the translucent gradient still reads as glass if a filter is unsupported).
 - Could add a one-time page-load "settle" stagger for the bubbles.
+
+---
+
+## sense 1 (B1): Scene wallpaper upgrade
+- Upgraded each scene's background to a richer layered **mesh gradient**
+  (wallpaper-grade) in `lib/sceneBackground.ts`; added a curated-photo **seam**
+  (`NEXT_PUBLIC_SCENE_IMAGES` JSON → scene→url, no hardcoded key). When set, the
+  photo layers over the gradient (soft-light, blurred) under the theme scrim;
+  otherwise the gradient shows. New `sceneBackground.test.ts`. 216 tests green.

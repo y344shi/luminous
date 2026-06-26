@@ -32,6 +32,15 @@ export default function SceneBackground() {
         className="absolute inset-0 transition-[background] duration-[1200ms] ease-in-out"
         style={{ background: v.gradient }}
       />
+      {/* curated photo for this scene, when configured (NEXT_PUBLIC_SCENE_IMAGES) */}
+      {v.image && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={v.image}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover opacity-55 [filter:blur(2px)_saturate(1.05)] mix-blend-soft-light"
+        />
+      )}
       {/* theme scrim — ties the wallpaper to the active theme + keeps legibility */}
       <div
         className="absolute inset-0"

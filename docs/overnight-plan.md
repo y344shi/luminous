@@ -27,7 +27,7 @@ push the branch. Small > grand. Revert rather than leave red.
 - [ ] A7. Page-load choreography: bubbles condense out of light into place (staggered).
 
 ## B · Living World  (branch `luminous-sense`)
-- [ ] B1. Scene wallpaper upgrade: curated high-res images per scene (Unsplash/Pexels seam, env-keyed), gradient fallback.
+- [x] B1. Scene wallpaper: richer layered mesh gradients per scene + a curated-image seam (`NEXT_PUBLIC_SCENE_IMAGES` JSON, no hardcoded key); photo layers over the gradient under a theme scrim when configured. _(sense 1)_
 - [ ] B2. 3D/parallax scene layer (CSS 3D transform or a tiny Spline/three embed) for top scenes.
 - [ ] B3. Floating nav map: Overpass nearby cafés → true bearing + distance arrow to the nearest Starbucks, as glass markers.
 - [ ] B4. Weather signal (open-meteo, key-free): scene + tint react to rain/sun/cloud.
