@@ -37,7 +37,7 @@ push the branch. Small > grand. Revert rather than leave red.
 
 ## C · Calm Ritual  (branch `luminous-craft`)
 - [x] C1. Committed-history discipline + Notion-loadable `docs/TIMELINE.md` (now with a Summary: commit count, branches, date span, plan/gallery links); `npm run timeline`; robust from any cwd. _(craft 1)_
-- [ ] C2. A second aesthetic: a "warm paper / field-notebook" Home — tactile, hand-drawn, slow — to compare against glass.
+- [x] C2. Warm-paper / field-notebook Home (`PaperHome`): a ruled-paper sheet, wishes as tilted hand-laid notes in a brush-script face (`.hand`), same loop underneath. A real counter-aesthetic to glass. _(craft 2)_
 - [ ] C3. Gentle haptics + optional soft chime on complete (`navigator.vibrate`).
 - [ ] C4. Shareable keepsake: render today's trace to a beautiful image card (canvas → PNG).
 - [ ] C5. Performance + a11y on the field: pause rAF when hidden, reduced-motion static layout, focus order, caps.

@@ -927,3 +927,12 @@ What still feels wrong / not done yet:
   project dir), and now writes a **Summary** (unique commits, branches, date
   span, links to plan + gallery) above per-branch tables. Added `npm run timeline`.
 - Committed-history rule already in CLAUDE.md; this makes the artifact first-class.
+
+---
+
+## craft 2 (C2): Warm-paper / field-notebook Home
+- New `PaperHome` (+ `.paper` ruled sheet, `.paper-note` taped cards, `--font-hand`
+  brush-script): today's wishes are hand-laid notes on warm ruled paper; tap a note
+  → do a little → a "✍ 今天没有消失…" line is written on the page. Same recommend +
+  trace loop underneath. craft Home now uses it (a counter-aesthetic to glass).
+- New paperHome.test.tsx (2); 216 tests green; typecheck + build clean.
