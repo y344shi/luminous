@@ -1412,3 +1412,13 @@ What still feels wrong / not done yet:
   is already clean; the guard locks the invariant so a future edit can't silently
   reintroduce an app dependency that would break RN/iOS portability. +24 tests (296);
   typecheck clean; build green; no behavior change.
+
+---
+
+## core 38: Docs reflect @core + package exports
+- After the extraction, the auto-loaded guide still said domain logic lived in lib/.
+  Updated CLAUDE.md + README Layout: the framework-free domain is @luminous/core
+  (packages/core), lib/ is the platform boundary; fixed the lib/copy.ts → packages/
+  core/copy.ts reference. Added a subpath `exports` map ("./*": "./*.ts") to the
+  package so a future RN/iOS workspace can import @luminous/core/<module> (inert for
+  web, which uses the @core/* alias). 296 tests; typecheck clean; build green.

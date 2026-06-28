@@ -46,7 +46,10 @@ npm run build      # next build — all routes compile
 Node 22+. (On WSL: `export PATH="$HOME/.local/bin:$PATH"`.)
 
 ## Layout
-- `lib/` — pure, React-free domain logic (scoring is `rng`-injectable & tested).
+- `packages/core/` — **`@luminous/core`**: the framework-free domain (recommender,
+  sensor fusion, ambient/context, seed parsing, traces). Imported via `@core/*`;
+  guarded React-free *and* app-free — the shared brain for a future RN/iOS build.
+- `lib/` — the platform boundary only (`store`, `storage`, browser/UI helpers).
 - `components/` — UI, grouped by feature; `home/shared` holds the field, sensing
   hooks, and illustration packs; `home/skins` holds the three looks.
 - `app/` — routes. `docs/` — living documentation. `tests/` — Vitest.
