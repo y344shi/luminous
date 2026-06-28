@@ -76,7 +76,7 @@ struct HomeView: View {
                 }
                 .padding(Spacing.lg)
             }
-            .themedScreen()
+            .background(GlassField().ignoresSafeArea())
             .hiddenNavBar()
             .navigationDestination(for: Route.self) { route in
                 switch route {
