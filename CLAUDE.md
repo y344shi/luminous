@@ -4,6 +4,20 @@ An AI **life-anchor** app (NOT a todo/productivity app). It catches a soft wish
 (a *Seed*) and hands it back at the right moment so that today didn't completely
 disappear. Read `docs/product-philosophy.md` before changing tone or copy.
 
+## ⛔️ NEVER switch git branches while Xcode has the project open (hard rule)
+Running `git checkout` / `git switch` (or any `merge` / `rebase` / `cherry-pick` /
+`stash` that rewrites files under `net/luminous/ios/`) **while the Xcode project is
+open corrupts Xcode's project + index state and has broken the workstation.** Do not
+do it. Concretely:
+- Do **not** check out a different branch in the live Xcode working copy. Stay on the
+  branch the user has open and make **additive commits** there.
+- For multi-branch direction work (`glass` / `sense` / `craft`), give each branch its
+  **own folder** with `git worktree add ../luminous-<dir> <branch>` and open only one
+  in Xcode at a time — never swap branches under the open project.
+- Before any unavoidable branch-changing git op, **stop and ask the user to close
+  Xcode first**, and confirm the working tree is clean.
+- Read-only git (`status`, `log`, `branch`, `diff`, `ls-files`) is always fine.
+
 ## Run / verify
 ```bash
 export PATH="$HOME/.local/bin:$PATH"   # Linux node v22 lives here (env's default node is Windows-only)
