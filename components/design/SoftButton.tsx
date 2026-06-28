@@ -1,6 +1,6 @@
 "use client";
 
-import { cx } from "@/lib/utils";
+import { cx } from "@core/utils";
 
 type Variant = "primary" | "soft" | "ghost";
 

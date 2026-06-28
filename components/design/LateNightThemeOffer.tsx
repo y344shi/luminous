@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useStore } from "@/lib/store";
 import { storage } from "@/lib/storage";
 import { copy } from "@/lib/copy";
-import { localDateKey } from "@/lib/utils";
+import { localDateKey } from "@core/utils";
 import { isLateNightHour } from "@/lib/semanticTime";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";

@@ -1,6 +1,6 @@
 import type { Seed, DailyTrace, Settings, ThemeName, Mood, Energy } from "./types";
 import { deserializeSeeds, deserializeTraces } from "./serialize";
-import type { Coords } from "./geo";
+import type { Coords } from "@core/geo";
 
 export type LastPick = { mood?: Mood; energy?: Energy };
 

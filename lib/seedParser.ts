@@ -5,7 +5,7 @@ import type {
   LocationType,
   SemanticTime,
 } from "./types";
-import { uid, nowIso } from "./utils";
+import { uid, nowIso } from "@core/utils";
 import { mockSeeds, type SeedTemplate } from "./mockSeeds";
 
 export type SeedDraft = SeedTemplate;

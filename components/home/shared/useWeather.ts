@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Coords } from "@/lib/geo";
+import type { Coords } from "@core/geo";
 import { buildOpenMeteoUrl, parseOpenMeteo, classifyWeather, type WeatherKind } from "@/lib/weather";
 
 /**

@@ -1353,3 +1353,11 @@ What still feels wrong / not done yet:
   Updated the 9 importers; extended corePurity to scan packages/core too. Incremental
   by design — more modules follow one safe slice per tick. 272 tests; all skins build
   green; no behavior/visual change.
+
+---
+
+## core 32: packages/core slice 2 (utils + geo)
+- Moved the next two zero-dependency leaves — lib/utils + lib/geo — into packages/core
+  via git mv; rewrote 25 importers (@/lib/* and ./* → @core/*). @core now holds
+  sensors/dwell/battery/utils/geo. Purity guard already covers the dir. 272 tests; all
+  skins build green; no behavior/visual change. Next keystone: types.

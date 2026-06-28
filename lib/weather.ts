@@ -1,4 +1,4 @@
-import type { Coords } from "./geo";
+import type { Coords } from "@core/geo";
 
 /**
  * Coarse weather via open-meteo (free, key-free, no token). Pure helpers; the

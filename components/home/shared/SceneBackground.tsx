@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { guessLocation, orbScene } from "@/lib/ambient";
 import { sceneVisual, type SceneVisual } from "@/lib/sceneBackground";
 import { useStore } from "@/lib/store";
-import { roundCoarse } from "@/lib/geo";
+import { roundCoarse } from "@core/geo";
 import {
   buildOpenMeteoUrl,
   parseOpenMeteo,

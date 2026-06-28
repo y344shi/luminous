@@ -2,7 +2,7 @@
 
 import { useStore } from "@/lib/store";
 import { themes, themeMeta, themeOrder } from "@/lib/themes";
-import { cx } from "@/lib/utils";
+import { cx } from "@core/utils";
 
 export default function ThemeSwitcher() {
   const current = useStore((s) => s.settings.theme);

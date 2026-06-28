@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useStore } from "@/lib/store";
 import { copy } from "@/lib/copy";
-import { localDateKey } from "@/lib/utils";
+import { localDateKey } from "@core/utils";
 import { wrapByWidth, keepsakeFilename } from "@/lib/keepsake";
 import SoftButton from "@/components/design/SoftButton";
 

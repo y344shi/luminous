@@ -6,7 +6,7 @@ import type { LocationType, Opportunity, SeedCategory } from "@/lib/types";
 import { useStore, findSeed } from "@/lib/store";
 import { recommend } from "@/lib/scoring";
 import { buildAmbientContext, guessLocation, ambientLabel, orbScene } from "@/lib/ambient";
-import { roundCoarse, isAtHome, isMovingSpeed, type Coords } from "@/lib/geo";
+import { roundCoarse, isAtHome, isMovingSpeed, type Coords } from "@core/geo";
 import { buildTrace, type CompletionKind } from "@/lib/traceGenerator";
 import { step, type Body } from "@/lib/bubblePhysics";
 import { copy } from "@/lib/copy";
@@ -15,7 +15,7 @@ import { IllustrationArt } from "./illustrationPacks";
 import { distinctIllustrationCategory } from "@/lib/illustration";
 import { weatherTint } from "@/lib/weather";
 import { useSensedSignals } from "./useSensedSignals";
-import { cx } from "@/lib/utils";
+import { cx } from "@core/utils";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 

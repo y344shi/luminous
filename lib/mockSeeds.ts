@@ -1,5 +1,5 @@
 import type { Seed, SeedCategory, Energy, LocationType, SemanticTime } from "./types";
-import { uid, nowIso } from "./utils";
+import { uid, nowIso } from "@core/utils";
 
 export type SeedTemplate = {
   title: string;

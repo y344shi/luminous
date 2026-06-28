@@ -1,5 +1,5 @@
 import type { DailyTrace } from "./types";
-import { friendlyDate } from "./utils";
+import { friendlyDate } from "@core/utils";
 import { copy } from "./copy";
 
 /**

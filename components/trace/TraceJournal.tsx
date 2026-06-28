@@ -6,7 +6,7 @@ import TraceCard from "./TraceCard";
 import EmptyState from "@/components/design/EmptyState";
 import ConfirmSheet from "@/components/design/ConfirmSheet";
 import { copy } from "@/lib/copy";
-import { friendlyDate } from "@/lib/utils";
+import { friendlyDate } from "@core/utils";
 import type { DailyTrace } from "@/lib/types";
 
 function groupByDate(traces: DailyTrace[]): [string, DailyTrace[]][] {

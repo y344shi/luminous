@@ -13,9 +13,9 @@ import type {
   Energy,
 } from "./types";
 import { storage, defaultSettings, type LastPick } from "./storage";
-import type { Coords } from "./geo";
+import type { Coords } from "@core/geo";
 import { seedMockGarden } from "./mockSeeds";
-import { localDateKey } from "./utils";
+import { localDateKey } from "@core/utils";
 
 type Store = {
   hydrated: boolean;

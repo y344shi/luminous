@@ -9,7 +9,7 @@ import { buildAmbientContext, guessLocation, ambientLabel } from "@/lib/ambient"
 import { buildTrace, type CompletionKind } from "@/lib/traceGenerator";
 import { copy } from "@/lib/copy";
 import { completeFeedback } from "@/lib/feedback";
-import { cx } from "@/lib/utils";
+import { cx } from "@core/utils";
 import { CategoryGlyph } from "../shared/glyphs";
 import PressedFlower from "./PressedFlower";
 import { useSensedSignals } from "../shared/useSensedSignals";

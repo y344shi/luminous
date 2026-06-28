@@ -6,7 +6,7 @@ import type {
   Mood,
   SeedCategory,
 } from "./types";
-import { uid, nowIso, clamp } from "./utils";
+import { uid, nowIso, clamp } from "@core/utils";
 import { dwellLevel } from "@core/dwell";
 
 const energyRank: Record<Energy, number> = { low: 0, medium: 1, high: 2 };

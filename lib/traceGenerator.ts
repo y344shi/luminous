@@ -1,5 +1,5 @@
 import type { Seed, DailyTrace, SeedCategory } from "./types";
-import { uid, nowIso, localDateKey } from "./utils";
+import { uid, nowIso, localDateKey } from "@core/utils";
 import { copy } from "./copy";
 
 export type CompletionKind = "completed" | "partial" | "skipped";
