@@ -8,6 +8,7 @@ import { buildContext } from "@/lib/context";
 import { recommend } from "@/lib/scoring";
 import { buildTrace, buildRestTrace, type CompletionKind } from "@/lib/traceGenerator";
 import { copy } from "@/lib/copy";
+import { completeFeedback } from "@/lib/feedback";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 import EmptyState from "@/components/design/EmptyState";
@@ -30,6 +31,7 @@ export default function NowFlow() {
   const addTrace = useStore((s) => s.addTrace);
   const updateTrace = useStore((s) => s.updateTrace);
   const updateSeed = useStore((s) => s.updateSeed);
+  const soundEnabled = useStore((s) => s.settings.soundEnabled);
   const hydrated = useStore((s) => s.hydrated);
   const lastPick = useStore((s) => s.lastPick);
   const rememberPick = useStore((s) => s.rememberPick);
@@ -101,6 +103,7 @@ export default function NowFlow() {
     }
     const trace = buildTrace(seed, kind, chosen?.id);
     addTrace(trace);
+    completeFeedback(soundEnabled);
     if (seed && kind === "completed") {
       updateSeed(seed.id, { status: "sleeping" });
     }

@@ -24,6 +24,7 @@ export const defaultSettings: Settings = {
   quietHoursEnd: 8,
   maxRemindersPerDay: 3,
   nudgesEnabled: false,
+  soundEnabled: false,
 };
 
 export type RemindersToday = { date: string; count: number };
