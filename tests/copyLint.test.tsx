@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import { copy, forbiddenWords } from "@/lib/copy";
+import { copy, forbiddenWords } from "@core/copy";
 import { useStore } from "@/lib/store";
 import { seedMockGarden } from "@/lib/mockSeeds";
 

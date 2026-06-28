@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useStore } from "@/lib/store";
 import SeedCard from "./SeedCard";
 import EmptyState from "@/components/design/EmptyState";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 
 export default function SeedGarden() {
   const seeds = useStore((s) => s.seeds);

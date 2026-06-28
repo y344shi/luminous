@@ -1,6 +1,6 @@
 import PageHeader from "@/components/design/PageHeader";
 import SettingsPanel from "@/components/settings/SettingsPanel";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 
 export default function SettingsPage() {
   return (

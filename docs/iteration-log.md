@@ -1371,3 +1371,13 @@ What still feels wrong / not done yet:
   sensors/dwell/battery/utils/geo/types/aesthetic. With types in core, the dependent
   pure modules can follow. 272 tests; typecheck clean; all skins build green; no
   behavior change.
+
+---
+
+## core 34: packages/core slice 4 (recommender + pure helpers)
+- Moved semanticTime/categoryMeta/copy/illustration/weather/scoring into packages/core
+  (52 importers rewritten). All imported only @core already, so no back-edges. @core
+  now holds 13 modules incl. the recommender (scoring). Remaining lib pure domain
+  (context/ambient/mockSeeds/seedParser/traceGenerator) follows next; storage+store
+  stay app-side (the platform boundary). 272 tests; typecheck clean; all skins build
+  green; no behavior change.

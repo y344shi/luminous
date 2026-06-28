@@ -1,6 +1,6 @@
 import type { DailyTrace } from "@core/types";
 import { friendlyDate } from "@core/utils";
-import { copy } from "./copy";
+import { copy } from "@core/copy";
 
 /**
  * Render the trace journal as a plain-text keepsake — the user's "year rings",

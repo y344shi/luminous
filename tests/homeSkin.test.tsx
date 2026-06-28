@@ -3,7 +3,7 @@ import { render, screen, cleanup } from "@testing-library/react";
 import { useStore } from "@/lib/store";
 import { defaultSettings } from "@/lib/storage";
 import { seedMockGarden } from "@/lib/mockSeeds";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 import HomeSkin from "@/components/home/HomeSkin";
 
 vi.mock("next/navigation", () => ({

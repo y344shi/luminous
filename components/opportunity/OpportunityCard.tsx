@@ -1,10 +1,10 @@
 import type { Opportunity, Seed } from "@core/types";
-import { energyLabel } from "@/lib/categoryMeta";
-import { copy } from "@/lib/copy";
+import { energyLabel } from "@core/categoryMeta";
+import { copy } from "@core/copy";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 import { IllustrationArt } from "@/components/home/shared/illustrationPacks";
-import { illustrationCategory } from "@/lib/illustration";
+import { illustrationCategory } from "@core/illustration";
 
 export default function OpportunityCard({
   opportunity,

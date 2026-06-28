@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { isBatteryLow } from "@core/battery";
-import { batteryBonus } from "@/lib/scoring";
+import { batteryBonus } from "@core/scoring";
 import type { Seed, ContextSnapshot } from "@core/types";
 
 describe("battery model", () => {

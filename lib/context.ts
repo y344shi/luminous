@@ -1,6 +1,6 @@
 import type { ContextSnapshot, Energy, Mood, LocationType } from "@core/types";
 import { nowIso } from "@core/utils";
-import { isLateNightHour, isWeekend, semanticTimeFromDate } from "./semanticTime";
+import { isLateNightHour, isWeekend, semanticTimeFromDate } from "@core/semanticTime";
 
 export type ContextInput = {
   mood: Mood;

@@ -4,14 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { copy } from "@/lib/copy";
-import { categoryMeta, energyLabel, durationLabel } from "@/lib/categoryMeta";
+import { copy } from "@core/copy";
+import { categoryMeta, energyLabel, durationLabel } from "@core/categoryMeta";
 import type { SeedStatus } from "@core/types";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 import EmptyState from "@/components/design/EmptyState";
 import { IllustrationArt } from "@/components/home/shared/illustrationPacks";
-import { illustrationCategory } from "@/lib/illustration";
+import { illustrationCategory } from "@core/illustration";
 
 const statusText: Record<SeedStatus, string> = {
   active: copy.seedDetail.statusActive,

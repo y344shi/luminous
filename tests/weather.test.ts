@@ -5,7 +5,7 @@ import {
   classifyWeather,
   weatherTint,
   weatherLabel,
-} from "@/lib/weather";
+} from "@core/weather";
 
 describe("weather", () => {
   it("builds a key-free open-meteo url", () => {

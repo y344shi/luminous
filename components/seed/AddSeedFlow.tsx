@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { draftToSeed, type SeedDraft } from "@/lib/seedParser";
 import { parseSeed } from "@/lib/aiParser";
 import { useStore } from "@/lib/store";
-import { copy } from "@/lib/copy";
-import { durationLabel } from "@/lib/categoryMeta";
+import { copy } from "@core/copy";
+import { durationLabel } from "@core/categoryMeta";
 import { IllustrationArt } from "@/components/home/shared/illustrationPacks";
-import { illustrationCategory } from "@/lib/illustration";
+import { illustrationCategory } from "@core/illustration";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 

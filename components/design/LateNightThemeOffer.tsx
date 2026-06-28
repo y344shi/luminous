@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useStore } from "@/lib/store";
 import { storage } from "@/lib/storage";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 import { localDateKey } from "@core/utils";
-import { isLateNightHour } from "@/lib/semanticTime";
+import { isLateNightHour } from "@core/semanticTime";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 

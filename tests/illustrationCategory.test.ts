@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { illustrationCategory, distinctIllustrationCategory } from "@/lib/illustration";
+import { illustrationCategory, distinctIllustrationCategory } from "@core/illustration";
 import type { SeedCategory } from "@core/types";
 
 describe("illustrationCategory", () => {

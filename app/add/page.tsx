@@ -1,6 +1,6 @@
 import PageHeader from "@/components/design/PageHeader";
 import AddSeedFlow from "@/components/seed/AddSeedFlow";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 
 export default function AddPage() {
   return (

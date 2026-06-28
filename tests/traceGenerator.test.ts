@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { generateTraceText, buildTrace, buildRestTrace } from "@/lib/traceGenerator";
 import { materializeSeed, mockSeeds } from "@/lib/mockSeeds";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 
 const seed = materializeSeed(mockSeeds[1]); // 坐一会野外 (recovery)
 

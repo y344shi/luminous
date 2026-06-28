@@ -1,8 +1,8 @@
 import type { ContextSnapshot, LocationType, Energy } from "@core/types";
 import { buildContext } from "./context";
-import { semanticTimeFromHour, isWeekend } from "./semanticTime";
+import { semanticTimeFromHour, isWeekend } from "@core/semanticTime";
 import { dwellLevel } from "@core/dwell";
-import { weatherLabel, type WeatherKind } from "./weather";
+import { weatherLabel, type WeatherKind } from "@core/weather";
 
 /**
  * Ambient context: what the app can sense on its own when you open Home —

@@ -11,7 +11,7 @@ import {
   classifyWeather,
   weatherTint,
   type WeatherKind,
-} from "@/lib/weather";
+} from "@core/weather";
 import { dayPhase, dayGradeTint, type DayPhase } from "@/lib/dayGrade";
 
 function isMobileDevice(): boolean {

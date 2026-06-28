@@ -1,8 +1,8 @@
 import type { Seed } from "@core/types";
-import { categoryMeta, energyLabel, durationLabel } from "@/lib/categoryMeta";
+import { categoryMeta, energyLabel, durationLabel } from "@core/categoryMeta";
 import BreathingCard from "@/components/design/BreathingCard";
 import { IllustrationArt } from "@/components/home/shared/illustrationPacks";
-import { illustrationCategory } from "@/lib/illustration";
+import { illustrationCategory } from "@core/illustration";
 
 const statusLabel: Record<Seed["status"], string> = {
   active: "在等一个时机",

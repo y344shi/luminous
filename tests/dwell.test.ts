@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { dwellLevel, advanceDwell } from "@core/dwell";
-import { dwellBonus } from "@/lib/scoring";
+import { dwellBonus } from "@core/scoring";
 import type { Seed, ContextSnapshot } from "@core/types";
 
 describe("dwell model", () => {

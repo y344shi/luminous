@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useStore } from "@/lib/store";
 import { storage, type RemindersToday } from "@/lib/storage";
 import { buildAmbientContext, guessLocation } from "@/lib/ambient";
-import { recommend } from "@/lib/scoring";
+import { recommend } from "@core/scoring";
 import { shouldNudge, bumpReminders, nudgeText } from "@/lib/nudge";
 
 const CHECK_EVERY_MS = 5 * 60 * 1000; // every 5 minutes

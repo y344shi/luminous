@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useStore } from "@/lib/store";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 import { cx } from "@core/utils";
 import { isQuietNow } from "@/lib/reminders";
 import BreathingCard from "@/components/design/BreathingCard";

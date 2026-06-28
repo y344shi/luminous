@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Coords } from "@core/geo";
-import { buildOpenMeteoUrl, parseOpenMeteo, classifyWeather, type WeatherKind } from "@/lib/weather";
+import { buildOpenMeteoUrl, parseOpenMeteo, classifyWeather, type WeatherKind } from "@core/weather";
 
 /**
  * Coarse current weather for a *saved, coarse* location (open-meteo, key-free). Only

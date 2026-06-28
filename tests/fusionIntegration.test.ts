@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { recommend } from "@/lib/scoring";
+import { recommend } from "@core/scoring";
 import { ctx, fixedRng } from "./helpers";
 import type { Seed } from "@core/types";
 

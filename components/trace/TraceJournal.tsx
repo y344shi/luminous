@@ -5,7 +5,7 @@ import { useStore } from "@/lib/store";
 import TraceCard from "./TraceCard";
 import EmptyState from "@/components/design/EmptyState";
 import ConfirmSheet from "@/components/design/ConfirmSheet";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 import { friendlyDate } from "@core/utils";
 import type { DailyTrace } from "@core/types";
 

@@ -2,7 +2,7 @@ import PageHeader from "@/components/design/PageHeader";
 import TraceJournal from "@/components/trace/TraceJournal";
 import TraceExport from "@/components/trace/TraceExport";
 import KeepsakeButton from "@/components/trace/KeepsakeButton";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 
 export default function TracesPage() {
   return (

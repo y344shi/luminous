@@ -12,7 +12,7 @@ import NowFlow from "@/components/opportunity/NowFlow";
 import SettingsPanel from "@/components/settings/SettingsPanel";
 import AddSeedFlow from "@/components/seed/AddSeedFlow";
 import SeedDetail from "@/components/seed/SeedDetail";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 
 beforeEach(() => {
   window.localStorage.clear();

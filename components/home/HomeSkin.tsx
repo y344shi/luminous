@@ -2,7 +2,7 @@
 
 import { useStore } from "@/lib/store";
 import { AESTHETIC } from "@core/aesthetic";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 import LateNightThemeOffer from "@/components/design/LateNightThemeOffer";
 import IntroCard from "@/components/IntroCard";
 import GlassField from "./skins/GlassField";

@@ -4,7 +4,7 @@ import { useDwell } from "./useDwell";
 import { useWeather, isGoodOutdoorWeather } from "./useWeather";
 import { useBattery } from "./useBattery";
 import type { Activity, Ambient } from "@core/sensors";
-import type { WeatherKind } from "@/lib/weather";
+import type { WeatherKind } from "@core/weather";
 
 export type SensedSignals = {
   activity: Activity | undefined;

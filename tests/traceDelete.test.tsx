@@ -3,7 +3,7 @@ import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { useStore } from "@/lib/store";
 import { buildTrace } from "@/lib/traceGenerator";
 import { materializeSeed, mockSeeds } from "@/lib/mockSeeds";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),

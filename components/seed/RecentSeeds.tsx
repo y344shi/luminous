@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useStore } from "@/lib/store";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 import { IllustrationArt } from "@/components/home/shared/illustrationPacks";
-import { illustrationCategory } from "@/lib/illustration";
+import { illustrationCategory } from "@core/illustration";
 import BreathingCard from "@/components/design/BreathingCard";
 
 export default function RecentSeeds() {

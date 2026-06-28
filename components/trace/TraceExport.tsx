@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useStore } from "@/lib/store";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 import { formatTracesForExport } from "@/lib/exportTraces";
 import SoftButton from "@/components/design/SoftButton";
 
