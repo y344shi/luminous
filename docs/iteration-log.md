@@ -1314,3 +1314,12 @@ What still feels wrong / not done yet:
   mic opt-in handles). All three consumers now read the bundle; adding a sense touches
   one file. Behavior-neutral; 271 tests; all skins build green. Also tidies the path
   toward packages/core (one portable seam).
+
+---
+
+## core 29: End-to-end sensor-fusion test
+- The per-signal bonuses were unit-tested alone; nothing proved they compose through
+  scoreSeed → rankSeeds → recommend. New fusionIntegration.test: a weary context
+  (deskMinutesToday 220 + batteryLow) provably raises a restful wish's score, lowers a
+  focus wish's, and surfaces rest first — a differential vs the neutral context. Guards
+  the whole fusion pipeline. 272 tests; build green.
