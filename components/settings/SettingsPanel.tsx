@@ -9,6 +9,7 @@ import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 import ThemeSwitcher from "@/components/design/ThemeSwitcher";
 import ConfirmSheet from "@/components/design/ConfirmSheet";
+import { illustrationStyles, StylePreview } from "./IllustrationStyles";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -168,6 +169,36 @@ export default function SettingsPanel() {
             />
           </button>
         </BreathingCard>
+      </Section>
+
+      <Section title={copy.settings.illustrationLabel}>
+        <p className="-mt-1 mb-2 text-[12px] text-[var(--text-muted)]">
+          {copy.settings.illustrationHelp}
+        </p>
+        <div className="grid grid-cols-2 gap-2.5">
+          {illustrationStyles.map((st) => {
+            const on = settings.illustrationStyle === st.key;
+            return (
+              <button
+                key={st.key}
+                onClick={() => updateSettings({ illustrationStyle: st.key })}
+                aria-pressed={on}
+                className={cx(
+                  "flex flex-col gap-1.5 rounded-2xl border p-2 text-left transition-colors",
+                  on
+                    ? "border-[var(--accent)] bg-[var(--accent-soft)]"
+                    : "border-[var(--border)] bg-[var(--surface)]"
+                )}
+              >
+                <span className="h-16 w-full overflow-hidden rounded-xl bg-[var(--surface-soft)]">
+                  <StylePreview art={st.art} />
+                </span>
+                <span className="text-[13px] font-medium text-[var(--text)]">{st.name}</span>
+                <span className="text-[11px] text-[var(--text-muted)]">{st.note}</span>
+              </button>
+            );
+          })}
+        </div>
       </Section>
 
       <Section title={copy.settings.nudgeLabel}>

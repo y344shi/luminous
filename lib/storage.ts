@@ -28,6 +28,7 @@ export const defaultSettings: Settings = {
   nudgesEnabled: false,
   soundEnabled: false,
   senseAround: false,
+  illustrationStyle: "opendoodles",
   aesthetic: AESTHETIC,
 };
 

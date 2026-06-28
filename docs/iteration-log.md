@@ -1116,3 +1116,12 @@ What still feels wrong / not done yet:
   `docs/scene-library.md` (Open Doodles CC0, Storyset, Pixeltrue, Blush, DrawKit,
   Humaaans/Open Peeps, unDraw, big banks) + the small-size caveat + integration
   notes. Groundwork for the "art figure / lifestyle" icon direction. Docs-only.
+
+---
+
+## core 12: Illustration-style picker (8 library swatches in Settings)
+- New `settings.illustrationStyle` + a Settings section "插画风格" with 8 hand-painted
+  SVG swatches, each evoking a library's signature look (Open Doodles loose line,
+  Storyset flat, Pixeltrue pastel, Blush painterly, Humaaans/Open Peeps figures,
+  unDraw mono-accent, DrawKit soft duotone). Persists the choice; wiring the picked
+  style onto the wishes is the next step. 251 tests green.

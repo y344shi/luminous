@@ -127,5 +127,6 @@ export type Settings = {
   nudgesEnabled: boolean;
   soundEnabled: boolean;
   senseAround: boolean;
+  illustrationStyle: string;
   aesthetic: import("./aesthetic").Aesthetic;
 };

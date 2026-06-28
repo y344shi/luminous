@@ -121,6 +121,8 @@ export const copy = {
     themeLabel: "外观",
     aiLabel: "AI 模式",
     skinLabel: "外观风格",
+    illustrationLabel: "插画风格",
+    illustrationHelp: "选一种你喜欢的画风，之后会用在每个小愿望上。",
     skinGlass: "琉璃",
     skinOcean: "海洋",
     skinPaper: "纸页",
