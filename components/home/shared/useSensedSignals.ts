@@ -1,0 +1,42 @@
+import { useStore } from "@/lib/store";
+import { useSensors } from "./useSensors";
+import { useDwell } from "./useDwell";
+import { useWeather, isGoodOutdoorWeather } from "./useWeather";
+import { useBattery } from "./useBattery";
+import type { Activity, Ambient } from "@/lib/sensors";
+import type { WeatherKind } from "@/lib/weather";
+
+export type SensedSignals = {
+  activity: Activity | undefined;
+  ambient: Ambient | undefined;
+  ambientOn: boolean;
+  enableAmbient: () => Promise<void>;
+  deskMinutesToday: number | undefined;
+  weatherKind: WeatherKind | undefined;
+  isOutdoorWeatherGood: boolean | undefined;
+  batteryLow: boolean | undefined;
+};
+
+/**
+ * One place that fuses every passive on-device sense — motion + loudness (mic
+ * opt-in), dwell (desk time today), weather (for a saved coarse home), battery.
+ * Both home skins and the Now flow read this, so adding a sense touches one file.
+ * Each signal degrades to undefined when its source is unavailable.
+ */
+export function useSensedSignals(): SensedSignals {
+  const homeLocation = useStore((s) => s.homeLocation);
+  const { activity, ambient, ambientOn, enableAmbient } = useSensors();
+  const deskMinutesToday = useDwell();
+  const weatherKind = useWeather(homeLocation);
+  const batteryLow = useBattery();
+  return {
+    activity,
+    ambient,
+    ambientOn,
+    enableAmbient,
+    deskMinutesToday,
+    weatherKind,
+    isOutdoorWeatherGood: isGoodOutdoorWeather(weatherKind),
+    batteryLow,
+  };
+}

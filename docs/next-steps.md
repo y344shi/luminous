@@ -20,6 +20,7 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] Paper polish: notes are laid hand-by-hand (staggered `tdd-rise`), and each carries a faint **pressed-flower** mark — a botanical line-art stamp that varies by category. _(paper 3)_
 
 ## Fresh (self-review — needs a green tick each)
+- [x] Consolidated the sensing hooks into one `useSensedSignals()` (motion/loudness/dwell/weather/battery) — BubbleField, PaperHome, NowFlow all read it, so the next signal is a one-file add. Behavior-neutral. _(core 28)_
 - [x] **Now flow is sensor-aware**: /now folded the passive senses (motion/loudness/dwell/weather/battery) into its recommendation context, so the deliberate ask is as keen as the home (was using only the stated answers). _(core 27)_
 - [x] **Weather sensing wired** (was a written-but-unused helper): when a coarse home is saved, fetch open-meteo (key-free), classify, derive isOutdoorWeatherGood → lifts "step outside" wishes. On-device opt-in; never forces. _(core 24)_
 - [x] Weather shows in the day-line beside place (晴/多云/雨/雪/雾/雷雨). _(core 25)_

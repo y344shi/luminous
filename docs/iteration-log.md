@@ -1304,3 +1304,13 @@ What still feels wrong / not done yet:
   the casual home. NowFlow now reads useSensors/useDwell/useWeather/useBattery and
   spreads activity/ambient/deskMinutesToday/batteryLow + sensed weather onto the
   recommend context. Stated + sensed, everywhere. 271 tests; build green.
+
+---
+
+## core 28: One useSensedSignals() hook (DRY the fusion)
+- The passive senses were wired in three places (BubbleField, PaperHome, NowFlow),
+  each repeating ~5 hook calls. Consolidated into components/home/shared/
+  useSensedSignals() — one hook fusing motion/loudness/dwell/weather/battery (+ the
+  mic opt-in handles). All three consumers now read the bundle; adding a sense touches
+  one file. Behavior-neutral; 271 tests; all skins build green. Also tidies the path
+  toward packages/core (one portable seam).

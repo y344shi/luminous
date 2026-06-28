@@ -12,10 +12,7 @@ import { completeFeedback } from "@/lib/feedback";
 import { cx } from "@/lib/utils";
 import { CategoryGlyph } from "../shared/glyphs";
 import PressedFlower from "./PressedFlower";
-import { useSensors } from "../shared/useSensors";
-import { useDwell } from "../shared/useDwell";
-import { useWeather, isGoodOutdoorWeather } from "../shared/useWeather";
-import { useBattery } from "../shared/useBattery";
+import { useSensedSignals } from "../shared/useSensedSignals";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 
@@ -39,14 +36,9 @@ export default function PaperHome() {
   const addTrace = useStore((s) => s.addTrace);
   const setSeedStatus = useStore((s) => s.setSeedStatus);
   const soundEnabled = useStore((s) => s.settings.soundEnabled);
-  const { activity, ambient, ambientOn, enableAmbient } = useSensors();
+  const { activity, ambient, ambientOn, enableAmbient, deskMinutesToday, weatherKind, isOutdoorWeatherGood, batteryLow } = useSensedSignals();
   const senseAround = useStore((s) => s.settings.senseAround);
   const updateSettings = useStore((s) => s.updateSettings);
-  const homeLocation = useStore((s) => s.homeLocation);
-  const deskMinutesToday = useDwell();
-  const weatherKind = useWeather(homeLocation);
-  const isOutdoorWeatherGood = isGoodOutdoorWeather(weatherKind);
-  const batteryLow = useBattery();
 
   const [mounted, setMounted] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
