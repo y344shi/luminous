@@ -16,6 +16,7 @@ import { IllustrationArt } from "./illustrationPacks";
 import { distinctIllustrationCategory } from "@/lib/illustration";
 import { useDwell } from "./useDwell";
 import { useWeather, isGoodOutdoorWeather } from "./useWeather";
+import { weatherTint } from "@/lib/weather";
 import { cx } from "@/lib/utils";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
@@ -325,6 +326,14 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
 
   return (
     <div ref={wrapRef} className="relative h-[72dvh] w-full">
+      {/* a soft veil tinted by the weather outside (clear adds nothing) */}
+      {weatherKind && weatherTint(weatherKind) && (
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: weatherTint(weatherKind) ?? undefined }}
+          aria-hidden
+        />
+      )}
       {/* faint drifting motes of light */}
       <div className="dream-motes" aria-hidden>
         {motes.map((m, i) => (

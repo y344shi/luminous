@@ -22,7 +22,7 @@ shipped. Keep core skin-agnostic; keep skins thin.
 ## Fresh (self-review — needs a green tick each)
 - [x] **Weather sensing wired** (was a written-but-unused helper): when a coarse home is saved, fetch open-meteo (key-free), classify, derive isOutdoorWeatherGood → lifts "step outside" wishes. On-device opt-in; never forces. _(core 24)_
 - [x] Weather shows in the day-line beside place (晴/多云/雨/雪/雾/雷雨). _(core 25)_
-- [ ] Optional: tint the scene by weather (weatherTint already written) — a visual nicety across skins.
+- [x] Weather tints the field — a soft veil (rain/snow/fog/storm/cloud) over the scene on glass/ocean; clear adds nothing. _(glass 12)_
 - [x] **Distinct wish illustrations** (user: "icons too similar"): wishes sharing a category looked identical; now the illustration varies across a wish's own categories (lib/illustration), and the 3 home cards are forced distinct. _(core 21)_
 - [x] Replaced the remaining system emojis with the illustration (Now flow / seed detail / add preview / recent list), varied by category. TraceCard stays warm. _(core 23)_
 - [x] **Dwell sensing** (smarter/temporal): tracks active minutes at the desk today (on-device, per-day localStorage); long sit → ranking favors body/rest/outside + the day-line says 坐了一会/坐了挺久. _(core 22)_
