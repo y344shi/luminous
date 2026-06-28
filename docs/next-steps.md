@@ -27,8 +27,8 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] **Per-category pack art** (API + first pack): packs can now provide `scene(category)`; Open Doodles has all 7 category scenes (book/bowl/leaf/path/pen/two-forms/bloom). Wish sheet + Settings preview pass the category. _(core 15)_
 - [x] Storyset is now category-aware (flat 7 scenes). _(core 16)_
 - [x] Pixeltrue is now category-aware (soft pastel 7 scenes). _(core 17)_
-- [ ] **Per-category art for the remaining 5 packs** (Blush/Humaaans/Open Peeps/unDraw/DrawKit) — one pack per tick; then real downloaded library assets behind the same interface.
-- [ ] Decide the home card layout (featured vs stack) for the lifestyle wishes.
+- [x] **All 8 packs category-aware** — Blush/Humaaans/Open Peeps/unDraw/DrawKit authored in parallel by 5 agents + assembled. Every wish category now has art in every style. _(core 18)_
+- [ ] **Home card = a floating bubble that's a card** (user direction): render each primary wish as a small card (illustration + title) that uses the SAME bubble physics body, not an abstract sphere. Share the physics; swap the visual.
 - [x] **Artistic glass redesign** (user: "weird, not artistic"): removed the green goo-metaball smudges; the orb is now a clean glass sphere (elegant line glyph + label) cradled in a soft **warm bloom**; fewer, on-screen bubbles. Calm + luminous. _(glass 8)_
 - [x] Sensing is now **clickable + automatic**: motion samples passively; ambient (mic) auto-resumes on load once opted-in (`settings.senseAround`, permission persists → no re-prompt); 感受周围 is the one-time trigger. _(core 11)_
 - [x] Make the sensing visible: the ambient line now surfaces the fused senses — 走着/在路上 (motion) and 周围很安静/周围有点热闹 (loudness) — so the app's keenness shows. _(core 10)_

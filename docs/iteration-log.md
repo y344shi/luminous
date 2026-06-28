@@ -1168,3 +1168,12 @@ What still feels wrong / not done yet:
   soft rounded pastel style (bowl, pencil+paper, two forms+heart, hills+sun, leaf on
   water, open book, flower). Verified in the Settings preview. 3/8 packs
   category-aware; 5 to go. 251 tests green.
+
+---
+
+## core 18: All 8 illustration packs category-aware (parallel agents)
+- Blush, Humaaans, Open Peeps, unDraw, DrawKit each authored their 7 category scenes
+  in parallel (5 subagents), assembled into illustrationPacks + wired scene(). Now
+  every wish category renders art in every one of the 8 library styles; verified
+  Humaaans (figures) in the preview. Next: home card sharing the bubble physics.
+  251 tests green.
