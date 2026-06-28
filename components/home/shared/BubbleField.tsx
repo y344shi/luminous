@@ -8,7 +8,7 @@ import { recommend } from "@/lib/scoring";
 import { buildAmbientContext, guessLocation, ambientLabel, orbScene } from "@/lib/ambient";
 import { roundCoarse, isAtHome, isMovingSpeed, type Coords } from "@/lib/geo";
 import { buildTrace, type CompletionKind } from "@/lib/traceGenerator";
-import { step, gravityFromOrientation, type Body } from "@/lib/bubblePhysics";
+import { step, type Body } from "@/lib/bubblePhysics";
 import { copy } from "@/lib/copy";
 import { CategoryGlyph, SceneGlyph } from "./glyphs";
 import SceneWindow from "./SceneWindow";
@@ -65,7 +65,6 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
   const didRiseRef = useRef(false);
   const lastAccelRef = useRef(0);
   const lastShakeRef = useRef(0);
-  const pointerRef = useRef({ px: 0, py: 0 });
   const zRef = useRef<Record<string, number>>({});
 
   const [mounted, setMounted] = useState(false);
@@ -181,13 +180,6 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
       const { w, h } = sizeRef.current;
       return { x: w / 2, y: h / 2, r: ORB_R + 6 };
     };
-    const onPointer = (e: PointerEvent) => {
-      pointerRef.current = {
-        px: e.clientX / window.innerWidth - 0.5,
-        py: e.clientY / window.innerHeight - 0.5,
-      };
-    };
-    window.addEventListener("pointermove", onPointer, { passive: true });
     function frame(t: number) {
       const dt = Math.min(last ? (t - last) / 1000 : 0.016, 0.05);
       last = t;
@@ -195,64 +187,32 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
       const bodies = bodiesRef.current;
       const tilt = tiltRef.current;
       const live = gyroOn && tilt;
-      if (buoyancy) {
-        // Floatiness: bubbles rise to their relevance-height (surface=top,
-        // floor=bottom) with a gentle bob; gyro/pointer stirs a horizontal current.
-        const sway = live
-          ? Math.max(-1, Math.min(1, (tilt.gamma ?? 0) / 45)) * 620
-          : pointerRef.current.px * 900;
-        for (const b of bodies) {
-          const home = homesRef.current[b.id];
-          if (!home) continue;
-          const ph = phaseRef.current[b.id] ?? 0;
-          const bob = Math.sin(t * 0.0011 + ph) * 5;
-          b.vx += (home.x - b.x) * 0.26 * dt + rand(-3, 3) * dt;
-          b.vy += (home.y + bob - b.y) * 0.5 * dt;
-        }
-        step(bodies, { w, h, gx: sway, gy: 0, dt, anchor: orb(), damping: 0.95, restitution: 0.5 });
-      } else if (live) {
-        const g = gravityFromOrientation(tilt.gamma, tilt.beta, 1200);
-        // Settle-to-cluster: when the device is near flat, ease bubbles gently
-        // back toward the orb instead of leaving them flung to the edges.
-        const flat = Math.abs(tilt.gamma ?? 0) + Math.abs(tilt.beta ?? 0) < 9;
-        if (flat) {
-          const c = orb();
-          for (const b of bodies) {
-            b.vx += (c.x - b.x) * 0.5 * dt;
-            b.vy += (c.y - b.y) * 0.5 * dt;
-          }
-        }
-        step(bodies, { w, h, gx: g.gx, gy: g.gy, dt, anchor: orb(), damping: 0.99, restitution: 0.78 });
-      } else {
-        for (const b of bodies) {
-          const home = homesRef.current[b.id];
-          if (home) {
-            b.vx += (home.x - b.x) * 0.42 * dt + rand(-3, 3) * dt;
-            b.vy += (home.y - b.y) * 0.42 * dt + rand(-3, 3) * dt;
-          }
-        }
-        step(bodies, { w, h, gx: 0, gy: 0, dt, anchor: orb(), damping: 0.94, restitution: 0.55 });
+      // Settle, then rest. A firm spring carries each bubble to its home and holds
+      // it there — no drift, no pointer following. On a phone, gyro tilt leans the
+      // whole cluster slightly; on desktop there is no input, so they simply rest.
+      const leanX = live ? Math.max(-1, Math.min(1, (tilt.gamma ?? 0) / 30)) * 24 : 0;
+      const leanY = live ? Math.max(-1, Math.min(1, (tilt.beta ?? 0) / 30)) * 24 : 0;
+      for (const b of bodies) {
+        const home = homesRef.current[b.id];
+        if (!home) continue;
+        const bob = buoyancy ? Math.sin(t * 0.0011 + (phaseRef.current[b.id] ?? 0)) * 3 : 0;
+        b.vx += (home.x + leanX - b.x) * 2.0 * dt;
+        b.vy += (home.y + leanY + bob - b.y) * 2.0 * dt;
       }
-      const { px, py } = pointerRef.current;
+      step(bodies, { w, h, gx: 0, gy: 0, dt, anchor: orb(), damping: 0.8, restitution: 0.4 });
       for (const b of bodies) {
         const node = elsRef.current[b.id];
         if (!node) continue;
-        const z = zRef.current[b.id] ?? 0.5;
-        const ox = px * z * 26; // near bubbles parallax more
-        const oy = py * z * 26;
-        node.style.transform = `translate3d(${b.x - b.r + ox}px, ${b.y - b.r + oy}px, 0)`;
+        node.style.transform = `translate3d(${b.x - b.r}px, ${b.y - b.r}px, 0)`;
         const blob = blobsRef.current[b.id];
-        if (blob) blob.style.transform = `translate3d(${b.x - b.r + ox}px, ${b.y - b.r + oy}px, 0)`;
+        if (blob) blob.style.transform = `translate3d(${b.x - b.r}px, ${b.y - b.r}px, 0)`;
       }
       rafRef.current = requestAnimationFrame(frame);
     }
     if (!reduced && (wrapRef.current?.clientWidth ?? 0) > 0) {
       rafRef.current = requestAnimationFrame(frame);
     }
-    return () => {
-      window.removeEventListener("pointermove", onPointer);
-      cancelAnimationFrame(rafRef.current);
-    };
+    return () => cancelAnimationFrame(rafRef.current);
   }, [mounted, gyroOn]);
 
   if (!mounted || !hydrated || !now) return null;

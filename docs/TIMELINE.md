@@ -243,10 +243,11 @@ Repo: `git@github.com:y344shi/luminous.git`  ·  app at `dreams/seize_the_day`
 | 2026-06-25 | `4643eb6` | Add project guide + overnight tick playbook for autonomous cycles |
 | 2026-06-25 | `730b76f` | Cycle 1: 《今天别消失》web MVP — full core loop alive |
 
-## branch `luminous-trunk` — 65 commits
+## branch `luminous-trunk` — 66 commits
 
 | date | commit | change |
 | --- | --- | --- |
+| 2026-06-28 | `f6a7ec0` | core 5: skin-aware motion-button label (ocean = 感受水流) |
 | 2026-06-28 | `edb9980` | core 4: housekeeping — CONTEXT reflects the consolidation; prune dead shots |
 | 2026-06-28 | `1c4b653` | paper 3: hand-laid note entrance + pressed-flower marks |
 | 2026-06-28 | `9da03e4` | ocean 4: caustic surface + light shafts + rising bubble streams |

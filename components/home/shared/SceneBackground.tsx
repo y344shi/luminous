@@ -75,20 +75,14 @@ export default function SceneBackground() {
     const schedule = () => {
       if (!raf) raf = requestAnimationFrame(apply);
     };
-    const onPointer = (e: PointerEvent) => {
-      tx = e.clientX / window.innerWidth - 0.5;
-      ty = e.clientY / window.innerHeight - 0.5;
-      schedule();
-    };
+    // Only the device gyro nudges the scene (slightly) — no pointer following.
     const onTilt = (e: DeviceOrientationEvent) => {
       tx = Math.max(-1, Math.min(1, (e.gamma ?? 0) / 45));
       ty = Math.max(-1, Math.min(1, (e.beta ?? 0) / 45));
       schedule();
     };
-    window.addEventListener("pointermove", onPointer, { passive: true });
     window.addEventListener("deviceorientation", onTilt);
     return () => {
-      window.removeEventListener("pointermove", onPointer);
       window.removeEventListener("deviceorientation", onTilt);
       if (raf) cancelAnimationFrame(raf);
     };

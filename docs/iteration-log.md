@@ -1033,3 +1033,13 @@ What still feels wrong / not done yet:
   感受水流 (feel the current) on the ocean skin and 感受重力 on glass — fixing a tone
   mismatch where the buoyancy/no-gravity ocean still said "feel gravity". One new
   copy key (feelCurrent), switched by the buoyancy prop. 250 tests green.
+
+---
+
+## core 6: Settle-then-rest motion (user feedback)
+- Removed all pointer-tracking (BubbleField sway/parallax + SceneBackground pointer
+  parallax) — it felt disturbing on the web. Replaced the slow, jittery, drifting
+  physics with a firm spring (pull 2.0, damping 0.8, no jitter) so bubbles flow in
+  and rest in place. Gyro tilt now leans the whole cluster only slightly (±24px);
+  on desktop (no input) they simply rest. Flow-in keeps the condense (glass) +
+  rise-from-floor (ocean) entrances. 250 tests green.
