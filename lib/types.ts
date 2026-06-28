@@ -83,6 +83,11 @@ export type ContextSnapshot = {
     isMobile: boolean;
     isAtComputer?: boolean;
   };
+
+  // Fused sensor signals (all derived on-device; absent when unavailable/denied).
+  activity?: "still" | "walking" | "transit"; // motion / accelerometer
+  ambient?: "quiet" | "lively"; // ambient loudness (opt-in mic)
+  arousal?: "calm" | "elevated"; // heart rate (iOS HealthKit; unused on web)
 };
 
 export type Opportunity = {

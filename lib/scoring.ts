@@ -124,6 +124,47 @@ export function triggerBonus(seed: Seed, ctx: ContextSnapshot): number {
 }
 
 /**
+ * Additive nudge from the fused device senses (motion / ambient loudness / heart
+ * rate). Each signal is optional — absent ones do nothing. Soft by design and
+ * capped, so it shapes the ranking without overpowering fit/mood/triggers.
+ */
+export function sensorBonus(seed: Seed, ctx: ContextSnapshot): number {
+  let b = 0;
+  const has = (c: SeedCategory) => seed.categories.includes(c);
+  const focus = has("learning") || has("creation");
+
+  // Motion / activity.
+  if (ctx.activity === "transit") {
+    if (seed.estimatedDurationMin <= 10) b += 0.1; // quick things suit the move
+    if (focus && seed.locationType === "computer") b -= 0.12; // not now
+    if (has("recovery") || has("body")) b += 0.05;
+  } else if (ctx.activity === "walking") {
+    if (seed.locationType === "outdoor" || has("exploration") || has("body")) b += 0.1;
+  } else if (ctx.activity === "still") {
+    if (focus) b += 0.05;
+  }
+
+  // Ambient loudness.
+  if (ctx.ambient === "quiet") {
+    if (focus || has("aesthetic")) b += 0.1;
+  } else if (ctx.ambient === "lively") {
+    if (has("connection")) b += 0.1;
+    if (has("recovery")) b += 0.05; // step out of the noise
+    if (focus) b -= 0.06;
+  }
+
+  // Arousal (heart rate; iOS-fed).
+  if (ctx.arousal === "elevated") {
+    if (has("recovery") || has("body")) b += 0.12;
+    if (seed.energyRequired === "high" || has("exploration")) b -= 0.08;
+  } else if (ctx.arousal === "calm") {
+    if (focus) b += 0.06;
+  }
+
+  return clamp(b, -0.25, 0.25);
+}
+
+/**
  * Late-night safety gate. Returns true if this seed is UNSAFE to recommend
  * late at night (too big, requires going out, or high energy).
  */
@@ -198,6 +239,7 @@ export function scoreSeed(
     tf * 0.2 + df * 0.2 + ef * 0.2 + lf * 0.2 + mf * 0.1 + fr * 0.05 + ser * 0.05;
 
   total += triggerBonus(seed, ctx);
+  total += sensorBonus(seed, ctx);
 
   // Late-night reshaping happens in recommend(), but reflect rescue boost here too.
   if (ctx.isLateNight && isRescueSeed(seed)) {

@@ -16,12 +16,16 @@ export type AmbientInputs = {
   locationHint: LocationType;
   energy?: Energy;
   isOutdoorWeatherGood?: boolean;
+  // Fused device senses (all optional; derived on-device only).
+  activity?: ContextSnapshot["activity"];
+  ambient?: ContextSnapshot["ambient"];
+  arousal?: ContextSnapshot["arousal"];
 };
 
 /** Build a full ContextSnapshot for the recommender from ambient signals.
  * Mood is unknown here (we didn't ask) — the bubbles are a gentle guess. */
 export function buildAmbientContext(i: AmbientInputs): ContextSnapshot {
-  return buildContext({
+  const ctx = buildContext({
     mood: "unknown",
     energy: i.energy ?? "medium",
     locationHint: i.locationHint,
@@ -30,6 +34,7 @@ export function buildAmbientContext(i: AmbientInputs): ContextSnapshot {
     isOutdoorWeatherGood: i.isOutdoorWeatherGood,
     now: i.now,
   });
+  return { ...ctx, activity: i.activity, ambient: i.ambient, arousal: i.arousal };
 }
 
 /**
