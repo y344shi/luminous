@@ -76,7 +76,7 @@ struct HomeView: View {
                 }
                 .padding(Spacing.lg)
             }
-            .background(GlassField().ignoresSafeArea())
+            .background(AestheticField().ignoresSafeArea())
             .hiddenNavBar()
             .navigationDestination(for: Route.self) { route in
                 switch route {

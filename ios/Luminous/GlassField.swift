@@ -45,8 +45,18 @@ struct GlassBubble: Identifiable {
         }
     }()
 
-    func center(at t: TimeInterval, in size: CGSize, motion: CGFloat) -> CGPoint {
+    func center(at t: TimeInterval, in size: CGSize, motion: CGFloat, buoyancy: Bool = false) -> CGPoint {
         let tt = CGFloat(t)
+        if buoyancy {
+            // Ocean: the bottom edge is the floor; bubbles rise toward the top
+            // surface. The most relevant (highest depth) settle highest, all
+            // sway sideways a touch and bob gently up/down.
+            let restY = 0.14 + (1 - depth) * 0.66
+            let bob = sin(tt * 0.5 + driftPhase) * (0.018 + driftAmp) * motion
+            let sway = sin(tt * 0.22 + driftPhase * 1.3) * driftAmp * 1.5 * motion
+            return CGPoint(x: (origin.x + sway) * size.width,
+                           y: (restY + bob) * size.height)
+        }
         let dx = sin(tt * 0.18 + driftPhase) * driftAmp * motion
         let dy = cos(tt * 0.14 + driftPhase * 1.3) * driftAmp * motion
         return CGPoint(x: (origin.x + dx) * size.width,
@@ -66,6 +76,9 @@ struct GlassField: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var bubbles: [GlassBubble] = GlassBubble.field
+    /// When true the field reads as an ocean: bubbles rise from the floor
+    /// (bottom edge) toward the surface (top) instead of drifting in place.
+    var buoyancy: Bool = false
 
     var body: some View {
         ZStack {
@@ -93,7 +106,7 @@ struct GlassField: View {
         layer.addFilter(.blur(radius: min(size.width, size.height) * 0.04))
         layer.addFilter(.alphaThreshold(min: 0.45, color: theme.accentSoft.opacity(0.55)))
         for b in bubbles {
-            let c = b.center(at: t, in: size, motion: motion)
+            let c = b.center(at: t, in: size, motion: motion, buoyancy: buoyancy)
             let r = b.radius(in: size) * 0.92
             let rect = CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2)
             layer.fill(Path(ellipseIn: rect), with: .color(.white.opacity(0.9)))
@@ -105,7 +118,7 @@ struct GlassField: View {
     private func drawGlassRims(in ctx: inout GraphicsContext, size: CGSize, t: TimeInterval) {
         let sweep = (sin(CGFloat(t) * 0.3) * 0.5 + 0.5)   // 0…1 moving glint
         for b in bubbles {
-            let c = b.center(at: t, in: size, motion: motion)
+            let c = b.center(at: t, in: size, motion: motion, buoyancy: buoyancy)
             let r = b.radius(in: size)
             let rect = CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2)
 
