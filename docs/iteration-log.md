@@ -975,3 +975,12 @@ What still feels wrong / not done yet:
   /top, lesser ones lower) with a gentle bob. Gyro now stirs a horizontal current
   instead of pulling gravity; shake-to-scatter kept. Branched off glass (keeps the
   refraction/caustic/depth/gooey/dreamier look). 214 tests green.
+
+---
+
+## ocean 2: Desktop fallback — floor = bottom, pointer stirs the current
+- Buoyancy is screen-vertical, so the **bottom edge is always the ocean floor**
+  with or without a motion sensor. On desktop (no orientation events) the
+  horizontal "current" now comes from the **pointer** instead of tilt, so the
+  field responds; the mobile-only "感受水流" button is hidden on desktop (no dead
+  control). 214 tests green.

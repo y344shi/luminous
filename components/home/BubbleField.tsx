@@ -190,7 +190,12 @@ export default function BubbleField() {
       // near the surface/top, lesser ones lower toward the ocean floor = the
       // bottom edge), with a gentle buoyant bob. Gyro just stirs a horizontal
       // current; the floor stays the bottom of the screen.
-      const sway = live ? Math.max(-1, Math.min(1, (tilt.gamma ?? 0) / 45)) * 620 : 0;
+      // The floor is always the bottom edge (buoyancy is screen-vertical), with or
+      // without a motion sensor. The horizontal "current" comes from device tilt
+      // when available, else from the pointer — so desktop still responds.
+      const sway = live
+        ? Math.max(-1, Math.min(1, (tilt.gamma ?? 0) / 45)) * 620
+        : pointerRef.current.px * 900;
       for (const b of bodies) {
         const home = homesRef.current[b.id];
         if (!home) continue;
@@ -291,7 +296,11 @@ export default function BubbleField() {
               : sense === "fail" ? copy.home.sensedFail
                 : null;
 
-  const canGyro = typeof window !== "undefined" && "DeviceOrientationEvent" in window;
+  // Only offer the "stir the current" affordance on devices that can actually
+  // produce orientation events — desktops get the pointer current instead, so we
+  // don't show a button that does nothing.
+  const canGyro =
+    typeof window !== "undefined" && "DeviceOrientationEvent" in window && isMobileDevice();
 
   return (
     <div ref={wrapRef} className="relative h-[72dvh] w-full">

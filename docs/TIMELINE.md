@@ -121,10 +121,11 @@ Repo: `git@github.com:y344shi/luminous.git`  ·  app at `dreams/seize_the_day`
 | 2026-06-25 | `4643eb6` | Add project guide + overnight tick playbook for autonomous cycles |
 | 2026-06-25 | `730b76f` | Cycle 1: 《今天别消失》web MVP — full core loop alive |
 
-## branch `luminous-ocean` — 54 commits
+## branch `luminous-ocean` — 55 commits
 
 | date | commit | change |
 | --- | --- | --- |
+| 2026-06-28 | `7bff2ee` | ocean 1 (D1): Buoyancy / floatiness — wishes float to the surface |
 | 2026-06-28 | `6da2e26` | glass 6: Gyro polish — smoothed tilt + shake-to-scatter + settle |
 | 2026-06-28 | `c8b9156` | Docs: add shared CONTEXT.md (cross-machine context + sync protocol) |
 | 2026-06-26 | `9a2f310` | glass 5: Dreamier ambience (calmer drift + motes + vignette) |
