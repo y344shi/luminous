@@ -959,3 +959,20 @@ What still feels wrong / not done yet:
   field drifts slower. Added a `.dream-motes` layer (9 faint rising light dots,
   staggered) and a soft `.dream-vignette` framing the field. Reduced-motion stills
   the motes. 214 tests green; typecheck + build clean.
+
+---
+
+## native: iOS + macOS + watchOS, switchable skins (Mac session, 2026-06-28)
+- Verified on the Mac (Xcode 26.6) that the `ios-glass` reconciliation **compiles
+  and runs** — previously "verified by reading only". `BUILD SUCCEEDED` for iOS
+  (iPhone 17 Pro sim), macOS (native), and a new **watchOS** target.
+- **Skins now switchable at runtime + persisted** (`tdd.aesthetic`): split
+  `Aesthetic` (pure enum) from `AestheticField` (view); `AppStore.aesthetic` +
+  `setAesthetic`; Settings → 外观风格 picker (glass/ocean/paper). Drove the field
+  from the store so Home re-skins live. Screens: `ios/shots/ios-{glass,ocean,paper}.png`.
+- **watchOS**: new "Luminous Watch App" target sharing the 10 pure-core files +
+  watch-native UI in `ios/LuminousWatch/` (same Now→trace loop, skin picker, per-skin
+  gradient). Screen: `ios/shots/watch-home.png`.
+- All work in worktree `wt-macos` on branch `macos` (Xcode stayed open on the live
+  copy — never branch-switched it, per CLAUDE.md). Open decisions + safe-pull steps:
+  see `ios/MAC-SESSION-NOTES.md`.

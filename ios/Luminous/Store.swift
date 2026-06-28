@@ -26,7 +26,8 @@ final class AppStore {
         static let samplesPlanted = "tdd.samplesPlanted"
         static let lastPick = "tdd.lastPick"
         static let introSeen = "tdd.introSeen"
-        static let all = [seeds, traces, settings, samplesPlanted, lastPick, introSeen]
+        static let aesthetic = "tdd.aesthetic"
+        static let all = [seeds, traces, settings, samplesPlanted, lastPick, introSeen, aesthetic]
     }
 
     // MARK: Persisted state
@@ -36,6 +37,10 @@ final class AppStore {
     var samplesPlanted = false
     var lastPick = LastPick()
     var introSeen = false
+
+    /// The active visual skin (glass / ocean / paper). Persisted; drives
+    /// `AestheticField` so switching it in Settings re-skins the app live.
+    var aesthetic: Aesthetic = .fallback
 
     // MARK: Transient state (not persisted)
     var opportunities: [Opportunity] = []
@@ -61,6 +66,8 @@ final class AppStore {
         samplesPlanted = defaults.bool(forKey: Key.samplesPlanted)
         lastPick = load(LastPick.self, Key.lastPick) ?? LastPick()
         introSeen = defaults.bool(forKey: Key.introSeen)
+        aesthetic = defaults.string(forKey: Key.aesthetic)
+            .flatMap(Aesthetic.init(rawValue:)) ?? .fallback
 
         // First run: plant a small mock garden so the app never feels empty.
         if seeds.isEmpty && traces.isEmpty {
@@ -151,6 +158,12 @@ final class AppStore {
         save(settings, Key.settings)
     }
 
+    /// Switch the visual skin and persist it. Re-skins the app immediately.
+    func setAesthetic(_ a: Aesthetic) {
+        aesthetic = a
+        defaults.set(a.rawValue, forKey: Key.aesthetic)
+    }
+
     func dismissSamplesNote() {
         samplesPlanted = false
         defaults.set(false, forKey: Key.samplesPlanted)
@@ -171,6 +184,7 @@ final class AppStore {
         settings = .default
         lastPick = LastPick()
         introSeen = false
+        aesthetic = .fallback
         opportunities = []
         lastContext = nil
     }

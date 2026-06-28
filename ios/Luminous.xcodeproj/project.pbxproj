@@ -6,8 +6,36 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		FACE00000000000000000020 /* Domain.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000010 /* Domain.swift */; };
+		FACE00000000000000000120 /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000110 /* Store.swift */; };
+		FACE00000000000000000220 /* Scoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000210 /* Scoring.swift */; };
+		FACE00000000000000000320 /* SeedParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000310 /* SeedParser.swift */; };
+		FACE00000000000000000420 /* SemanticTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000410 /* SemanticTime.swift */; };
+		FACE00000000000000000520 /* Copy.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000510 /* Copy.swift */; };
+		FACE00000000000000000620 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000610 /* Theme.swift */; };
+		FACE00000000000000000720 /* DayGrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000710 /* DayGrade.swift */; };
+		FACE00000000000000000820 /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000810 /* Feedback.swift */; };
+		FACE00000000000000000920 /* Aesthetic.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000910 /* Aesthetic.swift */; };
+		FACE00000000000000000A20 /* LuminousWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000A10 /* LuminousWatchApp.swift */; };
+		FACE00000000000000000B20 /* WatchUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000B10 /* WatchUI.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		E11067402FF0B7A10039162D /* Luminous.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Luminous.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FACE00000000000000000010 /* Domain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "Domain.swift"; path = "Luminous/Domain.swift"; sourceTree = SOURCE_ROOT; };
+		FACE00000000000000000110 /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "Store.swift"; path = "Luminous/Store.swift"; sourceTree = SOURCE_ROOT; };
+		FACE00000000000000000210 /* Scoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "Scoring.swift"; path = "Luminous/Scoring.swift"; sourceTree = SOURCE_ROOT; };
+		FACE00000000000000000310 /* SeedParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "SeedParser.swift"; path = "Luminous/SeedParser.swift"; sourceTree = SOURCE_ROOT; };
+		FACE00000000000000000410 /* SemanticTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "SemanticTime.swift"; path = "Luminous/SemanticTime.swift"; sourceTree = SOURCE_ROOT; };
+		FACE00000000000000000510 /* Copy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "Copy.swift"; path = "Luminous/Copy.swift"; sourceTree = SOURCE_ROOT; };
+		FACE00000000000000000610 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "Theme.swift"; path = "Luminous/Theme.swift"; sourceTree = SOURCE_ROOT; };
+		FACE00000000000000000710 /* DayGrade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "DayGrade.swift"; path = "Luminous/DayGrade.swift"; sourceTree = SOURCE_ROOT; };
+		FACE00000000000000000810 /* Feedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "Feedback.swift"; path = "Luminous/Feedback.swift"; sourceTree = SOURCE_ROOT; };
+		FACE00000000000000000910 /* Aesthetic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "Aesthetic.swift"; path = "Luminous/Aesthetic.swift"; sourceTree = SOURCE_ROOT; };
+		FACE00000000000000000A10 /* LuminousWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LuminousWatchApp.swift"; path = "LuminousWatch/LuminousWatchApp.swift"; sourceTree = SOURCE_ROOT; };
+		FACE00000000000000000B10 /* WatchUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "WatchUI.swift"; path = "LuminousWatch/WatchUI.swift"; sourceTree = SOURCE_ROOT; };
+		FACE00000000000000000002 /* Luminous Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Luminous Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -26,6 +54,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FACE00000000000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -33,6 +68,7 @@
 			isa = PBXGroup;
 			children = (
 				E11067422FF0B7A10039162D /* Luminous */,
+				FACE00000000000000000009 /* Luminous Watch App */,
 				E11067412FF0B7A10039162D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,8 +77,28 @@
 			isa = PBXGroup;
 			children = (
 				E11067402FF0B7A10039162D /* Luminous.app */,
+				FACE00000000000000000002 /* Luminous Watch App.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		FACE00000000000000000009 /* Luminous Watch App */ = {
+			isa = PBXGroup;
+			children = (
+				FACE00000000000000000010 /* Domain.swift */,
+				FACE00000000000000000110 /* Store.swift */,
+				FACE00000000000000000210 /* Scoring.swift */,
+				FACE00000000000000000310 /* SeedParser.swift */,
+				FACE00000000000000000410 /* SemanticTime.swift */,
+				FACE00000000000000000510 /* Copy.swift */,
+				FACE00000000000000000610 /* Theme.swift */,
+				FACE00000000000000000710 /* DayGrade.swift */,
+				FACE00000000000000000810 /* Feedback.swift */,
+				FACE00000000000000000910 /* Aesthetic.swift */,
+				FACE00000000000000000A10 /* LuminousWatchApp.swift */,
+				FACE00000000000000000B10 /* WatchUI.swift */,
+			);
+			name = "Luminous Watch App";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -68,6 +124,25 @@
 			);
 			productName = Luminous;
 			productReference = E11067402FF0B7A10039162D /* Luminous.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FACE00000000000000000001 /* Luminous Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FACE00000000000000000006 /* Build configuration list for PBXNativeTarget "Luminous Watch App" */;
+			buildPhases = (
+				FACE00000000000000000003 /* Sources */,
+				FACE00000000000000000004 /* Frameworks */,
+				FACE00000000000000000005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Luminous Watch App";
+			packageProductDependencies = (
+			);
+			productName = "Luminous Watch App";
+			productReference = FACE00000000000000000002 /* Luminous Watch App.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -100,12 +175,20 @@
 			projectRoot = "";
 			targets = (
 				E110673F2FF0B7A10039162D /* Luminous */,
+				FACE00000000000000000001 /* Luminous Watch App */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		E110673E2FF0B7A10039162D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FACE00000000000000000005 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -119,6 +202,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FACE00000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FACE00000000000000000020 /* Domain.swift in Sources */,
+				FACE00000000000000000120 /* Store.swift in Sources */,
+				FACE00000000000000000220 /* Scoring.swift in Sources */,
+				FACE00000000000000000320 /* SeedParser.swift in Sources */,
+				FACE00000000000000000420 /* SemanticTime.swift in Sources */,
+				FACE00000000000000000520 /* Copy.swift in Sources */,
+				FACE00000000000000000620 /* Theme.swift in Sources */,
+				FACE00000000000000000720 /* DayGrade.swift in Sources */,
+				FACE00000000000000000820 /* Feedback.swift in Sources */,
+				FACE00000000000000000920 /* Aesthetic.swift in Sources */,
+				FACE00000000000000000A20 /* LuminousWatchApp.swift in Sources */,
+				FACE00000000000000000B20 /* WatchUI.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -323,6 +425,66 @@
 			};
 			name = Release;
 		};
+		FACE00000000000000000007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Luminous;
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = rainymushroom.Luminous;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = rainymushroom.Luminous.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.5;
+			};
+			name = Debug;
+		};
+		FACE00000000000000000008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Luminous;
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = rainymushroom.Luminous;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = rainymushroom.Luminous.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.5;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -340,6 +502,15 @@
 			buildConfigurations = (
 				E110674C2FF0B7A10039162D /* Debug */,
 				E110674D2FF0B7A10039162D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FACE00000000000000000006 /* Build configuration list for PBXNativeTarget "Luminous Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FACE00000000000000000007 /* Debug */,
+				FACE00000000000000000008 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

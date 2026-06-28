@@ -19,6 +19,7 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: Spacing.xl) {
                     PageHeader(title: Copy.SettingsCopy.title)
 
+                    skinSection
                     themeSection
                     nudgeSection
                     resetSection
@@ -45,6 +46,52 @@ struct SettingsView: View {
                 Text(Copy.SettingsCopy.resetConfirm)
             }
         }
+    }
+
+    // MARK: 外观风格 — the swappable skin (glass / ocean / paper)
+
+    private var skinSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("外观风格")
+                .font(.system(size: 14))
+                .foregroundStyle(theme.textMuted)
+            ForEach(Aesthetic.allCases) { skin in
+                skinRow(skin)
+            }
+        }
+    }
+
+    private func skinRow(_ skin: Aesthetic) -> some View {
+        let selected = store.aesthetic == skin
+        return Button { store.setAesthetic(skin) } label: {
+            HStack(spacing: Spacing.md) {
+                Image(systemName: skin.symbol)
+                    .font(.system(size: 20))
+                    .foregroundStyle(theme.accent)
+                    .frame(width: 44, height: 44)
+                    .background(theme.surfaceSoft)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(skin.label)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(theme.textPrimary)
+                    Text(skin.feeling)
+                        .font(.system(size: 13))
+                        .foregroundStyle(theme.textSecondary)
+                }
+                Spacer()
+                if selected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(theme.accent)
+                }
+            }
+            .padding(Spacing.md)
+            .background(theme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(selected ? theme.accent : theme.border, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
     }
 
     private var themeSection: some View {
