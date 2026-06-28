@@ -354,7 +354,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
         ))}
       </div>
       {/* drifting glass bubbles */}
-      {shown.map((b) => (
+      {shown.map((b, i) => (
         <button
           key={b.id}
           ref={(n) => { elsRef.current[b.id] = n; }}
@@ -364,9 +364,10 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
             "absolute left-0 top-0 flex items-center justify-center rounded-full will-change-transform",
             b.primary ? "glass-liquid glass-iris glass-glint" : "glass glass-faint",
             "relative overflow-hidden",
-            dissolving === b.id && "tdd-dissolve"
+            // condense out of light on load; switch to dissolve when completed
+            dissolving === b.id ? "tdd-dissolve" : "tdd-condense"
           )}
-          style={{ width: b.r * 2, height: b.r * 2, ["--gd"]: `${(b.r % 5) * 1.7}s`, filter: `blur(${((1 - b.z) * 2.6).toFixed(2)}px) saturate(${(0.88 + b.z * 0.2).toFixed(2)})` } as React.CSSProperties}
+          style={{ width: b.r * 2, height: b.r * 2, ["--gd"]: `${(b.r % 5) * 1.7}s`, animationDelay: dissolving === b.id ? "0ms" : `${(i % 8) * 55}ms`, filter: `blur(${((1 - b.z) * 2.6).toFixed(2)}px) saturate(${(0.88 + b.z * 0.2).toFixed(2)})` } as React.CSSProperties}
         >
           <span className="glass-refract" aria-hidden />
           <CategoryGlyph category={b.category} size={Math.round(b.r)} />

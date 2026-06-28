@@ -10,7 +10,7 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] Desktop perf: on `@media (pointer: fine)` (desktop/laptop) the per-bubble animated SVG turbulence + the full-screen goo filter are swapped for a cheap CSS blur; touch keeps the full richness. _(core 3)_
 
 ## glass skin
-- [ ] A7 page-load choreography: bubbles condense out of light into place (staggered).
+- [x] A7 page-load choreography: each bubble condenses out of light (opacity + independent `scale`, staggered `animationDelay`) into place; mutually exclusive with dissolve; reduced-motion safe. _(glass 7)_
 
 ## ocean skin
 - [ ] Rise-from-the-floor load: bubbles spawn at the floor and float up (staggered).

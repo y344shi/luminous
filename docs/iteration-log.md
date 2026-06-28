@@ -993,3 +993,11 @@ What still feels wrong / not done yet:
   viewports. On `@media (pointer: fine)` (desktop/laptop, where lag was reported)
   they're swapped for a cheap CSS blur; touch devices keep the full richness.
   CSS-only; 250 tests green; typecheck + build clean.
+
+---
+
+## glass 7 (A7): Condense-from-light page-load
+- Each bubble now condenses out of light into place on load — opacity + the
+  independent CSS `scale` property (so it composes with the rAF position transform),
+  staggered via animationDelay. Mutually exclusive with the dissolve animation;
+  reduced-motion stills it. Shared field, so glass + ocean both get it. 250 tests green.

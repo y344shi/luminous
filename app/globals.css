@@ -443,6 +443,19 @@ body {
   animation: tdd-dissolve 750ms ease forwards;
 }
 
+/* Page-load: each bubble condenses out of light into place (staggered). Uses the
+   independent `scale` property so it composes with the rAF position transform. */
+@keyframes tdd-condense {
+  from { opacity: 0; scale: 0.4; }
+  to { opacity: 1; scale: 1; }
+}
+.tdd-condense {
+  animation: tdd-condense 720ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tdd-condense { animation: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tdd-rise,
   .tdd-breathe,
