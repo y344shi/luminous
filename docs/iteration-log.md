@@ -1343,3 +1343,13 @@ What still feels wrong / not done yet:
   brief + the RN/packages-core call). Replaced the create-next-app boilerplate README
   with a real one (what luminous is, the loop, the fusion, skins, run/verify, privacy).
   Docs-only; 272 tests green.
+
+---
+
+## core 31: Start packages/core (the shared-core extraction)
+- Created packages/core/ (the framework-free heart, toward RN/iOS sharing). First
+  slice: moved the zero-dependency sensing classifiers (sensors/dwell/battery) there.
+  Added the @core/* path alias (tsconfig) + vitest alias; Next resolves it natively.
+  Updated the 9 importers; extended corePurity to scan packages/core too. Incremental
+  by design — more modules follow one safe slice per tick. 272 tests; all skins build
+  green; no behavior/visual change.

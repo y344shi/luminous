@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { classifyActivity, classifyAmbient, classifyArousal } from "@/lib/sensors";
+import { classifyActivity, classifyAmbient, classifyArousal } from "@core/sensors";
 import { sensorBonus } from "@/lib/scoring";
 import type { Seed, ContextSnapshot } from "@/lib/types";
 

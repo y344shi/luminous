@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { isBatteryLow } from "@/lib/battery";
+import { isBatteryLow } from "@core/battery";
 
 type BatteryLike = {
   level: number;

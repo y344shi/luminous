@@ -20,6 +20,10 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] Paper polish: notes are laid hand-by-hand (staggered `tdd-rise`), and each carries a faint **pressed-flower** mark — a botanical line-art stamp that varies by category. _(paper 3)_
 
 ## Fresh (self-review — needs a green tick each)
+- [x] **Started `packages/core`**: real `packages/core/` dir + `@core/*` alias (tsconfig + vitest + Next all resolve it); moved the zero-dep sensing classifiers (sensors/dwell/battery) there; purity guard now scans it. Green end-to-end. _(core 31)_
+- [ ] **packages/core — slice 2**: move the next dependency-light pure modules (`utils`, `semanticTime`, `geo`, then `types`) into `@core`, one safe slice per tick.
+- [ ] **packages/core — slice 3**: move the recommender (`scoring`, `context`, `ambient`, `illustration`, `weather`, `mockSeeds`, `copy`) — the bulk of the brain.
+- [ ] **packages/core — finish**: give it a real `package.json` (`@luminous/core`) + npm workspace; then it's a true shared dependency for the RN/iOS build.
 - [x] Docs: refreshed `CONTEXT.md` (sensing fusion table + illustration packs + boxless wishes; dropped the dead café NavLayer) and wrote a real `README.md` (was create-next-app boilerplate). _(core 30)_
 - [x] **Boxless wishes** (user): dropped the glass card around primary wishes — now a bigger free-floating illustration + title (no box). Glass rings the orb; ocean rises in the upper band. _(glass 13)_
 - [x] End-to-end fusion test: a weary context (long sit + low battery) provably lifts the restful wish + lowers focus through recommend, not just in isolated bonuses. _(core 29)_

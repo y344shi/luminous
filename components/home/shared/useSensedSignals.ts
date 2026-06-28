@@ -3,7 +3,7 @@ import { useSensors } from "./useSensors";
 import { useDwell } from "./useDwell";
 import { useWeather, isGoodOutdoorWeather } from "./useWeather";
 import { useBattery } from "./useBattery";
-import type { Activity, Ambient } from "@/lib/sensors";
+import type { Activity, Ambient } from "@core/sensors";
 import type { WeatherKind } from "@/lib/weather";
 
 export type SensedSignals = {

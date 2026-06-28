@@ -1,7 +1,7 @@
 import type { ContextSnapshot, LocationType, Energy } from "./types";
 import { buildContext } from "./context";
 import { semanticTimeFromHour, isWeekend } from "./semanticTime";
-import { dwellLevel } from "./dwell";
+import { dwellLevel } from "@core/dwell";
 import { weatherLabel, type WeatherKind } from "./weather";
 
 /**

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { advanceDwell, type DwellRecord } from "@/lib/dwell";
+import { advanceDwell, type DwellRecord } from "@core/dwell";
 
 const KEY = "tdd.dwell.v1";
 

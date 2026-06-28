@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { classifyActivity, classifyAmbient, type Activity, type Ambient } from "@/lib/sensors";
+import { classifyActivity, classifyAmbient, type Activity, type Ambient } from "@core/sensors";
 
 /**
  * Live, on-device sensing for the recommender. Motion (accelerometer) is sampled
