@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 《今天别消失》 · luminous
 
-## Getting Started
+**An AI life-anchor — not a todo app.** It catches a soft wish (a *Seed*) and hands
+it back at the right moment, so today didn't completely disappear. Tender,
+ISFP-friendly: **no shame, no streaks, no deadlines, no priorities, no percentages.**
+Doing *a little* always counts; skipping never "fails".
 
-First, run the development server:
+> Read [`docs/product-philosophy.md`](docs/product-philosophy.md) before touching tone or copy.
 
+## The core loop (never breaks)
+**Add a Seed → a Now opportunity → Complete / Partial / Skipped → a Daily Trace.**
+A trace is "today didn't disappear, because ___" — a kept moment, not an achievement.
+
+## What makes it keen — on-device sensor fusion
+luminous reads coarse, **on-device** senses to pick *which tiny wish fits right now*,
+then nudges (never commands). Every signal is soft, capped, and degrades to nothing
+when unavailable. **Nothing raw ever leaves the device.**
+
+- **time** (morning…late-night, with a hard late-night safety gate) · **place**
+  (coarse, opt-in) · **motion** (still/walking/transit) · **ambient loudness** (opt-in
+  mic) · **dwell** (how long at the desk today) · **weather** (open-meteo, for a saved
+  coarse home) · **battery** (a soft "winding down" proxy) · **heart rate → arousal**
+  (iOS HealthKit seam).
+
+One hook, `useSensedSignals()`, fuses them for both the home and the deliberate
+`/now` flow. Pure classifiers live in `lib/`; each contributes a capped bonus in
+`lib/scoring.ts`. See [`docs/CONTEXT.md`](docs/CONTEXT.md) for the full map.
+
+## Three looks, one core
+A single shared core with runtime-swappable **skins** (Settings → 外观风格):
+
+- **glass** — wishes float as boxless illustrations around a glowing orb.
+- **ocean** — the same field with buoyancy; wishes rise to the surface.
+- **paper** — a warm field-notebook with pressed-flower marks.
+
+Every wish is a small **lifestyle illustration**, picked from 8 swappable library
+styles (Settings → 插画风格) and drawn per category.
+
+## Run / verify
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev        # local dev → http://localhost:3000
+npm run typecheck  # tsc --noEmit — stays clean
+npm test           # vitest — 270+ tests, stays green
+npm run build      # next build — all routes compile
 ```
+Node 22+. (On WSL: `export PATH="$HOME/.local/bin:$PATH"`.)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Layout
+- `lib/` — pure, React-free domain logic (scoring is `rng`-injectable & tested).
+- `components/` — UI, grouped by feature; `home/shared` holds the field, sensing
+  hooks, and illustration packs; `home/skins` holds the three looks.
+- `app/` — routes. `docs/` — living documentation. `tests/` — Vitest.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Privacy
+No hardcoded API keys. Only coarse, derived context ever feeds the ranking; raw
+audio, heart rate, and precise location **never leave the device**.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+*Built with Next.js · React · Tailwind · Zustand · TypeScript. iOS lives in `ios/`
+(SwiftUI); a React Native + shared-core unification is under consideration — see
+[`docs/CONTEXT.md`](docs/CONTEXT.md).*

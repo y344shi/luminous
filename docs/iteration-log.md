@@ -1333,3 +1333,13 @@ What still feels wrong / not done yet:
   bigger icon; pushed the glass ring (ORB_R+132) and re-scattered the ocean wishes into
   the upper band so they clear the orb. Ambient wishes stay small glass dots. 272 tests;
   glass+ocean reshot + build green.
+
+---
+
+## core 30: Docs — CONTEXT + README reflect reality
+- CONTEXT.md was 30+ commits stale (still listed the deleted café NavLayer, no sensing
+  / illustration / boxless wishes). Refreshed the skins block, added a Sensing-fusion
+  signal table + an Illustration-packs section, updated the iOS section (sensor-port
+  brief + the RN/packages-core call). Replaced the create-next-app boilerplate README
+  with a real one (what luminous is, the loop, the fusion, skins, run/verify, privacy).
+  Docs-only; 272 tests green.

@@ -41,13 +41,54 @@ Put shared docs **inside the app dir** on WSL or they won't reach the Mac.
 | `archive/*` | retired direction branches (glass/sense/craft/ocean, ios-sense/ios-craft) — reference only |
 
 ## Skins — status (one core, three looks; backlog in `docs/next-steps.md`)
-- **glass** — liquid-glass bubble field: refraction · caustic light · depth · gooey · dreamier · gyro · condense-from-light entrance. ✅
-- **ocean** — the field with `buoyancy`: rise-from-floor load · caustic surface + light shafts + bubble streams. ✅
-- **paper** — warm field-notebook: haptics · keepsake card · hand-laid notes + pressed-flower marks. ✅
-- **shared core** (every skin inherits): SceneBackground (mesh/parallax/weather/day-grade), NavLayer (Overpass café nav), SceneWindow (living orb), feedback, keepsake, webpush. Runtime skin picker in Settings.
+- **glass** — bubble field round a glowing orb: the 3 top wishes float as **boxless
+  illustrations + titles** (custom physics, gyro lean, condense-from-light entrance);
+  lesser wishes are small glass dots; a soft warm bloom holds the orb. ✅
+- **ocean** — the same field with `buoyancy`: wishes rise from the floor and scatter
+  in the upper band (surface); weather can tint the field. ✅
+- **paper** — warm field-notebook: hand-laid notes + pressed-flower marks · haptics ·
+  keepsake card. (Keeps its own emblems; no illustration packs / no weather tint.) ✅
+- **shared core** (every skin inherits): SceneBackground (mesh/parallax/day-grade),
+  the central **orb** (sensed scene + label), **floating illustrated wishes** (the
+  illustration packs, below), the **sensing fusion** (below), the wish **tap-sheet**,
+  feedback, keepsake, webpush. Runtime skin picker in Settings → 外观风格.
+  *(The old Overpass "café nav" NavLayer was a misread of the design and is deleted.)*
 
 A 5-minute overnight loop works **skins + core on `luminous-trunk` → main**, one
 green committed step per tick (`docs/tick-playbook.md`).
+
+## Sensing fusion (on-device — the keen part)
+The recommender fuses coarse, on-device senses to pick *which tiny wish fits now*.
+**Nothing raw leaves the device**; each signal is soft + capped and degrades to
+nothing when unavailable. One hook — `components/home/shared/useSensedSignals.ts` —
+bundles them, read by both home skins **and** the Now flow (`/now`), so the
+deliberate ask is as keen as the casual home. Pure classifiers live in `lib/`
+(`sensors`, `dwell`, `weather`, `battery`); each has a capped `*Bonus` in
+`lib/scoring.ts` folded into `scoreSeed`.
+
+| signal | source | bonus | status |
+| --- | --- | --- | --- |
+| time / weekday / late-night | clock | timeFit + late-night **safety gate** | live |
+| location | coarse geo (opt-in) | locationFit | live |
+| motion → still/walking/transit | accelerometer | sensorBonus | live |
+| loudness → quiet/lively | mic (opt-in) | sensorBonus | live |
+| dwell → desk-min today | localStorage | dwellBonus | live |
+| weather → kind | open-meteo (saved home) | weather_good + day-line + tint | live |
+| battery low | Battery API | batteryBonus | live (Chrome/Android) |
+| arousal → calm/elevated | **heart rate** | sensorBonus | **iOS seam** (HealthKit) |
+
+The day-line surfaces several (e.g. `周三 · 下午 · 在电脑前 · 晴 · 坐了一会`).
+End-to-end coverage: `tests/fusionIntegration.test.ts`.
+
+## Illustration packs (every wish is a small lifestyle drawing)
+8 library "looks" (Open Doodles / Storyset / Pixeltrue / Blush / Humaaans / Open
+Peeps / unDraw / DrawKit) in `components/home/shared/illustrationPacks.tsx`, each
+**category-aware** (a scene per wish category). Code-drawn for now; real downloaded
+assets can drop behind the same `IllustrationArt` interface. Picked in Settings →
+插画风格 (`settings.illustrationStyle`); `illustrationCategory` varies the look across
+a wish's categories. Shown on the home wishes, tap-sheet, Garden, Now, detail, add —
+everywhere except the keepsake `TraceCard` (kept warm by decision). See
+`docs/scene-library.md` for sources/licenses.
 
 ## iOS — status (one trunk: `ios-glass`)
 `ios/Luminous/` is a full SwiftUI app mirroring the web core
@@ -57,6 +98,14 @@ green committed step per tick (`docs/tick-playbook.md`).
 `SceneBackground` (MeshGradient) sits behind glass/ocean. **Build on the Mac with
 Xcode** (last reconciliation is verified by reading only — confirm it compiles).
 Plan: `docs/ios-roadmap.md`.
+
+**Not yet on iOS (the web pulled ahead):** the sensing fusion, the illustration
+packs, and the boxless floating wishes. Brief to port the sensors (CoreMotion /
+AVAudioSession / **HealthKit heart-rate → arousal** / CoreLocation / weather,
+mirroring `lib/sensors`+`scoring`): `docs/ios-sensor-port.md`. **Open strategic
+call (needs the human):** unify on **React Native + a shared `packages/core`**
+(extract the pure `lib/` first — kills the Swift logic duplication) vs. keep
+SwiftUI. The pure classifiers/scoring are already RN-portable.
 
 ## Cross-machine sync protocol
 **Start** of any session, on either machine:
@@ -80,5 +129,6 @@ Never count on chat history carrying over between machines — write it here.
 - `docs/TIMELINE.md` — Notion-loadable git history (auto-generated).
 - `docs/iteration-log.md` — per-cycle journal.
 - `docs/ios-roadmap.md` — native plan.
-- `docs/scene-library.md` — ~100 scenarios + transparent/3D asset sources.
+- `docs/ios-sensor-port.md` — brief to port the sensing fusion to iOS (Swift / RN).
+- `docs/scene-library.md` — ~100 scenarios + illustration-library sources/licenses.
 - `docs/GALLERY.md` — latest Home screenshot per **skin** (glass/ocean/paper).
