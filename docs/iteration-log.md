@@ -1052,3 +1052,11 @@ What still feels wrong / not done yet:
   Added it to the paper skin too, with a new `variant="soft"` so the chip fits the
   notebook instead of the glass look. Geo sensing is now present in all three web
   skins. Updated homeSkin.test (paper now has the nav). 250 tests green.
+
+---
+
+## core 8: Tidy — drop dead AmbientOrbit + fix stale doc
+- Removed `components/home/AmbientOrbit.tsx` + `tests/ambientOrbit.test.tsx` (an
+  old pre-bubble-field Home, no longer imported anywhere). Corrected the BubbleField
+  doc comment, which still described the old "feel gravity / cluster on tilt" model,
+  to the current settle-then-rest + slight-gyro-lean behaviour. 248 tests green.

@@ -38,11 +38,12 @@ function rand(a: number, b: number) {
 }
 
 /**
- * A dreamy field of glass bubbles. The most-fitting wishes float bigger and
- * brighter near the central orb; lesser ones drift smaller and dimmer across the
- * whole screen. They collide softly, and — if you grant motion access — feel the
- * device's gravity, sliding and clustering when you tilt. Tap one to do it; it
- * dissolves into light and leaves a trace.
+ * A dreamy field of glass bubbles. The most-fitting wishes settle bigger and
+ * brighter near the central orb; lesser ones rest smaller and dimmer across the
+ * field. They flow into place on load and stay put — no pointer following. On a
+ * phone, granting motion lets the gyro lean the whole cluster *slightly*. Tap one
+ * to do it; it dissolves into light and leaves a trace. With `buoyancy`, the field
+ * becomes an ocean — wishes float up toward the surface (the bottom edge is the floor).
  */
 export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean } = {}) {
   const hydrated = useStore((s) => s.hydrated);
