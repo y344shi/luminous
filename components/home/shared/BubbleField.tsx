@@ -62,6 +62,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
   const rafRef = useRef<number>(0);
   const sizeRef = useRef({ w: 0, h: 0 });
   const phaseRef = useRef<Record<string, number>>({});
+  const didRiseRef = useRef(false);
   const lastAccelRef = useRef(0);
   const lastShakeRef = useRef(0);
   const pointerRef = useRef({ px: 0, py: 0 });
@@ -125,6 +126,8 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
     const homes: Record<string, { x: number; y: number }> = {};
     const zmap: Record<string, number> = {};
     const phasemap: Record<string, number> = {};
+    // ocean: on first load only, spawn bubbles at the floor so they rise into place
+    const rise = buoyancy && !didRiseRef.current;
 
     opps.forEach((o, i) => {
       const seed = findSeed(seeds, o.seedId);
@@ -139,7 +142,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
         : w / 2 + Math.cos(ang) * (ORB_R + 64);
       const hy = buoyancy ? h * (0.15 + i * 0.07) : h / 2 + Math.sin(ang) * (ORB_R + 64);
       next.push({ id: o.id, seedId: o.seedId, title: seed.title, category: seed.categories[0], r, z, primary: true, opp: o });
-      bodies.push({ id: o.id, x: hx, y: hy, vx: 0, vy: 0, r, m: r * r });
+      bodies.push({ id: o.id, x: hx, y: rise ? h - r - rand(0, 18) : hy, vx: 0, vy: 0, r, m: r * r });
       homes[o.id] = { x: hx, y: hy };
       zmap[o.id] = z;
       phasemap[o.id] = rand(0, Math.PI * 2);
@@ -152,12 +155,13 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
       const hx = rand(r + 6, w - r - 6);
       const hy = buoyancy ? h * 0.6 + rand(0, h * 0.3) : rand(r + 6, h - r - 6);
       next.push({ id, seedId: seed.id, title: seed.title, category: seed.categories[0], r, z, primary: false });
-      bodies.push({ id, x: hx, y: hy, vx: rand(-8, 8), vy: rand(-8, 8), r, m: r * r });
+      bodies.push({ id, x: hx, y: rise ? h - r - rand(0, 18) : hy, vx: rand(-8, 8), vy: rand(-8, 8), r, m: r * r });
       homes[id] = { x: hx, y: hy };
       zmap[id] = z;
       phasemap[id] = rand(0, Math.PI * 2);
     });
 
+    if (rise) didRiseRef.current = true;
     bodiesRef.current = bodies;
     homesRef.current = homes;
     zRef.current = zmap;

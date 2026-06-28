@@ -1001,3 +1001,11 @@ What still feels wrong / not done yet:
   independent CSS `scale` property (so it composes with the rAF position transform),
   staggered via animationDelay. Mutually exclusive with the dissolve animation;
   reduced-motion stills it. Shared field, so glass + ocean both get it. 250 tests green.
+
+---
+
+## ocean 3: Rise-from-the-floor load
+- Ocean skin only: on first build, bubbles spawn at the bottom edge (the ocean
+  floor) and the buoyancy physics floats them up to their relevance-heights — a
+  gentle rise into place. One-shot via didRiseRef (no re-rise when the field
+  rebuilds after an interaction). Glass unaffected. 250 tests green.

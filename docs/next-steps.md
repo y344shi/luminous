@@ -13,7 +13,7 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] A7 page-load choreography: each bubble condenses out of light (opacity + independent `scale`, staggered `animationDelay`) into place; mutually exclusive with dissolve; reduced-motion safe. _(glass 7)_
 
 ## ocean skin
-- [ ] Rise-from-the-floor load: bubbles spawn at the floor and float up (staggered).
+- [x] Rise-from-the-floor load (ocean): on first load bubbles spawn at the bottom edge and float up to their relevance-heights via buoyancy; once only (no re-rise on rebuild). _(ocean 3)_
 - [ ] Caustic water surface + light shafts from the top; faint bubble streams.
 
 ## paper skin
