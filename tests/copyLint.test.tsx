@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/",
 }));
 
-import BubbleField from "@/components/home/BubbleField";
+import BubbleField from "@/components/home/shared/BubbleField";
 import SeedGarden from "@/components/seed/SeedGarden";
 import TraceJournal from "@/components/trace/TraceJournal";
 import SettingsPanel from "@/components/settings/SettingsPanel";

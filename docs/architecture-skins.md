@@ -14,9 +14,8 @@ domain logic lives in `lib/` and is ported to iOS once:
 > `store`, `geo`, `ambient`, `weather`, `places`, `dayGrade`, `feedback`,
 > `keepsake`, `webpush`, `sceneBackground`, `bubblePhysics`.
 
-The app shell (`app/`), the store/provider, and the shared home pieces under
-`components/home/` (`SceneBackground`, `NavLayer`, `glyphs`, `GlassFilters`,
-`SceneWindow`, `BubbleField`) are also core. Anything **two or more skins need**
+The app shell (`app/`), the store/provider, and the shared home pieces under `components/home/shared/` (`SceneBackground`,
+`NavLayer`, `glyphs`, `GlassFilters`, `SceneWindow`, `BubbleField`) are also core. Anything **two or more skins need**
 belongs here, not inside a skin.
 
 ## Skin — only *how* the Home field looks and moves

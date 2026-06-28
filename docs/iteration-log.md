@@ -976,3 +976,11 @@ What still feels wrong / not done yet:
   `app/page.tsx` is now a thin wrapper. Settings gains a 3-way 外观风格 picker
   (琉璃/海洋/纸页). Switching is instant + persisted; no rebuild. New homeSkin.test.tsx
   (3); 250 tests green; typecheck + build clean.
+
+---
+
+## core 2: Folder tidy — shared/ + skins/
+- Moved the shared home pieces (BubbleField, SceneBackground, NavLayer, SceneWindow,
+  GlassFilters, glyphs) into `components/home/shared/`, and PaperHome into
+  `components/home/skins/` (dropping the re-export shim). Updated all importers +
+  tests. Matches docs/architecture-skins.md. No visual change. 250 tests green.

@@ -3,7 +3,7 @@ import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { useStore } from "@/lib/store";
 import { seedMockGarden } from "@/lib/mockSeeds";
 import { copy } from "@/lib/copy";
-import PaperHome from "@/components/home/PaperHome";
+import PaperHome from "@/components/home/skins/PaperHome";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),

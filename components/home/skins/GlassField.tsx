@@ -1,6 +1,6 @@
-import GlassFilters from "../GlassFilters";
-import SceneBackground from "../SceneBackground";
-import BubbleField from "../BubbleField";
+import GlassFilters from "../shared/GlassFilters";
+import SceneBackground from "../shared/SceneBackground";
+import BubbleField from "../shared/BubbleField";
 
 /** Glass skin — the liquid-glass bubble field over the sensed scene. */
 export default function GlassField() {

@@ -1,6 +1,6 @@
-import GlassFilters from "../GlassFilters";
-import SceneBackground from "../SceneBackground";
-import BubbleField from "../BubbleField";
+import GlassFilters from "../shared/GlassFilters";
+import SceneBackground from "../shared/SceneBackground";
+import BubbleField from "../shared/BubbleField";
 
 /** Ocean skin — the same field with buoyancy: wishes float up toward the surface
  * (the bottom edge is the ocean floor), most relevant highest. */

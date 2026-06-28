@@ -4,8 +4,7 @@ One narrow item per overnight tick (see `docs/tick-playbook.md`). Mark `[x]` whe
 shipped. Keep core skin-agnostic; keep skins thin.
 
 ## Core (every skin inherits)
-- [ ] Folder tidy: move shared home pieces into `components/home/shared/` and
-  update imports (cosmetic; current code already shares them).
+- [x] Folder tidy: shared pieces → `components/home/shared/` (BubbleField, SceneBackground, NavLayer, SceneWindow, GlassFilters, glyphs); PaperHome → `skins/`. Imports + tests updated; 250 green. _(core 2)_
 - [ ] Real `packages/core` / `packages/design` extraction + CI on luminous (was C6).
 - [x] A Settings "外观风格" picker sets the aesthetic at **runtime** (persisted): `HomeSkin` reads `settings.aesthetic` (falls back to `NEXT_PUBLIC_AESTHETIC` pre-hydration); flip glass/ocean/paper in-app, no rebuild. _(core 1)_
 - [ ] Perf pass on the glass effects for large desktop viewports (backdrop-filter +
