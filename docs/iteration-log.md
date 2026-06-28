@@ -1323,3 +1323,13 @@ What still feels wrong / not done yet:
   (deskMinutesToday 220 + batteryLow) provably raises a restful wish's score, lowers a
   focus wish's, and surfaces rest first — a differential vs the neutral context. Guards
   the whole fusion pipeline. 272 tests; build green.
+
+---
+
+## glass 13: Boxless wishes (bigger floating illustration + title)
+- Per user: removed the glass card + inner chip around primary wishes — the icon was
+  too small inside the box. Primary wishes now render as a free-floating, larger
+  illustration (h-62%, soft drop-shadow) + title, no container. Bumped r 41→47 for a
+  bigger icon; pushed the glass ring (ORB_R+132) and re-scattered the ocean wishes into
+  the upper band so they clear the orb. Ambient wishes stay small glass dots. 272 tests;
+  glass+ocean reshot + build green.

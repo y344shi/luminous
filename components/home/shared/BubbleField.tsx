@@ -148,15 +148,15 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
     opps.forEach((o, i) => {
       const seed = findSeed(seeds, o.seedId);
       if (!seed) return;
-      const r = 41 + (2 - i) * 3; // primary cards (illustration + title + action)
+      const r = 47 + (2 - i) * 3; // primary wishes (free-floating illustration + title)
       const z = 0.86 + (3 - i) * 0.04; // primaries sit near (crisp)
       const n = opps.length;
       const ang = (-90 + (360 / Math.max(n, 1)) * i) * (Math.PI / 180);
       // buoyancy skin: most relevant float highest (surface); glass skin: ring round orb
       const hx = buoyancy
-        ? Math.max(r + 10, Math.min(w - r - 10, w * (0.5 + (i - (n - 1) / 2) * 0.06)))
-        : Math.max(r + 8, Math.min(w - r - 8, w / 2 + Math.cos(ang) * (ORB_R + 112)));
-      const hy = buoyancy ? h * (0.12 + i * 0.21) : Math.max(r + 8, Math.min(h - r - 8, h / 2 + Math.sin(ang) * (ORB_R + 112)));
+        ? Math.max(r + 10, Math.min(w - r - 10, w * (0.5 + (i - (n - 1) / 2) * 0.22)))
+        : Math.max(r + 8, Math.min(w - r - 8, w / 2 + Math.cos(ang) * (ORB_R + 132)));
+      const hy = buoyancy ? h * (0.09 + i * 0.13) : Math.max(r + 8, Math.min(h - r - 8, h / 2 + Math.sin(ang) * (ORB_R + 132)));
       next.push({ id: o.id, seedId: o.seedId, title: seed.title, category: distinctIllustrationCategory(seed.categories, seed.id, usedCats), r, z, primary: true, opp: o });
       bodies.push({ id: o.id, x: hx, y: rise ? h - r - rand(0, 18) : hy, vx: 0, vy: 0, r, m: r * r });
       homes[o.id] = { x: hx, y: hy };
@@ -355,18 +355,23 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
           onClick={() => setSelected(b)}
           aria-label={b.title}
           className={cx(
-            "absolute left-0 top-0 flex items-center justify-center will-change-transform relative overflow-hidden",
-            b.primary ? "glass-liquid glass-glint rounded-[20px]" : "glass glass-faint rounded-full",
+            "absolute left-0 top-0 flex items-center justify-center will-change-transform",
+            // primary wishes: a free-floating illustration + title (no box);
+            // lesser wishes: a small glass dot
+            b.primary ? "flex-col gap-1" : "glass glass-faint rounded-full relative overflow-hidden",
             // condense out of light on load; switch to dissolve when completed
             dissolving === b.id ? "tdd-dissolve" : "tdd-condense"
           )}
           style={{ width: b.r * 2, height: b.r * 2, ["--gd"]: `${(b.r % 5) * 1.7}s`, animationDelay: dissolving === b.id ? "0ms" : `${(i % 8) * 55}ms`, filter: `blur(${((1 - b.z) * 2.6).toFixed(2)}px) saturate(${(0.88 + b.z * 0.2).toFixed(2)})` } as React.CSSProperties}
         >
-          <span className="glass-refract" aria-hidden />
           {b.primary ? (
-            <span className="flex h-full w-full flex-col items-center justify-center gap-1 px-2 py-1.5">
-              <span className="flex h-[46%] w-[80%] items-center justify-center rounded-xl bg-[#f1ece2]">
-                <IllustrationArt style={illustrationStyle} category={b.category} className="h-full w-full" />
+            <>
+              <span className="flex h-[62%] w-full items-center justify-center">
+                <IllustrationArt
+                  style={illustrationStyle}
+                  category={b.category}
+                  className="h-full w-full drop-shadow-[0_1px_3px_rgba(60,52,44,0.16)]"
+                />
               </span>
               <span
                 className="serif text-center text-[11px] font-medium leading-tight text-[var(--text)]"
@@ -374,9 +379,12 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
               >
                 {b.title}
               </span>
-            </span>
+            </>
           ) : (
-            <CategoryGlyph category={b.category} size={Math.round(b.r)} />
+            <>
+              <span className="glass-refract" aria-hidden />
+              <CategoryGlyph category={b.category} size={Math.round(b.r)} />
+            </>
           )}
         </button>
       ))}

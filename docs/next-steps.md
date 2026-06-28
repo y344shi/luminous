@@ -20,6 +20,7 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] Paper polish: notes are laid hand-by-hand (staggered `tdd-rise`), and each carries a faint **pressed-flower** mark — a botanical line-art stamp that varies by category. _(paper 3)_
 
 ## Fresh (self-review — needs a green tick each)
+- [x] **Boxless wishes** (user): dropped the glass card around primary wishes — now a bigger free-floating illustration + title (no box). Glass rings the orb; ocean rises in the upper band. _(glass 13)_
 - [x] End-to-end fusion test: a weary context (long sit + low battery) provably lifts the restful wish + lowers focus through recommend, not just in isolated bonuses. _(core 29)_
 - [x] Consolidated the sensing hooks into one `useSensedSignals()` (motion/loudness/dwell/weather/battery) — BubbleField, PaperHome, NowFlow all read it, so the next signal is a one-file add. Behavior-neutral. _(core 28)_
 - [x] **Now flow is sensor-aware**: /now folded the passive senses (motion/loudness/dwell/weather/battery) into its recommendation context, so the deliberate ask is as keen as the home (was using only the stated answers). _(core 27)_
