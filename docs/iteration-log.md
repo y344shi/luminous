@@ -1211,3 +1211,15 @@ What still feels wrong / not done yet:
   categories), and IllustrationArt renders an svg per category + falls back for an
   unknown style. Locks the pack system (the big recent feature) against regressions.
   254 tests green.
+
+---
+
+## glass 11: Lighter wish cards (title only)
+- Removed the one-line action from the floating cards — it was too cramped. Cards now
+  show illustration + title only (title can breathe to 2 lines, bigger illustration).
+  The action still lives on the tap-sheet. Reshot glass+ocean. 254 tests green.
+
+## core 20: Garden wishes use the chosen illustration
+- SeedCard swapped its system category emoji for IllustrationArt(category, chosen
+  pack) — the Garden now matches the home cards. SeedGarden passes settings.
+  illustrationStyle. 254 tests; build green.
