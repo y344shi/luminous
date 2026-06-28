@@ -5,7 +5,7 @@ shipped. Keep core skin-agnostic; keep skins thin.
 
 ## Core (every skin inherits)
 - [x] Folder tidy: shared pieces → `components/home/shared/` (BubbleField, SceneBackground, NavLayer, SceneWindow, GlassFilters, glyphs); PaperHome → `skins/`. Imports + tests updated; 250 green. _(core 2)_
-- [ ] Real `packages/core` / `packages/design` extraction + CI on luminous (was C6).
+- [ ] `packages/design` extraction + CI on luminous. (`packages/core` ✓ done — core 31–37.)
 - [x] A Settings "外观风格" picker sets the aesthetic at **runtime** (persisted): `HomeSkin` reads `settings.aesthetic` (falls back to `NEXT_PUBLIC_AESTHETIC` pre-hydration); flip glass/ocean/paper in-app, no rebuild. _(core 1)_
 - [x] Desktop perf: on `@media (pointer: fine)` (desktop/laptop) the per-bubble animated SVG turbulence + the full-screen goo filter are swapped for a cheap CSS blur; touch keeps the full richness. _(core 3)_
 
@@ -30,9 +30,6 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] **packages/core — slice 5**: moved the rest of the pure domain (context/ambient/mockSeeds/seedParser/traceGenerator/seedAiPrompt/reminders/exportTraces). `@core` = 21 modules; `lib/` is now the platform boundary. _(core 35)_
 - [x] **packages/core — finished**: `@core` is now `@luminous/core` (real package.json) holding the whole framework-free domain (23 modules incl. bubblePhysics/aiParser); web consumes it via the `@core/*` alias. `lib/` is purely the platform boundary now. _(core 36)_
 - [ ] When the RN/iOS app is created: add `@luminous/core` as a workspace dep there (+ `transpilePackages` if needed). No web change required.
-- [ ] **packages/core — finish**: give `@core` a real `package.json` (`@luminous/core`) + npm workspace → a true shared dependency for the RN/iOS build.
-- [ ] **packages/core — slice 3**: move the recommender (`scoring`, `context`, `ambient`, `illustration`, `weather`, `mockSeeds`, `copy`) — the bulk of the brain.
-- [ ] **packages/core — finish**: give it a real `package.json` (`@luminous/core`) + npm workspace; then it's a true shared dependency for the RN/iOS build.
 - [x] Docs: refreshed `CONTEXT.md` (sensing fusion table + illustration packs + boxless wishes; dropped the dead café NavLayer) and wrote a real `README.md` (was create-next-app boilerplate). _(core 30)_
 - [x] **Boxless wishes** (user): dropped the glass card around primary wishes — now a bigger free-floating illustration + title (no box). Glass rings the orb; ocean rises in the upper band. _(glass 13)_
 - [x] End-to-end fusion test: a weary context (long sit + low battery) provably lifts the restful wish + lowers focus through recommend, not just in isolated bonuses. _(core 29)_
@@ -46,7 +43,6 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] **Dwell sensing** (smarter/temporal): tracks active minutes at the desk today (on-device, per-day localStorage); long sit → ranking favors body/rest/outside + the day-line says 坐了一会/坐了挺久. _(core 22)_
 - [x] PaperHome sensing parity: dwell + weather now feed paper's ranking + day-line (the tint stays glass/ocean — paper keeps its notebook look). _(paper 1)_
 - [x] **Battery signal**: low + unplugged → a soft winding-down proxy; ranking favors small/restful, eases off long/high-energy. On-device, no permission. _(core 26)_
-- [ ] Sensing breadth: session-length + app-open cadence; iOS system-wide Screen Time (note in ios-sensor-port.md).
 - [x] Lighter wish cards: dropped the cramped action line — cards show illustration + title only (user). _(glass 11)_
 - [x] Garden wishes use the chosen illustration pack (dropped the system emoji) — consistent with the home cards. _(core 20)_
 - [x] Test coverage for the illustration pack system: all 8 packs registered, every pack category-aware (7 scenes), IllustrationArt renders + falls back. _(core 19)_
@@ -65,14 +61,13 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] Sensing is now **clickable + automatic**: motion samples passively; ambient (mic) auto-resumes on load once opted-in (`settings.senseAround`, permission persists → no re-prompt); 感受周围 is the one-time trigger. _(core 11)_
 - [x] Make the sensing visible: the ambient line now surfaces the fused senses — 走着/在路上 (motion) and 周围很安静/周围有点热闹 (loudness) — so the app's keenness shows. _(core 10)_
 - [x] **Sensor-fusion ranking** (the real core idea): the recommender now fuses motion (accelerometer→activity), ambient loudness (opt-in mic→quiet/lively), location, time + weather; `scoring.sensorBonus` nudges which tiny action fits *now*. Café-finder removed. All on-device. `感受周围` opt-in. _(sense 1–3)_
-- [ ] **iOS: port the sensor fusion** — brief written for the Mac agent in `docs/ios-sensor-port.md` (CoreMotion · AVAudioSession · HealthKit HR→arousal · CoreLocation, mirroring `lib/sensors.ts` + `sensorBonus`). (Mac/Swift.)
+- [ ] **iOS/RN: port (or consume) the sensor fusion** — brief: `docs/ios-sensor-port.md`. The brain is now `@luminous/core`; **RN can consume it directly (zero reimplementation)**, SwiftUI mirrors it. (Mac.)
 - [x] a11y bug: under prefers-reduced-motion the physics loop never ran, so bubbles stacked unpositioned at the corner — now placed at their homes statically (no animation). _(core 9)_
 - [x] Tidy: removed dead `AmbientOrbit` (pre-bubble-field Home leftover) + its test; corrected the BubbleField doc comment to match the settle-then-rest motion. _(core 8)_
 - [x] Geo search in **every** web skin: NavLayer (Overpass nearby café/attraction + true-bearing arrow) was only on glass/ocean; added to paper too (a skin-fitting `soft` variant). _(core 7)_
 - [x] Motion rework (user feedback): removed pointer-tracking everywhere; a firm spring flows bubbles in and **rests** them (no drift/jitter); gyro tilt is a **slight** lean only, desktop is still. _(core 6)_
 - [x] Tone fix: the shared field's motion button reads 感受水流 on the ocean skin (current), 感受重力 on glass — no more "gravity" under a buoyancy metaphor. _(core 5)_
 - [ ] iOS: build `ios-glass` in Xcode and confirm the sense/craft reconciliation compiles + reads well (Mac task).
-- [ ] Decide React Native vs SwiftUI (see chat) — prerequisite is the `packages/core` extraction above.
-- [ ] Add-flow + Garden visual cohesion: make sure every route feels at home under each skin's palette.
+- [ ] **Decide React Native vs SwiftUI** — the `packages/core` prerequisite is ✓ done, so this is now purely the product call. (Recommendation in `docs/CONTEXT.md`: RN + `@luminous/core`.)
 - [ ] (optional, needs product-tone OK) a discreet on-Home skin cue so users can flip looks without opening Settings.
 - [ ] Keep the keepsake card intentionally warm across all skins (decision recorded — do not re-skin it).

@@ -1432,3 +1432,13 @@ What still feels wrong / not done yet:
   classifiers directly (only sampling is platform-specific) — zero reimplementation;
   SwiftUI still mirrors. Also flagged dwell/weather/battery to port. Docs-only; 296
   tests green.
+
+---
+
+## core 40: Backlog hygiene
+- next-steps.md (the loop's input) had drifted: packages/core "slice 3"/"finish"
+  listed open but shipped (core 33/34/36), plus a decided-against item (session-length)
+  and a moot one (Add/Garden cohesion — skins only affect Home). Pruned those, fixed
+  the stale iOS line (lib/* → @luminous/core; RN-consume note) and the RN-vs-SwiftUI
+  prerequisite (extraction done). 7 truly-open items remain (all native/user-gated).
+  [x] history kept. Docs-only; 296 tests green.
