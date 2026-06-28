@@ -1043,3 +1043,12 @@ What still feels wrong / not done yet:
   and rest in place. Gyro tilt now leans the whole cluster only slightly (±24px);
   on desktop (no input) they simply rest. Flow-in keeps the condense (glass) +
   rise-from-floor (ocean) entrances. 250 tests green.
+
+---
+
+## core 7: Geo/nearby search in every skin (user feedback)
+- The NavLayer (opt-in geolocation → OpenStreetMap Overpass nearby café/attraction
+  → true-bearing arrow + distance) lived only in the bubble field (glass/ocean).
+  Added it to the paper skin too, with a new `variant="soft"` so the chip fits the
+  notebook instead of the glass look. Geo sensing is now present in all three web
+  skins. Updated homeSkin.test (paper now has the nav). 250 tests green.

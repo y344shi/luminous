@@ -30,18 +30,19 @@ describe("HomeSkin — runtime skin switch", () => {
     expect(["glass", "ocean", "paper"]).toContain(defaultSettings.aesthetic);
   });
 
-  it("glass/ocean render the bubble field (café nav present)", () => {
+  it("glass/ocean render the bubble field (no notebook list)", () => {
     setSkin("glass");
     render(<HomeSkin clean={false} />);
     expect(screen.getAllByText(copy.home.navFind).length).toBeGreaterThan(0);
+    expect(screen.queryByLabelText("也许现在可以做的小事")).toBeNull();
     cleanup();
   });
 
-  it("paper renders the notebook (labelled note list, no café nav)", () => {
+  it("paper renders the notebook list — and the geo search is in every skin", () => {
     setSkin("paper");
     render(<HomeSkin clean={false} />);
     expect(screen.getByLabelText("也许现在可以做的小事")).toBeTruthy();
-    expect(screen.queryByText(copy.home.navFind)).toBeNull();
+    expect(screen.getAllByText(copy.home.navFind).length).toBeGreaterThan(0);
     cleanup();
   });
 });

@@ -20,7 +20,11 @@ type Status = "idle" | "searching" | "done" | "none" | "fail";
  * is stored. The arrow rotates with the device compass when available, else
  * north-up. Tap to search; fails soft.
  */
-export default function NavLayer() {
+export default function NavLayer({ variant = "glass" }: { variant?: "glass" | "soft" } = {}) {
+  const chip =
+    variant === "soft"
+      ? "rounded-[4px] border border-[var(--text)]/15 bg-[var(--surface)] shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+      : "glass rounded-full";
   const [status, setStatus] = useState<Status>("idle");
   const [place, setPlace] = useState<NearPlace | null>(null);
   const [heading, setHeading] = useState(0);
@@ -76,7 +80,7 @@ export default function NavLayer() {
     return (
       <button
         onClick={find}
-        className="glass rounded-full px-4 py-2 text-[12px] text-[var(--text-secondary)]"
+        className={`${chip} px-4 py-2 text-[12px] text-[var(--text-secondary)]`}
       >
         {copy.home.navFind}
       </button>
@@ -95,7 +99,7 @@ export default function NavLayer() {
 
   const rotation = (place.bearing - heading + 360) % 360;
   return (
-    <button onClick={find} className="glass flex items-center gap-2 rounded-full py-2 pl-2 pr-4">
+    <button onClick={find} className={`${chip} flex items-center gap-2 py-2 pl-2 pr-4`}>
       <span
         className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent-soft)]"
         style={{ transform: `rotate(${rotation}deg)` }}

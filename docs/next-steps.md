@@ -20,6 +20,7 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] Paper polish: notes are laid hand-by-hand (staggered `tdd-rise`), and each carries a faint **pressed-flower** mark — a botanical line-art stamp that varies by category. _(paper 3)_
 
 ## Fresh (self-review — needs a green tick each)
+- [x] Geo search in **every** web skin: NavLayer (Overpass nearby café/attraction + true-bearing arrow) was only on glass/ocean; added to paper too (a skin-fitting `soft` variant). _(core 7)_
 - [x] Motion rework (user feedback): removed pointer-tracking everywhere; a firm spring flows bubbles in and **rests** them (no drift/jitter); gyro tilt is a **slight** lean only, desktop is still. _(core 6)_
 - [x] Tone fix: the shared field's motion button reads 感受水流 on the ocean skin (current), 感受重力 on glass — no more "gravity" under a buoyancy metaphor. _(core 5)_
 - [ ] iOS: build `ios-glass` in Xcode and confirm the sense/craft reconciliation compiles + reads well (Mac task).

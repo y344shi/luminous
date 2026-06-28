@@ -12,6 +12,7 @@ import { completeFeedback } from "@/lib/feedback";
 import { cx } from "@/lib/utils";
 import { CategoryGlyph } from "../shared/glyphs";
 import PressedFlower from "./PressedFlower";
+import NavLayer from "../shared/NavLayer";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 
@@ -116,7 +117,7 @@ export default function PaperHome() {
         </p>
       )}
 
-      <div className="mt-9 flex items-center gap-4 pl-7">
+      <div className="mt-9 flex flex-wrap items-center gap-4 pl-7">
         <Link
           href="/now"
           className="hand rounded-[4px] border border-[var(--text)]/15 bg-[var(--surface)] px-5 py-2.5 text-[16px] text-[var(--text)] shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
@@ -124,6 +125,7 @@ export default function PaperHome() {
           {copy.home.primary}
         </Link>
         <Link href="/add" aria-label="接住一个新愿望" className="hand text-[22px] text-[var(--text-secondary)]">＋</Link>
+        <NavLayer variant="soft" />
       </div>
 
       {selected && (() => {
