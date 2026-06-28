@@ -1069,3 +1069,13 @@ What still feels wrong / not done yet:
   unpositioned in the top-left corner. Added a one-shot effect that places each
   bubble at its home (no animation) under reduced-motion. Affects all bubble-field
   skins (glass/ocean); default render unchanged. 248 tests green.
+
+---
+
+## sense 3/3: live sensing + opt-in (the fusion is now wired)
+- New `useSensors` hook: passive accelerometer → activity; opt-in mic → ambient
+  loudness (also unlocks iOS motion). Nothing recorded or sent — reads levels,
+  derives a coarse signal, forgets the raw. Wired into BubbleField + PaperHome so
+  the recommendations re-rank as senses arrive; a gentle `感受周围` opt-in in the
+  controls. Heart-rate `arousal` stays an unused seam (iOS HealthKit later).
+  251 tests green; typecheck + all skins build clean.

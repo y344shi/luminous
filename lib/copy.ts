@@ -29,6 +29,7 @@ export const copy = {
     bubbleLater: "先放着",
     feelGravity: "感受重力",
     feelCurrent: "感受水流",
+    senseAround: "感受周围",
     traceHeading: "今日痕迹",
     traceEmpty: "还没有，但可以很小。",
     seedsHeading: "最近的小愿望",

@@ -12,6 +12,7 @@ import { completeFeedback } from "@/lib/feedback";
 import { cx } from "@/lib/utils";
 import { CategoryGlyph } from "../shared/glyphs";
 import PressedFlower from "./PressedFlower";
+import { useSensors } from "../shared/useSensors";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 
@@ -35,6 +36,7 @@ export default function PaperHome() {
   const addTrace = useStore((s) => s.addTrace);
   const setSeedStatus = useStore((s) => s.setSeedStatus);
   const soundEnabled = useStore((s) => s.settings.soundEnabled);
+  const { activity, ambient, ambientOn, enableAmbient } = useSensors();
 
   const [mounted, setMounted] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
@@ -54,10 +56,10 @@ export default function PaperHome() {
 
   useEffect(() => {
     if (!mounted || !now) return;
-    const ctx = buildAmbientContext({ now, isMobile: isMobileDevice(), locationHint: location, energy: lastPick.energy });
+    const ctx = buildAmbientContext({ now, isMobile: isMobileDevice(), locationHint: location, energy: lastPick.energy, activity, ambient });
     setOpps(recommend(seeds, ctx, { limit: 4 }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, now, seeds, location, lastPick.energy]);
+  }, [mounted, now, seeds, location, lastPick.energy, activity, ambient]);
 
   if (!mounted || !hydrated || !now) return null;
   const shown = opps.filter((o) => !doneSeedIds.includes(o.seedId));
@@ -124,6 +126,14 @@ export default function PaperHome() {
           {copy.home.primary}
         </Link>
         <Link href="/add" aria-label="接住一个新愿望" className="hand text-[22px] text-[var(--text-secondary)]">＋</Link>
+        {!ambientOn && (
+          <button
+            onClick={enableAmbient}
+            className="hand rounded-[4px] border border-[var(--text)]/15 bg-[var(--surface)] px-3.5 py-2 text-[13px] text-[var(--text-secondary)]"
+          >
+            {copy.home.senseAround}
+          </button>
+        )}
       </div>
 
       {selected && (() => {

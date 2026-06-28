@@ -12,6 +12,7 @@ import { step, type Body } from "@/lib/bubblePhysics";
 import { copy } from "@/lib/copy";
 import { CategoryGlyph, SceneGlyph } from "./glyphs";
 import SceneWindow from "./SceneWindow";
+import { useSensors } from "./useSensors";
 import { cx } from "@/lib/utils";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
@@ -52,6 +53,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
   const setSeedStatus = useStore((s) => s.setSeedStatus);
   const homeLocation = useStore((s) => s.homeLocation);
   const setHomeLocation = useStore((s) => s.setHomeLocation);
+  const { activity, ambient, ambientOn, enableAmbient } = useSensors();
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const elsRef = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -113,6 +115,8 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
       isMobile: isMobileDevice(),
       locationHint: location,
       energy: lastPick.energy,
+      activity,
+      ambient,
     });
     const opps = recommend(seeds, ctx, { limit: 4 });
     const primaryIds = new Set(opps.map((o) => o.seedId));
@@ -167,7 +171,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
     phaseRef.current = phasemap;
     setBubbles(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, now, seeds, location, lastPick.energy]);
+  }, [mounted, now, seeds, location, lastPick.energy, activity, ambient]);
 
   // physics loop
   useEffect(() => {
@@ -406,6 +410,14 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
               className="glass rounded-full px-4 py-2 text-[12px] text-[var(--text-secondary)]"
             >
               {buoyancy ? copy.home.feelCurrent : copy.home.feelGravity}
+            </button>
+          )}
+          {!ambientOn && (
+            <button
+              onClick={enableAmbient}
+              className="glass rounded-full px-4 py-2 text-[12px] text-[var(--text-secondary)]"
+            >
+              {copy.home.senseAround}
             </button>
           )}
           <Link
