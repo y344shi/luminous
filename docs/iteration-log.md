@@ -919,3 +919,43 @@ What still feels wrong / not done yet:
 - `backdrop-filter` / `color-mix` / conic-mask need a modern browser (graceful:
   the translucent gradient still reads as glass if a filter is unsupported).
 - Could add a one-time page-load "settle" stagger for the bubbles.
+
+---
+
+## glass 1 (A1): Liquid-glass refraction
+- New `GlassFilters` SVG `#tdd-liquid` (animated fractalNoise turbulence +
+  displacement). `.glass-refract` inner layer warps a caustic highlight inside
+  each bubble + the orb → light bends like real glass. Reduced-motion: filter off.
+- Rendered on Home; 214 tests green; typecheck + build clean. Branch luminous-glass.
+
+---
+
+## glass 2 (A2): Caustic edge light
+- The iridescent rim now slowly hue-rotates (`tdd-rim-hue`) for a living caustic
+  shimmer, and a bright specular **glint** sweeps across each primary bubble + the
+  orb (`.glass-glint::before`, staggered per-bubble via `--gd`). Reduced-motion off.
+- 214 tests green; typecheck + build clean. Branch luminous-glass.
+
+---
+
+## glass 3 (A3): Depth field
+- Each bubble carries a `z` (primaries near ~0.9, lesser ones far ~0.3) driving a
+  progressive blur (`blur((1-z)*2.6px)`) and pointer/device-tilt **parallax**
+  (near bubbles shift more). Crisp in front, soft in back. Reduced-motion: static.
+- 214 tests green; typecheck + build clean. Branch luminous-glass.
+
+---
+
+## glass 4 (A4): Gooey coalesce (liquid metaballs)
+- New `#tdd-goo` filter (feGaussianBlur + alpha-threshold feColorMatrix). A
+  `.goo-layer` of soft accent `.goo-blob`s is synced under the glass bubbles each
+  frame; when bubbles drift/collide close, their blobs fuse into liquid bridges and
+  part again. Layer sits behind the glass at 0.5 opacity. 214 tests green.
+
+---
+
+## glass 5 (A5): Dreamier ambience
+- Calmer motion (home-pull 0.55→0.42, jitter ±5→±3, damping 0.92→0.94) so the
+  field drifts slower. Added a `.dream-motes` layer (9 faint rising light dots,
+  staggered) and a soft `.dream-vignette` framing the field. Reduced-motion stills
+  the motes. 214 tests green; typecheck + build clean.

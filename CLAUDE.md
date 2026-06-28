@@ -62,3 +62,6 @@ A 5-minute cron runs build cycles. Each tick follows `docs/tick-playbook.md`:
 pick the next item from `docs/next-steps.md`, implement (optionally via subagents),
 keep the loop working, run typecheck+test+build, update docs, commit on branch
 `seize-the-day/overnight-build`. One narrow improvement per cycle. Never rewrite wholesale.
+
+## Shared context (read first)
+Before working, read `docs/CONTEXT.md` — the cross-machine shared brain (Mac + WSL): branch map, status, and the start/end sync protocol.
