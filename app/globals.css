@@ -381,6 +381,15 @@ body {
   will-change: transform;
 }
 
+/* Desktop perf: the animated SVG turbulence (per bubble + orb, every frame) and
+   the full-screen goo filter are costly over large viewports — where the user
+   reported lag. On fine-pointer devices (desktop / laptop) swap them for a cheap
+   CSS blur; the glass still reads well. Touch devices keep the full richness. */
+@media (pointer: fine) {
+  .glass-refract { filter: none; }
+  .goo-layer { filter: blur(7px); }
+}
+
 /* Dreamier ambience: a gentle vignette + faint drifting motes of light. */
 .dream-vignette {
   position: absolute;

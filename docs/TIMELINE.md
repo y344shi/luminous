@@ -243,10 +243,11 @@ Repo: `git@github.com:y344shi/luminous.git`  ·  app at `dreams/seize_the_day`
 | 2026-06-25 | `4643eb6` | Add project guide + overnight tick playbook for autonomous cycles |
 | 2026-06-25 | `730b76f` | Cycle 1: 《今天别消失》web MVP — full core loop alive |
 
-## branch `luminous-trunk` — 58 commits
+## branch `luminous-trunk` — 59 commits
 
 | date | commit | change |
 | --- | --- | --- |
+| 2026-06-28 | `1e18a54` | core 2: folder tidy — shared/ + skins/ layout |
 | 2026-06-28 | `cf2b579` | core 1: runtime skin picker (Settings 外观风格, persisted) |
 | 2026-06-28 | `82284c4` | restructure 3: carry restructure-plan onto the trunk (main sync) |
 | 2026-06-28 | `69a89b2` | restructure 2: swappable skins + config switch (glass / ocean / paper) |

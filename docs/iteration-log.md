@@ -984,3 +984,12 @@ What still feels wrong / not done yet:
   GlassFilters, glyphs) into `components/home/shared/`, and PaperHome into
   `components/home/skins/` (dropping the re-export shim). Updated all importers +
   tests. Matches docs/architecture-skins.md. No visual change. 250 tests green.
+
+---
+
+## core 3: Desktop perf pass on the glass effects
+- The animated SVG turbulence (`.glass-refract`, per bubble + orb every frame) and
+  the full-screen goo metaball filter (`.goo-layer`) are the costly bits on large
+  viewports. On `@media (pointer: fine)` (desktop/laptop, where lag was reported)
+  they're swapped for a cheap CSS blur; touch devices keep the full richness.
+  CSS-only; 250 tests green; typecheck + build clean.

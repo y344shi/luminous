@@ -7,8 +7,7 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] Folder tidy: shared pieces → `components/home/shared/` (BubbleField, SceneBackground, NavLayer, SceneWindow, GlassFilters, glyphs); PaperHome → `skins/`. Imports + tests updated; 250 green. _(core 2)_
 - [ ] Real `packages/core` / `packages/design` extraction + CI on luminous (was C6).
 - [x] A Settings "外观风格" picker sets the aesthetic at **runtime** (persisted): `HomeSkin` reads `settings.aesthetic` (falls back to `NEXT_PUBLIC_AESTHETIC` pre-hydration); flip glass/ocean/paper in-app, no rebuild. _(core 1)_
-- [ ] Perf pass on the glass effects for large desktop viewports (backdrop-filter +
-  SVG goo/turbulence cost).
+- [x] Desktop perf: on `@media (pointer: fine)` (desktop/laptop) the per-bubble animated SVG turbulence + the full-screen goo filter are swapped for a cheap CSS blur; touch keeps the full richness. _(core 3)_
 
 ## glass skin
 - [ ] A7 page-load choreography: bubbles condense out of light into place (staggered).
