@@ -20,6 +20,7 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] Paper polish: notes are laid hand-by-hand (staggered `tdd-rise`), and each carries a faint **pressed-flower** mark — a botanical line-art stamp that varies by category. _(paper 3)_
 
 ## Fresh (self-review — needs a green tick each)
+- [x] Fix: illustration-style swatches used dark line-art on `--surface-soft`, invisible in the dark soft_ritual theme — gave the previews a fixed light card so they read in every theme. _(core 13)_
 - [x] **插画风格 picker in Settings**: 8 hand-painted swatches, one per illustration library (Open Doodles / Storyset / Pixeltrue / Blush / Humaaans / Open Peeps / unDraw / DrawKit), persisted to `settings.illustrationStyle`. Wiring the chosen style to the wishes is next. _(core 12)_
 - [x] Researched + recorded **lifestyle-illustration libraries** in `docs/scene-library.md` (Open Doodles / Storyset / Pixeltrue / Blush…) for the "art figure" direction.
 - [ ] **Lifestyle-card presentation** (user direction): show each wish as a lifestyle scene + a text description, one tap to start — not an abstract sphere. Illustration source TBD (library pick pending); card layout first.

@@ -190,7 +190,9 @@ export default function SettingsPanel() {
                     : "border-[var(--border)] bg-[var(--surface)]"
                 )}
               >
-                <span className="h-16 w-full overflow-hidden rounded-xl bg-[var(--surface-soft)]">
+                {/* fixed light card so the library-style art (some dark line-work)
+                    reads in every theme, including the dark soft_ritual */}
+                <span className="h-16 w-full overflow-hidden rounded-xl bg-[#f1ece2]">
                   <StylePreview art={st.art} />
                 </span>
                 <span className="text-[13px] font-medium text-[var(--text)]">{st.name}</span>

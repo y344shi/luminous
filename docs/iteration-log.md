@@ -1125,3 +1125,11 @@ What still feels wrong / not done yet:
   Storyset flat, Pixeltrue pastel, Blush painterly, Humaaans/Open Peeps figures,
   unDraw mono-accent, DrawKit soft duotone). Persists the choice; wiring the picked
   style onto the wishes is the next step. 251 tests green.
+
+---
+
+## core 13: Illustration swatches legible in the dark theme
+- The 8 插画风格 swatches drew dark line-art (Open Doodles / Open Peeps ink) on a
+  --surface-soft card, which is dark in soft_ritual → dark-on-dark, invisible. Gave
+  the preview card a fixed light background so library-style art reads in every
+  theme. 251 tests green.
