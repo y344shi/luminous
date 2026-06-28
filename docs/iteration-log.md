@@ -1177,3 +1177,12 @@ What still feels wrong / not done yet:
   every wish category renders art in every one of the 8 library styles; verified
   Humaaans (figures) in the preview. Next: home card sharing the bubble physics.
   251 tests green.
+
+---
+
+## glass 9: Home wishes become floating cards (shared physics)
+- Primary wishes now render as small cards (per-category illustration chip + title)
+  instead of abstract spheres, on the SAME bubble physics body — glass rings them
+  round the orb, ocean floats them in a staircase. Reduced to 3 primaries, bigger
+  bodies + wider ring/buoyancy spacing so cards clear the orb; ambient wishes stay
+  small bubbles. Physics engine untouched. 251 tests; all skins build green.
