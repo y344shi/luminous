@@ -1295,3 +1295,12 @@ What still feels wrong / not done yet:
   hook (Battery API; absent on iOS Safari/Firefox → no signal) wired into BubbleField +
   PaperHome. Ranking-only — kept off the day-line to avoid noise. On-device, no
   permission. +5 tests (271).
+
+---
+
+## core 27: The Now flow is sensor-aware
+- /now built its context only from the question answers (mood/energy/place), ignoring
+  the passive senses the home already fuses — so the explicit ask was less keen than
+  the casual home. NowFlow now reads useSensors/useDwell/useWeather/useBattery and
+  spreads activity/ambient/deskMinutesToday/batteryLow + sensed weather onto the
+  recommend context. Stated + sensed, everywhere. 271 tests; build green.

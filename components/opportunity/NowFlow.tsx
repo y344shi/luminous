@@ -6,6 +6,10 @@ import type { Mood, Energy, Opportunity, LocationType } from "@/lib/types";
 import { useStore, findSeed } from "@/lib/store";
 import { buildContext } from "@/lib/context";
 import { recommend } from "@/lib/scoring";
+import { useSensors } from "@/components/home/shared/useSensors";
+import { useDwell } from "@/components/home/shared/useDwell";
+import { useWeather, isGoodOutdoorWeather } from "@/components/home/shared/useWeather";
+import { useBattery } from "@/components/home/shared/useBattery";
 import { buildTrace, buildRestTrace, type CompletionKind } from "@/lib/traceGenerator";
 import { copy } from "@/lib/copy";
 import { completeFeedback } from "@/lib/feedback";
@@ -34,6 +38,11 @@ export default function NowFlow() {
   const soundEnabled = useStore((s) => s.settings.soundEnabled);
   const hydrated = useStore((s) => s.hydrated);
   const lastPick = useStore((s) => s.lastPick);
+  const homeLocation = useStore((s) => s.homeLocation);
+  const { activity, ambient } = useSensors();
+  const deskMinutesToday = useDwell();
+  const weatherKind = useWeather(homeLocation);
+  const batteryLow = useBattery();
   const illustrationStyle = useStore((s) => s.settings.illustrationStyle);
   const rememberPick = useStore((s) => s.rememberPick);
 
@@ -71,14 +80,21 @@ export default function NowFlow() {
   function handleFind() {
     if (!ready) return;
     rememberPick(mood!, energy!);
-    const ctx = buildContext({
-      mood: mood!,
-      energy: energy!,
-      freeMinutes: freeTouched ? freeMinutes : undefined,
-      locationHint,
-      isOutdoorWeatherGood: weatherGood || undefined,
-      isAtComputer: locationHint === "computer",
-    });
+    const ctx = {
+      ...buildContext({
+        mood: mood!,
+        energy: energy!,
+        freeMinutes: freeTouched ? freeMinutes : undefined,
+        locationHint,
+        isOutdoorWeatherGood: weatherGood || isGoodOutdoorWeather(weatherKind) || undefined,
+        isAtComputer: locationHint === "computer",
+      }),
+      // fuse the passive senses so the deliberate ask is as keen as the home
+      activity,
+      ambient,
+      deskMinutesToday,
+      batteryLow,
+    };
     const result = recommend(seeds, ctx, { limit: 3 });
     setOpps(result);
     setActiveIndex(0);
