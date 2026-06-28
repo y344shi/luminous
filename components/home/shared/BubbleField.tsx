@@ -350,24 +350,16 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
         >
           <span className="glass-refract" aria-hidden />
           {b.primary ? (
-            <span className="flex h-full w-full flex-col items-center justify-center gap-0.5 px-2 py-1.5">
-              <span className="flex h-[40%] w-[76%] items-center justify-center rounded-lg bg-[#f1ece2]">
+            <span className="flex h-full w-full flex-col items-center justify-center gap-1 px-2 py-1.5">
+              <span className="flex h-[46%] w-[80%] items-center justify-center rounded-xl bg-[#f1ece2]">
                 <IllustrationArt style={illustrationStyle} category={b.category} className="h-full w-full" />
               </span>
               <span
                 className="serif text-center text-[11px] font-medium leading-tight text-[var(--text)]"
-                style={{ display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" } as React.CSSProperties}
+                style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" } as React.CSSProperties}
               >
                 {b.title}
               </span>
-              {b.opp?.suggestedAction && (
-                <span
-                  className="text-center text-[9px] leading-snug text-[var(--text-secondary)]"
-                  style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" } as React.CSSProperties}
-                >
-                  {b.opp.suggestedAction}
-                </span>
-              )}
             </span>
           ) : (
             <CategoryGlyph category={b.category} size={Math.round(b.r)} />
