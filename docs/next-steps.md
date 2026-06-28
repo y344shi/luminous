@@ -17,4 +17,4 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] Ocean ambience: a caustic water **surface** band, slow **light shafts** from the top, and faint rising **bubble streams** — a decorative layer in the OceanField skin only; reduced-motion safe. _(ocean 4)_
 
 ## paper skin
-- [ ] Hand-drawn entrance for the notes; a pressed-flower mark per category.
+- [x] Paper polish: notes are laid hand-by-hand (staggered `tdd-rise`), and each carries a faint **pressed-flower** mark — a botanical line-art stamp that varies by category. _(paper 3)_

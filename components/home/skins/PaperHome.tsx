@@ -11,6 +11,7 @@ import { copy } from "@/lib/copy";
 import { completeFeedback } from "@/lib/feedback";
 import { cx } from "@/lib/utils";
 import { CategoryGlyph } from "../shared/glyphs";
+import PressedFlower from "./PressedFlower";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 
@@ -91,8 +92,13 @@ export default function PaperHome() {
               <button
                 onClick={() => setSelected(o)}
                 aria-label={`${seed.title}，${o.suggestedAction}`}
+                style={{ animationDelay: `${i * 90}ms` }}
                 className="paper-note tdd-rise flex w-full items-start gap-3 rounded-[4px] p-4 text-left transition-transform active:scale-[0.99]"
               >
+                <PressedFlower
+                  category={seed.categories[0]}
+                  className="pointer-events-none absolute right-2.5 top-2.5 text-[var(--accent-text)] opacity-25"
+                />
                 <CategoryGlyph category={seed.categories[0]} size={22} className="mt-0.5 text-[var(--accent-text)]" />
                 <span className="flex flex-col">
                   <span className="hand text-[19px] leading-snug text-[var(--text)]">{seed.title}</span>

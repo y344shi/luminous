@@ -1017,3 +1017,11 @@ What still feels wrong / not done yet:
   shared field) adds a shimmering caustic water surface band at the top, three slow
   drifting light shafts, and six faint rising bubble streams. CSS-only,
   pointer-events-none, reduced-motion safe. Glass/paper untouched. 250 tests green.
+
+---
+
+## paper 3: Hand-laid notes + pressed-flower marks
+- Paper skin only: the notes now appear staggered (per-index animationDelay on the
+  tdd-rise entrance), like being laid down one by one; each note carries a faint
+  PressedFlower mark — a tiny botanical line-art stamp keyed to the wish's category
+  (sprig/bloom/clover/fern/bud/wheat/tulip). New PressedFlower.tsx; 250 tests green.
