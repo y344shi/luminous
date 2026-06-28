@@ -964,3 +964,15 @@ What still feels wrong / not done yet:
 - a11y (PaperHome): each note button has a descriptive aria-label (title + action),
   the notes list is labelled, and the written-trace line is a polite role=status
   region so it's announced. 225 tests green; typecheck + build clean.
+
+---
+
+## craft 6 (C7): PWA push groundwork (VAPID seam)
+- New `lib/webpush.ts`: reads the VAPID public key from NEXT_PUBLIC_VAPID_PUBLIC_KEY
+  (no hardcoded key), base64url→Uint8Array decode, `pushSupported`,
+  `ensurePushSubscription` (reuses any existing sub; returns null unless a key +
+  granted permission + support). The service worker already handles push +
+  notificationclick. Dormant until a backend stores subs & sends pushes; local
+  in-session nudges are unaffected. New webpush.test.ts (3); 229 tests green.
+- C6 (packages extraction) intentionally DEFERRED — it is the shared-core
+  restructure under review (docs/restructure-plan.md); not done autonomously.

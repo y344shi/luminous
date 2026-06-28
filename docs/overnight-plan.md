@@ -41,8 +41,8 @@ push the branch. Small > grand. Revert rather than leave red.
 - [x] C3. Gentle haptics + optional soft chime on complete (`lib/feedback.ts`): a soft `navigator.vibrate` double-tap always; a brief rising sine chime only when `soundEnabled` (new Settings toggle). Wired into PaperHome + NowFlow. _(craft 3)_
 - [x] C4. Shareable keepsake: today's trace → a warm canvas card (wordmark, serif text, sprout mark, date) exported as PNG via Web Share / download. `lib/keepsake.ts` pure wrap+filename, tested. _(craft 4)_
 - [x] C5. Perf + a11y: the shared bubble field now **pauses its rAF when the tab is hidden** (visibilitychange, dt-jump-safe) on top of the reduced-motion gate; PaperHome notes got descriptive `aria-label`s, a labelled list, and a polite trace status region. _(craft 5)_
-- [ ] C6. Extract `packages/core` + `packages/design`; stand up CI on luminous.
-- [ ] C7. PWA push groundwork (VAPID seam) so nudges can reach a closed app.
+- [ ] C6. Extract `packages/core` + `packages/design`; stand up CI on luminous. _(DEFERRED — folded into the shared-core restructure; see `docs/restructure-plan.md`, awaiting approval. Not done autonomously.)_
+- [x] C7. PWA push groundwork: `lib/webpush.ts` (VAPID key from env — no hardcoded key — base64url decode, `ensurePushSubscription`); the SW already has `push`/`notificationclick`. Dormant until a backend exists; local nudges unaffected. _(craft 6)_
 
 ## Scene library + graphics sources
 See `docs/scene-library.md` for the ~100 scenario list and the recommended
