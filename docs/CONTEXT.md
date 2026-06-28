@@ -5,6 +5,9 @@ on **any machine** — MacBook *and* Windows WSL. Claude's conversation history 
 **not** sync across machines; **this file and the committed docs it indexes are how
 context travels.** Pull before you start, commit what matters before you stop.
 
+
+> **Restructure in progress (approved):** consolidating to ONE trunk (`luminous-trunk` → `main`) with a shared core + swappable skins (glass / ocean / paper) via `lib/aesthetic.ts` + `NEXT_PUBLIC_AESTHETIC`. See `docs/architecture-skins.md` + `docs/restructure-plan.md`. iOS mirrors it (Aesthetic enum on `ios-glass`). The old per-aesthetic branches are being archived.
+
 ## What luminous is
 An AI **life-anchor** app (NOT a todo/productivity app): it catches a soft wish (a
 *Seed*) and hands it back at the right moment so today didn't completely disappear.

@@ -11,6 +11,8 @@ import { buildTrace, type CompletionKind } from "@/lib/traceGenerator";
 import { step, gravityFromOrientation, type Body } from "@/lib/bubblePhysics";
 import { copy } from "@/lib/copy";
 import { CategoryGlyph, SceneGlyph } from "./glyphs";
+import SceneWindow from "./SceneWindow";
+import NavLayer from "./NavLayer";
 import { cx } from "@/lib/utils";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
@@ -42,7 +44,7 @@ function rand(a: number, b: number) {
  * device's gravity, sliding and clustering when you tilt. Tap one to do it; it
  * dissolves into light and leaves a trace.
  */
-export default function BubbleField() {
+export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean } = {}) {
   const hydrated = useStore((s) => s.hydrated);
   const seeds = useStore((s) => s.seeds);
   const lastPick = useStore((s) => s.lastPick);
@@ -59,6 +61,7 @@ export default function BubbleField() {
   const tiltRef = useRef<{ gamma: number | null; beta: number | null } | null>(null);
   const rafRef = useRef<number>(0);
   const sizeRef = useRef({ w: 0, h: 0 });
+  const phaseRef = useRef<Record<string, number>>({});
   const lastAccelRef = useRef(0);
   const lastShakeRef = useRef(0);
   const pointerRef = useRef({ px: 0, py: 0 });
@@ -121,19 +124,25 @@ export default function BubbleField() {
     const bodies: Body[] = [];
     const homes: Record<string, { x: number; y: number }> = {};
     const zmap: Record<string, number> = {};
+    const phasemap: Record<string, number> = {};
 
     opps.forEach((o, i) => {
       const seed = findSeed(seeds, o.seedId);
       if (!seed) return;
       const r = 34 + (3 - i) * 3; // best slightly bigger
       const z = 0.86 + (3 - i) * 0.04; // primaries sit near (crisp)
-      const angle = (-90 + (360 / Math.max(opps.length, 1)) * i) * (Math.PI / 180);
-      const hx = w / 2 + Math.cos(angle) * (ORB_R + 64);
-      const hy = h / 2 + Math.sin(angle) * (ORB_R + 64);
+      const n = opps.length;
+      const ang = (-90 + (360 / Math.max(n, 1)) * i) * (Math.PI / 180);
+      // buoyancy skin: most relevant float highest (surface); glass skin: ring round orb
+      const hx = buoyancy
+        ? Math.max(r + 10, Math.min(w - r - 10, w * (0.5 + (i - (n - 1) / 2) * 0.22)))
+        : w / 2 + Math.cos(ang) * (ORB_R + 64);
+      const hy = buoyancy ? h * (0.15 + i * 0.07) : h / 2 + Math.sin(ang) * (ORB_R + 64);
       next.push({ id: o.id, seedId: o.seedId, title: seed.title, category: seed.categories[0], r, z, primary: true, opp: o });
       bodies.push({ id: o.id, x: hx, y: hy, vx: 0, vy: 0, r, m: r * r });
       homes[o.id] = { x: hx, y: hy };
       zmap[o.id] = z;
+      phasemap[o.id] = rand(0, Math.PI * 2);
     });
 
     ambientSeeds.forEach((seed) => {
@@ -141,16 +150,18 @@ export default function BubbleField() {
       const r = rand(15, 22);
       const z = rand(0.25, 0.5); // lesser wishes drift far (soft)
       const hx = rand(r + 6, w - r - 6);
-      const hy = rand(r + 6, h - r - 6);
+      const hy = buoyancy ? h * 0.6 + rand(0, h * 0.3) : rand(r + 6, h - r - 6);
       next.push({ id, seedId: seed.id, title: seed.title, category: seed.categories[0], r, z, primary: false });
       bodies.push({ id, x: hx, y: hy, vx: rand(-8, 8), vy: rand(-8, 8), r, m: r * r });
       homes[id] = { x: hx, y: hy };
       zmap[id] = z;
+      phasemap[id] = rand(0, Math.PI * 2);
     });
 
     bodiesRef.current = bodies;
     homesRef.current = homes;
     zRef.current = zmap;
+    phaseRef.current = phasemap;
     setBubbles(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted, now, seeds, location, lastPick.energy]);
@@ -180,7 +191,22 @@ export default function BubbleField() {
       const bodies = bodiesRef.current;
       const tilt = tiltRef.current;
       const live = gyroOn && tilt;
-      if (live) {
+      if (buoyancy) {
+        // Floatiness: bubbles rise to their relevance-height (surface=top,
+        // floor=bottom) with a gentle bob; gyro/pointer stirs a horizontal current.
+        const sway = live
+          ? Math.max(-1, Math.min(1, (tilt.gamma ?? 0) / 45)) * 620
+          : pointerRef.current.px * 900;
+        for (const b of bodies) {
+          const home = homesRef.current[b.id];
+          if (!home) continue;
+          const ph = phaseRef.current[b.id] ?? 0;
+          const bob = Math.sin(t * 0.0011 + ph) * 5;
+          b.vx += (home.x - b.x) * 0.26 * dt + rand(-3, 3) * dt;
+          b.vy += (home.y + bob - b.y) * 0.5 * dt;
+        }
+        step(bodies, { w, h, gx: sway, gy: 0, dt, anchor: orb(), damping: 0.95, restitution: 0.5 });
+      } else if (live) {
         const g = gravityFromOrientation(tilt.gamma, tilt.beta, 1200);
         // Settle-to-cluster: when the device is near flat, ease bubbles gently
         // back toward the orb instead of leaving them flung to the edges.
@@ -294,7 +320,8 @@ export default function BubbleField() {
               : sense === "fail" ? copy.home.sensedFail
                 : null;
 
-  const canGyro = typeof window !== "undefined" && "DeviceOrientationEvent" in window;
+  const canGyro =
+    typeof window !== "undefined" && "DeviceOrientationEvent" in window && isMobileDevice();
 
   return (
     <div ref={wrapRef} className="relative h-[72dvh] w-full">
@@ -354,7 +381,10 @@ export default function BubbleField() {
         style={{ width: ORB_R * 2, height: ORB_R * 2 }}
       >
         <span className="glass-refract" aria-hidden />
-        <SceneGlyph icon={scene.icon} size={44} />
+        <SceneWindow icon={scene.icon} />
+        <span className="relative">
+          <SceneGlyph icon={scene.icon} size={32} />
+        </span>
         <span className="serif text-[11px] tracking-[0.14em] text-[var(--text-secondary)]">
           {scene.label}
         </span>
@@ -384,7 +414,8 @@ export default function BubbleField() {
             {justTrace}
           </p>
         )}
-        <div className="pointer-events-auto flex items-center gap-3">
+        <div className="pointer-events-auto flex flex-wrap items-center justify-center gap-3">
+          <NavLayer />
           {canGyro && !gyroOn && (
             <button
               onClick={enableMotion}
