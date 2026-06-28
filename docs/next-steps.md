@@ -26,7 +26,8 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] **All libraries, switch on demand** (user direction): pluggable `illustrationPacks` (one interface for all 8 looks) wired to `settings.illustrationStyle`; the picked style renders on the wish sheet + a live preview in Settings. _(core 14)_ Real library assets can drop into the same interface later.
 - [x] **Per-category pack art** (API + first pack): packs can now provide `scene(category)`; Open Doodles has all 7 category scenes (book/bowl/leaf/path/pen/two-forms/bloom). Wish sheet + Settings preview pass the category. _(core 15)_
 - [x] Storyset is now category-aware (flat 7 scenes). _(core 16)_
-- [ ] **Per-category art for the remaining 6 packs** (Pixeltrue/Blush/Humaaans/Open Peeps/unDraw/DrawKit) — one pack per tick; then real downloaded library assets behind the same interface.
+- [x] Pixeltrue is now category-aware (soft pastel 7 scenes). _(core 17)_
+- [ ] **Per-category art for the remaining 5 packs** (Blush/Humaaans/Open Peeps/unDraw/DrawKit) — one pack per tick; then real downloaded library assets behind the same interface.
 - [ ] Decide the home card layout (featured vs stack) for the lifestyle wishes.
 - [x] **Artistic glass redesign** (user: "weird, not artistic"): removed the green goo-metaball smudges; the orb is now a clean glass sphere (elegant line glyph + label) cradled in a soft **warm bloom**; fewer, on-screen bubbles. Calm + luminous. _(glass 8)_
 - [x] Sensing is now **clickable + automatic**: motion samples passively; ambient (mic) auto-resumes on load once opted-in (`settings.senseAround`, permission persists → no re-prompt); 感受周围 is the one-time trigger. _(core 11)_

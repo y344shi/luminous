@@ -136,6 +136,71 @@ const storysetScenes: Record<SeedCategory, ReactNode> = {
   ),
 };
 
+// Pixeltrue — soft pastel, rounded, gentle (viewBox 80×56).
+const pixeltrueScenes: Record<SeedCategory, ReactNode> = {
+  body: (
+    <g>
+      <ellipse cx="40" cy="48" rx="20" ry="3" fill="#e9e1d4" />
+      <path d="M24 28 q0 16 16 16 q16 0 16 -16 Z" fill="#f0d3bd" />
+      <rect x="23" y="26" width="34" height="4" rx="2" fill="#e3b79b" />
+      <path d="M33 22 q-3 -5 0 -9 M44 22 q3 -5 0 -9" stroke="#cfe0c8" strokeWidth="3.2" fill="none" strokeLinecap="round" />
+    </g>
+  ),
+  creation: (
+    <g>
+      <rect x="20" y="18" width="22" height="30" rx="5" fill="#eef0e6" />
+      <rect x="25" y="27" width="12" height="3" rx="1.5" fill="#cfe0c8" />
+      <rect x="25" y="33" width="12" height="3" rx="1.5" fill="#cfe0c8" />
+      <g transform="rotate(38 50 32)">
+        <rect x="45" y="16" width="7" height="24" rx="3.5" fill="#e3b79b" />
+        <path d="M45 40 q3.5 6 7 0 Z" fill="#d9a07a" />
+      </g>
+    </g>
+  ),
+  connection: (
+    <g>
+      <rect x="16" y="24" width="16" height="22" rx="8" fill="#f0d3bd" />
+      <rect x="48" y="24" width="16" height="22" rx="8" fill="#cfe0c8" />
+      <circle cx="36" cy="16" r="4" fill="#e8a3a3" />
+      <circle cx="44" cy="16" r="4" fill="#e8a3a3" />
+      <path d="M32 18 L40 28 L48 18 Z" fill="#e8a3a3" />
+    </g>
+  ),
+  exploration: (
+    <g>
+      <circle cx="54" cy="18" r="7" fill="#f5d9a8" />
+      <path d="M14 44 q14 -22 28 0 Z" fill="#cfe0c8" />
+      <path d="M40 44 q12 -16 24 0 Z" fill="#b9cdb0" />
+    </g>
+  ),
+  recovery: (
+    <g>
+      <rect x="12" y="36" width="56" height="12" rx="6" fill="#cfe0e6" />
+      <path d="M28 24 C28 15 44 13 50 20 C50 28 34 30 28 24 Z" fill="#b9cdb0" />
+    </g>
+  ),
+  learning: (
+    <g>
+      <path d="M40 42 q-10 -6 -20 -4 V22 q10 -2 20 4 Z" fill="#f0d3bd" />
+      <path d="M40 42 q10 -6 20 -4 V22 q-10 -2 -20 4 Z" fill="#e3b79b" />
+      <rect x="38" y="24" width="4" height="18" rx="2" fill="#cfa98a" />
+    </g>
+  ),
+  aesthetic: (
+    <g>
+      <g fill="#f0b8c0">
+        <circle cx="40" cy="16" r="5" />
+        <circle cx="32" cy="22" r="5" />
+        <circle cx="48" cy="22" r="5" />
+        <circle cx="35" cy="31" r="5" />
+        <circle cx="45" cy="31" r="5" />
+      </g>
+      <circle cx="40" cy="24" r="4.5" fill="#f5d9a8" />
+      <path d="M40 31 V46" stroke="#b9cdb0" strokeWidth="3" strokeLinecap="round" />
+    </g>
+  ),
+};
+
 export const illustrationStyles: IllustrationStyle[] = [
   {
     key: "opendoodles",
@@ -172,6 +237,7 @@ export const illustrationStyles: IllustrationStyle[] = [
     key: "pixeltrue",
     name: "Pixeltrue",
     note: "柔和粉彩 · 治愈",
+    scene: (c) => pixeltrueScenes[c],
     art: (
       <g>
         <ellipse cx="38" cy="50" rx="22" ry="3" fill="#e9e1d4" />

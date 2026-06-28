@@ -1160,3 +1160,11 @@ What still feels wrong / not done yet:
   flat accent+neutral style (bowl, pencil+paper, two figures+heart, hill+flag+sun,
   leaf on water, open book, potted plant). Verified in the Settings preview. 2 of 8
   packs now category-aware; 6 to go. 251 tests green.
+
+---
+
+## core 17: Pixeltrue category-aware (soft pastel 7 scenes)
+- Third pack grows per-category art: Pixeltrue draws all 7 wish categories in its
+  soft rounded pastel style (bowl, pencil+paper, two forms+heart, hills+sun, leaf on
+  water, open book, flower). Verified in the Settings preview. 3/8 packs
+  category-aware; 5 to go. 251 tests green.
