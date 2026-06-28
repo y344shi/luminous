@@ -6,7 +6,12 @@ on **any machine** — MacBook *and* Windows WSL. Claude's conversation history 
 context travels.** Pull before you start, commit what matters before you stop.
 
 
-> **Restructure in progress (approved):** consolidating to ONE trunk (`luminous-trunk` → `main`) with a shared core + swappable skins (glass / ocean / paper) via `lib/aesthetic.ts` + `NEXT_PUBLIC_AESTHETIC`. See `docs/architecture-skins.md` + `docs/restructure-plan.md`. iOS mirrors it (Aesthetic enum on `ios-glass`). The old per-aesthetic branches are being archived.
+> **Restructure DONE:** one trunk per platform, shared core + swappable skins
+> (glass / ocean / paper) via `lib/aesthetic.ts` (runtime-switchable in Settings →
+> 外观风格, or `NEXT_PUBLIC_AESTHETIC` default). Web → `luminous-trunk` → `main`;
+> iOS mirrors it with an `Aesthetic` enum on `ios-glass`. The old per-aesthetic
+> branches (web glass/sense/craft/ocean, iOS ios-sense/ios-craft) were folded in
+> and deleted — preserved as `archive/*` tags. See `docs/architecture-skins.md`.
 
 ## What luminous is
 An AI **life-anchor** app (NOT a todo/productivity app): it catches a soft wish (a
@@ -28,29 +33,30 @@ Core loop (must never break): **Add Seed → Now Opportunity → Complete/Partia
 So a file at `dreams/seize_the_day/docs/X` on WSL appears at `docs/X` on the Mac.
 Put shared docs **inside the app dir** on WSL or they won't reach the Mac.
 
-## Branches — what each holds
+## Branches — what each holds (post-consolidation)
 | branch | contents |
 | --- | --- |
-| `main` | baseline + shared meta (this file) |
-| `glass` | web Direction A · Liquid Glass (bubble field) |
-| `sense` | web Direction B · Living World (scene/sensing) |
-| `craft` | web Direction C · Calm Ritual (paper notebook) |
-| `ios-glass` | **native SwiftUI port** (`ios/Luminous/`) + the glass direction |
+| `main` | the web trunk — shared core + all 3 skins (`luminous-trunk` pushes here) |
+| `ios-glass` | the iOS trunk — `ios/Luminous/` core + `Aesthetic` enum + all 3 skins |
+| `archive/*` | retired direction branches (glass/sense/craft/ocean, ios-sense/ios-craft) — reference only |
 
-## Web directions — status (see `docs/overnight-plan.md` for the full 20-item plan)
-- **glass**: A1 refraction · A2 caustic rim · A3 depth · A4 gooey · A5 dreamier — *(A6, A7 pending)*
-- **sense**: B1 wallpapers · B2 parallax · B3 café-nav (Overpass) · B4 weather (open-meteo) · B5 day-grade — *(B6, B7 pending)*
-- **craft**: C1 timeline · C2 paper-home · C3 haptics+chime · C4 keepsake card · C5 perf+a11y — *(C6, C7 pending)*
+## Skins — status (one core, three looks; backlog in `docs/next-steps.md`)
+- **glass** — liquid-glass bubble field: refraction · caustic light · depth · gooey · dreamier · gyro · condense-from-light entrance. ✅
+- **ocean** — the field with `buoyancy`: rise-from-floor load · caustic surface + light shafts + bubble streams. ✅
+- **paper** — warm field-notebook: haptics · keepsake card · hand-laid notes + pressed-flower marks. ✅
+- **shared core** (every skin inherits): SceneBackground (mesh/parallax/weather/day-grade), NavLayer (Overpass café nav), SceneWindow (living orb), feedback, keepsake, webpush. Runtime skin picker in Settings.
 
-A 5-minute overnight loop rotates glass→sense→craft, one green committed step per
-tick (`docs/tick-playbook.md`).
+A 5-minute overnight loop works **skins + core on `luminous-trunk` → main**, one
+green committed step per tick (`docs/tick-playbook.md`).
 
-## iOS port — status
-`ios/Luminous/` is a full SwiftUI app mirroring the web domain layer
-(`Domain`/`Store`/`Scoring`/`SeedParser`/`SemanticTime`/`Theme`/`Copy`/`DesignKit`)
-with `HomeView`/`NowView`/`GardenView`/`TracesView`/`SettingsView`/`AddSeedView`.
-`GlassField.swift` ports web **glass 1–5** (TimelineView + Canvas, honors Reduce
-Motion). Build on the **Mac** with Xcode. Plan: `docs/ios-roadmap.md`.
+## iOS — status (one trunk: `ios-glass`)
+`ios/Luminous/` is a full SwiftUI app mirroring the web core
+(`Domain`/`Store`/`Scoring`/`SeedParser`/`SemanticTime`/`Theme`/`Copy`/`DesignKit`/
+`Feedback`/`DayGrade`) with an `Aesthetic` enum + `AestheticField` switching
+`GlassField`/`OceanField`(=GlassField buoyancy)/`PaperField`. A time-of-day
+`SceneBackground` (MeshGradient) sits behind glass/ocean. **Build on the Mac with
+Xcode** (last reconciliation is verified by reading only — confirm it compiles).
+Plan: `docs/ios-roadmap.md`.
 
 ## Cross-machine sync protocol
 **Start** of any session, on either machine:
@@ -68,9 +74,11 @@ Never count on chat history carrying over between machines — write it here.
 ## Doc index
 - `CLAUDE.md` / `AGENTS.md` — working rules (auto-loaded each session).
 - `docs/product-philosophy.md` — tone/voice (read before copy changes).
-- `docs/overnight-plan.md` — the 3-direction, 20-item plan + checkboxes.
+- `docs/architecture-skins.md` — the shared-core + swappable-skins design.
+- `docs/next-steps.md` — the live backlog (one item per tick).
+- `docs/overnight-plan.md` — the original 3-direction 20-item plan (historical).
 - `docs/TIMELINE.md` — Notion-loadable git history (auto-generated).
 - `docs/iteration-log.md` — per-cycle journal.
 - `docs/ios-roadmap.md` — native plan.
 - `docs/scene-library.md` — ~100 scenarios + transparent/3D asset sources.
-- `docs/GALLERY.md` — latest Home screenshot per direction.
+- `docs/GALLERY.md` — latest Home screenshot per **skin** (glass/ocean/paper).

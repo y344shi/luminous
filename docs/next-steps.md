@@ -18,3 +18,10 @@ shipped. Keep core skin-agnostic; keep skins thin.
 
 ## paper skin
 - [x] Paper polish: notes are laid hand-by-hand (staggered `tdd-rise`), and each carries a faint **pressed-flower** mark — a botanical line-art stamp that varies by category. _(paper 3)_
+
+## Fresh (self-review — needs a green tick each)
+- [ ] iOS: build `ios-glass` in Xcode and confirm the sense/craft reconciliation compiles + reads well (Mac task).
+- [ ] Decide React Native vs SwiftUI (see chat) — prerequisite is the `packages/core` extraction above.
+- [ ] Add-flow + Garden visual cohesion: make sure every route feels at home under each skin's palette.
+- [ ] (optional, needs product-tone OK) a discreet on-Home skin cue so users can flip looks without opening Settings.
+- [ ] Keep the keepsake card intentionally warm across all skins (decision recorded — do not re-skin it).
