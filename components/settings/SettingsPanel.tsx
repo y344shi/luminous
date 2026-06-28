@@ -203,7 +203,7 @@ export default function SettingsPanel() {
         </div>
         <div className="mt-1 flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
           <span className="h-16 w-24 shrink-0 overflow-hidden rounded-xl bg-[#f1ece2]">
-            <IllustrationArt style={settings.illustrationStyle} />
+            <IllustrationArt style={settings.illustrationStyle} category="learning" />
           </span>
           <div className="flex flex-col gap-0.5">
             <span className="serif text-[15px] text-[var(--text)]">{copy.settings.illustrationSample}</span>

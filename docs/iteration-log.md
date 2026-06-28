@@ -1143,3 +1143,12 @@ What still feels wrong / not done yet:
   illustration on the wish tap-sheet (glass/ocean) + a live "sample wish" preview
   under the Settings picker. Real downloaded library assets can replace the
   code-drawn art behind the same interface later. 251 tests green.
+
+---
+
+## core 15: Per-category pack art (API + Open Doodles)
+- IllustrationStyle gains optional scene(category); IllustrationArt renders it when
+  a category is passed, else the signature art. Open Doodles now has all 7 category
+  scenes (loose line: bowl/pen/two-forms/path+hill/leaf+water/open-book/bloom). The
+  wish tap-sheet passes the wish's category; the Settings preview passes "learning"
+  (so 记法语单词 shows a book). Other 7 packs grow into scene() next. 251 tests green.

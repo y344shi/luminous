@@ -1,18 +1,85 @@
 import type { ReactNode } from "react";
+import type { SeedCategory } from "@/lib/types";
 
 /**
  * Eight illustration "looks", one per library, hand-painted as small swatches in
  * each library's signature style so the choice is visible. The chosen key is
  * stored in settings.illustrationStyle; the actual library assets get wired to
  * the wishes later. See docs/scene-library.md for the sources + licenses.
+ *
+ * `art` is the pack's signature scene (used for the swatch). `scene(category)` is
+ * the optional per-category illustration — packs grow into it one at a time; until
+ * a pack provides it, IllustrationArt falls back to the signature `art`.
  */
-export type IllustrationStyle = { key: string; name: string; note: string; art: ReactNode };
+export type IllustrationStyle = {
+  key: string;
+  name: string;
+  note: string;
+  art: ReactNode;
+  scene?: (category: SeedCategory) => ReactNode;
+};
+
+// Open Doodles — loose hand-drawn line, one scene per wish category (viewBox 80×56).
+const L = { fill: "none", stroke: "#3a342c", strokeWidth: 1.7, strokeLinecap: "round", strokeLinejoin: "round" } as const;
+const opendoodlesScenes: Record<SeedCategory, ReactNode> = {
+  body: (
+    <g {...L}>
+      <path d="M24 30 Q40 44 56 30" />
+      <path d="M24 30 H56" />
+      <path d="M34 26 q-3 -4 0 -8" />
+      <path d="M46 26 q3 -4 0 -8" />
+    </g>
+  ),
+  creation: (
+    <g {...L}>
+      <path d="M22 42 Q38 38 54 42" opacity="0.45" />
+      <path d="M28 38 L48 18" />
+      <path d="M46 16 L52 22 L49 25 L43 19 Z" />
+    </g>
+  ),
+  connection: (
+    <g {...L}>
+      <ellipse cx="30" cy="33" rx="7" ry="11" transform="rotate(-12 30 33)" />
+      <ellipse cx="50" cy="33" rx="7" ry="11" transform="rotate(12 50 33)" />
+      <path d="M37 20 q3 -4 6 0" />
+    </g>
+  ),
+  exploration: (
+    <g {...L}>
+      <path d="M14 40 Q40 34 66 40" />
+      <path d="M44 40 Q52 22 60 40" />
+      <path d="M20 42 C32 38 28 32 40 30" strokeDasharray="1 4" />
+    </g>
+  ),
+  recovery: (
+    <g {...L}>
+      <path d="M30 24 C30 16 42 13 50 19 C50 27 38 30 30 24 Z" />
+      <path d="M30 24 L48 18" />
+      <path d="M16 36 q6 -3 12 0 t12 0 t12 0" />
+      <path d="M16 42 q6 -3 12 0 t12 0 t12 0" opacity="0.6" />
+    </g>
+  ),
+  learning: (
+    <g {...L}>
+      <path d="M40 42 V24" />
+      <path d="M20 44 Q40 37 60 44 M20 44 V30 Q30 26 40 30 M60 44 V30 Q50 26 40 30" />
+    </g>
+  ),
+  aesthetic: (
+    <g {...L}>
+      <path d="M40 24 m-7 0 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0" />
+      <path d="M40 31 V40" />
+      <path d="M32 46 L34 40 H46 L48 46 Z" />
+    </g>
+  ),
+};
 
 export const illustrationStyles: IllustrationStyle[] = [
   {
     key: "opendoodles",
     name: "Open Doodles",
     note: "手绘随性 · CC0",
+    scene: (c) => opendoodlesScenes[c],
     art: (
       <g fill="none" stroke="#3a342c" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="34" cy="16" r="6" />
@@ -132,11 +199,19 @@ export function StylePreview({ art }: { art: ReactNode }) {
 
 /** Render the illustration for the active library pack (by settings.illustrationStyle).
  * One interface for all 8 looks — real library assets can replace the art later. */
-export function IllustrationArt({ style, className }: { style: string; className?: string }) {
+export function IllustrationArt({
+  style,
+  category,
+  className,
+}: {
+  style: string;
+  category?: SeedCategory;
+  className?: string;
+}) {
   const pack = illustrationStyles.find((s) => s.key === style) ?? illustrationStyles[0];
   return (
     <svg viewBox="0 0 80 56" className={className ?? "h-full w-full"} aria-hidden>
-      {pack.art}
+      {category && pack.scene ? pack.scene(category) : pack.art}
     </svg>
   );
 }

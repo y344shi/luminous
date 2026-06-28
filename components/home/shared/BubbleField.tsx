@@ -435,7 +435,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
             <button aria-label="关闭" onClick={() => setSelected(null)} className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
             <BreathingCard rise className="relative m-3 flex w-full max-w-md flex-col gap-4" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)" }}>
               <span className="mx-auto h-28 w-48 overflow-hidden rounded-2xl bg-[#f1ece2]">
-                <IllustrationArt style={illustrationStyle} />
+                <IllustrationArt style={illustrationStyle} category={seed.categories[0]} />
               </span>
               <div className="flex items-center gap-2">
                 <CategoryGlyph category={seed.categories[0]} size={24} />
