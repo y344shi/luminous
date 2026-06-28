@@ -29,7 +29,8 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] Pixeltrue is now category-aware (soft pastel 7 scenes). _(core 17)_
 - [x] **All 8 packs category-aware** — Blush/Humaaans/Open Peeps/unDraw/DrawKit authored in parallel by 5 agents + assembled. Every wish category now has art in every style. _(core 18)_
 - [x] **Home wishes are floating cards** (user direction): each primary wish now renders as a small card — per-category illustration + title — on the SAME bubble physics body (glass: ring round the orb; ocean: floating staircase). Ambient wishes stay small bubbles. _(glass 9)_
-- [ ] Polish: tune card spacing on small screens (ocean stack can graze mid-settle); consider showing the one-line action on the card.
+- [x] Ocean card spacing: near-centered column → collision scatters the 3 cards cleanly, no graze. _(ocean 1)_
+- [ ] (open) Consider showing the one-line action on the card face (awaiting product call).
 - [x] **Artistic glass redesign** (user: "weird, not artistic"): removed the green goo-metaball smudges; the orb is now a clean glass sphere (elegant line glyph + label) cradled in a soft **warm bloom**; fewer, on-screen bubbles. Calm + luminous. _(glass 8)_
 - [x] Sensing is now **clickable + automatic**: motion samples passively; ambient (mic) auto-resumes on load once opted-in (`settings.senseAround`, permission persists → no re-prompt); 感受周围 is the one-time trigger. _(core 11)_
 - [x] Make the sensing visible: the ambient line now surfaces the fused senses — 走着/在路上 (motion) and 周围很安静/周围有点热闹 (loudness) — so the app's keenness shows. _(core 10)_

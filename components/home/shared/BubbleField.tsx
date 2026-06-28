@@ -148,9 +148,9 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
       const ang = (-90 + (360 / Math.max(n, 1)) * i) * (Math.PI / 180);
       // buoyancy skin: most relevant float highest (surface); glass skin: ring round orb
       const hx = buoyancy
-        ? Math.max(r + 10, Math.min(w - r - 10, w * (0.5 + (i - (n - 1) / 2) * 0.13)))
+        ? Math.max(r + 10, Math.min(w - r - 10, w * (0.5 + (i - (n - 1) / 2) * 0.06)))
         : Math.max(r + 8, Math.min(w - r - 8, w / 2 + Math.cos(ang) * (ORB_R + 112)));
-      const hy = buoyancy ? h * (0.14 + i * 0.15) : Math.max(r + 8, Math.min(h - r - 8, h / 2 + Math.sin(ang) * (ORB_R + 112)));
+      const hy = buoyancy ? h * (0.13 + i * 0.18) : Math.max(r + 8, Math.min(h - r - 8, h / 2 + Math.sin(ang) * (ORB_R + 112)));
       next.push({ id: o.id, seedId: o.seedId, title: seed.title, category: seed.categories[0], r, z, primary: true, opp: o });
       bodies.push({ id: o.id, x: hx, y: rise ? h - r - rand(0, 18) : hy, vx: 0, vy: 0, r, m: r * r });
       homes[o.id] = { x: hx, y: hy };

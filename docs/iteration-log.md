@@ -1186,3 +1186,11 @@ What still feels wrong / not done yet:
   round the orb, ocean floats them in a staircase. Reduced to 3 primaries, bigger
   bodies + wider ring/buoyancy spacing so cards clear the orb; ambient wishes stay
   small bubbles. Physics engine untouched. 251 tests; all skins build green.
+
+---
+
+## ocean 1: Floating-card spacing (no graze)
+- Ocean buoyancy was pulling the lower cards together. Switched the buoyancy homes
+  to a near-centered column (tiny horizontal stagger) + wider vertical gap, so the
+  collision step scatters the 3 cards into a clean, non-overlapping spread as they
+  float. Glass (ring) unchanged. 251 tests; ocean builds green.
