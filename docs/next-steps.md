@@ -27,7 +27,8 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] Replaced the remaining system emojis with the illustration (Now flow / seed detail / add preview / recent list), varied by category. TraceCard stays warm. _(core 23)_
 - [x] **Dwell sensing** (smarter/temporal): tracks active minutes at the desk today (on-device, per-day localStorage); long sit → ranking favors body/rest/outside + the day-line says 坐了一会/坐了挺久. _(core 22)_
 - [x] PaperHome sensing parity: dwell + weather now feed paper's ranking + day-line (the tint stays glass/ocean — paper keeps its notebook look). _(paper 1)_
-- [ ] Sensing breadth: add session-length + app-open cadence; battery signal; iOS system-wide Screen Time (note in ios-sensor-port.md).
+- [x] **Battery signal**: low + unplugged → a soft winding-down proxy; ranking favors small/restful, eases off long/high-energy. On-device, no permission. _(core 26)_
+- [ ] Sensing breadth: session-length + app-open cadence; iOS system-wide Screen Time (note in ios-sensor-port.md).
 - [x] Lighter wish cards: dropped the cramped action line — cards show illustration + title only (user). _(glass 11)_
 - [x] Garden wishes use the chosen illustration pack (dropped the system emoji) — consistent with the home cards. _(core 20)_
 - [x] Test coverage for the illustration pack system: all 8 packs registered, every pack category-aware (7 scenes), IllustrationArt renders + falls back. _(core 19)_

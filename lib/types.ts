@@ -89,6 +89,7 @@ export type ContextSnapshot = {
   ambient?: "quiet" | "lively"; // ambient loudness (opt-in mic)
   arousal?: "calm" | "elevated"; // heart rate (iOS HealthKit; unused on web)
   deskMinutesToday?: number; // dwell — active minutes at the desk today (on-device)
+  batteryLow?: boolean; // low + unplugged → a soft "winding down" proxy
 };
 
 export type Opportunity = {

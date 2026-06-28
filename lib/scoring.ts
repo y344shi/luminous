@@ -187,6 +187,21 @@ export function dwellBonus(seed: Seed, ctx: ContextSnapshot): number {
 }
 
 /**
+ * Battery nudge — when low + unplugged (a soft winding-down proxy), lean toward small,
+ * restful, at-hand things and ease off long or high-energy ones. Soft + capped.
+ */
+export function batteryBonus(seed: Seed, ctx: ContextSnapshot): number {
+  if (!ctx.batteryLow) return 0;
+  let b = 0;
+  const has = (c: SeedCategory) => seed.categories.includes(c);
+  if (has("recovery") || has("body")) b += 0.08;
+  if (seed.estimatedDurationMin <= 10) b += 0.05;
+  if (seed.energyRequired === "high") b -= 0.08;
+  if (seed.estimatedDurationMin > 30) b -= 0.05;
+  return clamp(b, -0.12, 0.12);
+}
+
+/**
  * Late-night safety gate. Returns true if this seed is UNSAFE to recommend
  * late at night (too big, requires going out, or high energy).
  */
@@ -263,6 +278,7 @@ export function scoreSeed(
   total += triggerBonus(seed, ctx);
   total += sensorBonus(seed, ctx);
   total += dwellBonus(seed, ctx);
+  total += batteryBonus(seed, ctx);
 
   // Late-night reshaping happens in recommend(), but reflect rescue boost here too.
   if (ctx.isLateNight && isRescueSeed(seed)) {

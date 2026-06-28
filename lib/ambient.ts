@@ -23,6 +23,7 @@ export type AmbientInputs = {
   ambient?: ContextSnapshot["ambient"];
   arousal?: ContextSnapshot["arousal"];
   deskMinutesToday?: number;
+  batteryLow?: boolean;
 };
 
 /** Build a full ContextSnapshot for the recommender from ambient signals.
@@ -43,6 +44,7 @@ export function buildAmbientContext(i: AmbientInputs): ContextSnapshot {
     ambient: i.ambient,
     arousal: i.arousal,
     deskMinutesToday: i.deskMinutesToday,
+    batteryLow: i.batteryLow,
   };
 }
 

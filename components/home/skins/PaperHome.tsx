@@ -15,6 +15,7 @@ import PressedFlower from "./PressedFlower";
 import { useSensors } from "../shared/useSensors";
 import { useDwell } from "../shared/useDwell";
 import { useWeather, isGoodOutdoorWeather } from "../shared/useWeather";
+import { useBattery } from "../shared/useBattery";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 
@@ -45,6 +46,7 @@ export default function PaperHome() {
   const deskMinutesToday = useDwell();
   const weatherKind = useWeather(homeLocation);
   const isOutdoorWeatherGood = isGoodOutdoorWeather(weatherKind);
+  const batteryLow = useBattery();
 
   const [mounted, setMounted] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
@@ -69,10 +71,10 @@ export default function PaperHome() {
 
   useEffect(() => {
     if (!mounted || !now) return;
-    const ctx = buildAmbientContext({ now, isMobile: isMobileDevice(), locationHint: location, energy: lastPick.energy, activity, ambient, deskMinutesToday, isOutdoorWeatherGood });
+    const ctx = buildAmbientContext({ now, isMobile: isMobileDevice(), locationHint: location, energy: lastPick.energy, activity, ambient, deskMinutesToday, isOutdoorWeatherGood, batteryLow });
     setOpps(recommend(seeds, ctx, { limit: 4 }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, now, seeds, location, lastPick.energy, activity, ambient, deskMinutesToday, isOutdoorWeatherGood]);
+  }, [mounted, now, seeds, location, lastPick.energy, activity, ambient, deskMinutesToday, isOutdoorWeatherGood, batteryLow]);
 
   if (!mounted || !hydrated || !now) return null;
   const shown = opps.filter((o) => !doneSeedIds.includes(o.seedId));

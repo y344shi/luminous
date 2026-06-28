@@ -1286,3 +1286,12 @@ What still feels wrong / not done yet:
   *tint* stays glass/ocean (paper keeps its clean notebook look); paper gets the
   ranking + the 晴/多云/坐了一会 day-line. All sensing now uniform across skins.
   266 tests; paper builds green.
+
+---
+
+## core 26: Battery sensing (winding-down proxy)
+- lib/battery.isBatteryLow (low + unplugged). scoring.batteryBonus leans toward
+  small/restful + short, eases off long/high-energy when low (capped ±0.12). useBattery
+  hook (Battery API; absent on iOS Safari/Firefox → no signal) wired into BubbleField +
+  PaperHome. Ranking-only — kept off the day-line to avoid noise. On-device, no
+  permission. +5 tests (271).
