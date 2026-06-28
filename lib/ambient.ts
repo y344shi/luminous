@@ -1,6 +1,7 @@
 import type { ContextSnapshot, LocationType, Energy } from "./types";
 import { buildContext } from "./context";
 import { semanticTimeFromHour, isWeekend } from "./semanticTime";
+import { dwellLevel } from "./dwell";
 
 /**
  * Ambient context: what the app can sense on its own when you open Home —
@@ -20,6 +21,7 @@ export type AmbientInputs = {
   activity?: ContextSnapshot["activity"];
   ambient?: ContextSnapshot["ambient"];
   arousal?: ContextSnapshot["arousal"];
+  deskMinutesToday?: number;
 };
 
 /** Build a full ContextSnapshot for the recommender from ambient signals.
@@ -34,7 +36,13 @@ export function buildAmbientContext(i: AmbientInputs): ContextSnapshot {
     isOutdoorWeatherGood: i.isOutdoorWeatherGood,
     now: i.now,
   });
-  return { ...ctx, activity: i.activity, ambient: i.ambient, arousal: i.arousal };
+  return {
+    ...ctx,
+    activity: i.activity,
+    ambient: i.ambient,
+    arousal: i.arousal,
+    deskMinutesToday: i.deskMinutesToday,
+  };
 }
 
 /**
@@ -76,7 +84,7 @@ const LOCATION_LABEL: Record<LocationType, string> = {
 export function ambientLabel(
   now: Date,
   locationHint: LocationType,
-  sensed?: Pick<ContextSnapshot, "activity" | "ambient">
+  sensed?: Pick<ContextSnapshot, "activity" | "ambient" | "deskMinutesToday">
 ): string {
   const wd = WEEKDAY[now.getDay()];
   // Time of day ignoring the weekend override, so we still say "下午" on Sat.
@@ -89,6 +97,12 @@ export function ambientLabel(
   else if (sensed?.activity === "transit" && locationHint !== "transit") parts.push("在路上");
   if (sensed?.ambient === "quiet") parts.push("周围很安静");
   else if (sensed?.ambient === "lively") parts.push("周围有点热闹");
+  // Dwell — gently note a long sit (only at the desk).
+  if (sensed?.deskMinutesToday != null && locationHint === "computer") {
+    const lvl = dwellLevel(sensed.deskMinutesToday);
+    if (lvl === "settled") parts.push("坐了一会");
+    else if (lvl === "long") parts.push("坐了挺久");
+  }
   return parts.filter(Boolean).join(" · ");
 }
 

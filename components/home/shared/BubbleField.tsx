@@ -14,6 +14,7 @@ import { CategoryGlyph, SceneGlyph } from "./glyphs";
 import { useSensors } from "./useSensors";
 import { IllustrationArt } from "./illustrationPacks";
 import { distinctIllustrationCategory } from "@/lib/illustration";
+import { useDwell } from "./useDwell";
 import { cx } from "@/lib/utils";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
@@ -58,6 +59,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
   const senseAround = useStore((s) => s.settings.senseAround);
   const updateSettings = useStore((s) => s.updateSettings);
   const illustrationStyle = useStore((s) => s.settings.illustrationStyle);
+  const deskMinutesToday = useDwell();
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const elsRef = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -125,6 +127,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
       energy: lastPick.energy,
       activity,
       ambient,
+      deskMinutesToday,
     });
     const opps = recommend(seeds, ctx, { limit: 3 });
     const primaryIds = new Set(opps.map((o) => o.seedId));
@@ -180,7 +183,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
     phaseRef.current = phasemap;
     setBubbles(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, now, seeds, location, lastPick.energy, activity, ambient]);
+  }, [mounted, now, seeds, location, lastPick.energy, activity, ambient, deskMinutesToday]);
 
   // physics loop
   useEffect(() => {
@@ -394,7 +397,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
           onClick={senseLocation}
           className="pointer-events-auto text-[12.5px] tracking-[0.12em] text-[var(--text-secondary)] transition-opacity hover:opacity-75"
         >
-          {senseText ?? ambientLabel(now, location, { activity, ambient })}
+          {senseText ?? ambientLabel(now, location, { activity, ambient, deskMinutesToday })}
         </button>
         {sense === "offerHome" && pendingCoords && (
           <button

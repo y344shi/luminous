@@ -1232,3 +1232,12 @@ What still feels wrong / not done yet:
   OWN categories (stable per wish), distinctIllustrationCategory forces a small set
   (the 3 home cards) to differ. Applied in BubbleField + Garden SeedCard. +4 tests
   (258). The two creation+learning samples now show pen vs book.
+
+---
+
+## core 22: Dwell sensing (how long at the desk today)
+- A temporal sense: lib/dwell accumulates active minutes-at-desk today (per-day
+  localStorage, desktop + visible only; gaps ignored). dwellBonus in scoring leans
+  toward body/recovery/outside after a long sit and eases off computer-focus.
+  ambientLabel surfaces 坐了一会 / 坐了挺久. useDwell hook wired into BubbleField.
+  On-device only; system-wide app usage stays an iOS Screen Time job. +6 tests (264).

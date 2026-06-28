@@ -7,6 +7,7 @@ import type {
   SeedCategory,
 } from "./types";
 import { uid, nowIso, clamp } from "./utils";
+import { dwellLevel } from "./dwell";
 
 const energyRank: Record<Energy, number> = { low: 0, medium: 1, high: 2 };
 
@@ -165,6 +166,27 @@ export function sensorBonus(seed: Seed, ctx: ContextSnapshot): number {
 }
 
 /**
+ * Dwell nudge — kinder as the day's desk time adds up. After a long sit, lean toward
+ * the body, rest, and stepping outside; ease off one-more-screen tasks. Soft + capped.
+ */
+export function dwellBonus(seed: Seed, ctx: ContextSnapshot): number {
+  if (ctx.deskMinutesToday == null) return 0;
+  const level = dwellLevel(ctx.deskMinutesToday);
+  if (level === "fresh") return 0;
+  let b = 0;
+  const has = (c: SeedCategory) => seed.categories.includes(c);
+  const focus = has("learning") || has("creation");
+  if (level === "settled") {
+    if (has("body") || has("recovery")) b += 0.06;
+  } else if (level === "long") {
+    if (has("body") || has("recovery")) b += 0.14;
+    if (seed.locationType === "outdoor" || has("exploration")) b += 0.08;
+    if (focus && seed.locationType === "computer") b -= 0.1;
+  }
+  return clamp(b, -0.2, 0.2);
+}
+
+/**
  * Late-night safety gate. Returns true if this seed is UNSAFE to recommend
  * late at night (too big, requires going out, or high energy).
  */
@@ -240,6 +262,7 @@ export function scoreSeed(
 
   total += triggerBonus(seed, ctx);
   total += sensorBonus(seed, ctx);
+  total += dwellBonus(seed, ctx);
 
   // Late-night reshaping happens in recommend(), but reflect rescue boost here too.
   if (ctx.isLateNight && isRescueSeed(seed)) {
