@@ -1194,3 +1194,11 @@ What still feels wrong / not done yet:
   to a near-centered column (tiny horizontal stagger) + wider vertical gap, so the
   collision step scatters the 3 cards into a clean, non-overlapping spread as they
   float. Glass (ring) unchanged. 251 tests; ocean builds green.
+
+---
+
+## glass 10: One-line action on the wish cards
+- The floating wish cards now show illustration + title (1 line) + the suggested
+  action (2 lines) — so the card says what to do, not just name the wish. Tuned card
+  size (r41) so cards still clear the orb on a narrow screen, and widened the ocean
+  vertical step so the taller cards don't overlap. 251 tests; glass+ocean green.
