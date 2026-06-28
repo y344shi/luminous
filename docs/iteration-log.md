@@ -1060,3 +1060,12 @@ What still feels wrong / not done yet:
   old pre-bubble-field Home, no longer imported anywhere). Corrected the BubbleField
   doc comment, which still described the old "feel gravity / cluster on tilt" model,
   to the current settle-then-rest + slight-gyro-lean behaviour. 248 tests green.
+
+---
+
+## core 9: Reduced-motion placement fix (a11y)
+- Bubble positions were only ever set by the rAF physics loop, which is gated off
+  under prefers-reduced-motion — so reduced-motion users saw every bubble stacked
+  unpositioned in the top-left corner. Added a one-shot effect that places each
+  bubble at its home (no animation) under reduced-motion. Affects all bubble-field
+  skins (glass/ocean); default render unchanged. 248 tests green.

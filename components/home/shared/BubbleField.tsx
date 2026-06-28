@@ -216,6 +216,26 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
     return () => cancelAnimationFrame(rafRef.current);
   }, [mounted, gyroOn]);
 
+  // Reduced-motion: the rAF loop never runs, so place each bubble at its home
+  // once (no animation) — otherwise they'd stack unpositioned in the corner.
+  useEffect(() => {
+    const reduced =
+      typeof window !== "undefined" &&
+      !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    if (!mounted || !reduced) return;
+    for (const b of bodiesRef.current) {
+      const home = homesRef.current[b.id];
+      if (home) {
+        b.x = home.x;
+        b.y = home.y;
+      }
+      const node = elsRef.current[b.id];
+      if (node) node.style.transform = `translate3d(${b.x - b.r}px, ${b.y - b.r}px, 0)`;
+      const blob = blobsRef.current[b.id];
+      if (blob) blob.style.transform = `translate3d(${b.x - b.r}px, ${b.y - b.r}px, 0)`;
+    }
+  }, [mounted, bubbles]);
+
   if (!mounted || !hydrated || !now) return null;
 
   const shown = bubbles.filter((b) => !doneSeedIds.includes(b.seedId));
