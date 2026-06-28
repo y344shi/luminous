@@ -1,4 +1,4 @@
-import type { SeedCategory, Energy } from "./types";
+import type { SeedCategory, Energy } from "@core/types";
 
 export const categoryMeta: Record<SeedCategory, { label: string; emoji: string }> = {
   body: { label: "身体", emoji: "🍵" },

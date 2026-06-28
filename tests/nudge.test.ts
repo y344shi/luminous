@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { shouldNudge, remindersSentToday, bumpReminders, nudgeText } from "@/lib/nudge";
 import { defaultSettings } from "@/lib/storage";
-import type { Settings, Opportunity } from "@/lib/types";
+import type { Settings, Opportunity } from "@core/types";
 
 function settings(over: Partial<Settings> = {}): Settings {
   return { ...defaultSettings, ...over };

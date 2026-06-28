@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { isBatteryLow } from "@core/battery";
 import { batteryBonus } from "@/lib/scoring";
-import type { Seed, ContextSnapshot } from "@/lib/types";
+import type { Seed, ContextSnapshot } from "@core/types";
 
 describe("battery model", () => {
   it("low only when below 20% and unplugged", () => {

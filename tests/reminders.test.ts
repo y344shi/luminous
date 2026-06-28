@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { isQuietNow, remindersRemaining, canRemindNow } from "@/lib/reminders";
 import { defaultSettings } from "@/lib/storage";
-import type { Settings } from "@/lib/types";
+import type { Settings } from "@core/types";
 
 function settings(over: Partial<Settings> = {}): Settings {
   return { ...defaultSettings, ...over };

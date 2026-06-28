@@ -1361,3 +1361,13 @@ What still feels wrong / not done yet:
   via git mv; rewrote 25 importers (@/lib/* and ./* → @core/*). @core now holds
   sensors/dwell/battery/utils/geo. Purity guard already covers the dir. 272 tests; all
   skins build green; no behavior/visual change. Next keystone: types.
+
+---
+
+## core 33: packages/core slice 3 (types + aesthetic — the keystone)
+- Moved lib/types (+ lib/aesthetic, which types references via an inline import) into
+  packages/core; both move together so the inline import("./aesthetic") stays valid.
+  Rewrote 40 importers to @core/types / @core/aesthetic. @core now holds
+  sensors/dwell/battery/utils/geo/types/aesthetic. With types in core, the dependent
+  pure modules can follow. 272 tests; typecheck clean; all skins build green; no
+  behavior change.

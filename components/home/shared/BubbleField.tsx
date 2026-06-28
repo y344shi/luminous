@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import type { LocationType, Opportunity, SeedCategory } from "@/lib/types";
+import type { LocationType, Opportunity, SeedCategory } from "@core/types";
 import { useStore, findSeed } from "@/lib/store";
 import { recommend } from "@/lib/scoring";
 import { buildAmbientContext, guessLocation, ambientLabel, orbScene } from "@/lib/ambient";

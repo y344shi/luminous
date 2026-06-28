@@ -1,4 +1,4 @@
-import type { DailyTrace } from "@/lib/types";
+import type { DailyTrace } from "@core/types";
 import { categoryMeta } from "@/lib/categoryMeta";
 import { copy } from "@/lib/copy";
 import BreathingCard from "@/components/design/BreathingCard";

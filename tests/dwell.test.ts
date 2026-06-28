@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { dwellLevel, advanceDwell } from "@core/dwell";
 import { dwellBonus } from "@/lib/scoring";
-import type { Seed, ContextSnapshot } from "@/lib/types";
+import type { Seed, ContextSnapshot } from "@core/types";
 
 describe("dwell model", () => {
   it("dwellLevel buckets minutes", () => {

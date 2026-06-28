@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { copy } from "@/lib/copy";
 import { categoryMeta, energyLabel, durationLabel } from "@/lib/categoryMeta";
-import type { SeedStatus } from "@/lib/types";
+import type { SeedStatus } from "@core/types";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 import EmptyState from "@/components/design/EmptyState";

@@ -1,6 +1,6 @@
 "use client";
 
-import type { Mood, Energy, LocationType } from "@/lib/types";
+import type { Mood, Energy, LocationType } from "@core/types";
 import { cx } from "@core/utils";
 
 export const moodOptions: { value: Mood; label: string }[] = [

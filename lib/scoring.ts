@@ -5,7 +5,7 @@ import type {
   Energy,
   Mood,
   SeedCategory,
-} from "./types";
+} from "@core/types";
 import { uid, nowIso, clamp } from "@core/utils";
 import { dwellLevel } from "@core/dwell";
 

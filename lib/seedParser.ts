@@ -4,7 +4,7 @@ import type {
   Energy,
   LocationType,
   SemanticTime,
-} from "./types";
+} from "@core/types";
 import { uid, nowIso } from "@core/utils";
 import { mockSeeds, type SeedTemplate } from "./mockSeeds";
 

@@ -7,7 +7,7 @@ import EmptyState from "@/components/design/EmptyState";
 import ConfirmSheet from "@/components/design/ConfirmSheet";
 import { copy } from "@/lib/copy";
 import { friendlyDate } from "@core/utils";
-import type { DailyTrace } from "@/lib/types";
+import type { DailyTrace } from "@core/types";
 
 function groupByDate(traces: DailyTrace[]): [string, DailyTrace[]][] {
   const map = new Map<string, DailyTrace[]>();

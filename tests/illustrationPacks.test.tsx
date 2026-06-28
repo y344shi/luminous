@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
 import { illustrationStyles, IllustrationArt } from "@/components/home/shared/illustrationPacks";
-import type { SeedCategory } from "@/lib/types";
+import type { SeedCategory } from "@core/types";
 
 const CATEGORIES: SeedCategory[] = [
   "body",

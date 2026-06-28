@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { classifyActivity, classifyAmbient, classifyArousal } from "@core/sensors";
 import { sensorBonus } from "@/lib/scoring";
-import type { Seed, ContextSnapshot } from "@/lib/types";
+import type { Seed, ContextSnapshot } from "@core/types";
 
 describe("sensors — pure classifiers", () => {
   it("classifyActivity: still / walking / transit by variability", () => {

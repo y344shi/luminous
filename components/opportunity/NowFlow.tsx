@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Mood, Energy, Opportunity, LocationType } from "@/lib/types";
+import type { Mood, Energy, Opportunity, LocationType } from "@core/types";
 import { useStore, findSeed } from "@/lib/store";
 import { buildContext } from "@/lib/context";
 import { recommend } from "@/lib/scoring";

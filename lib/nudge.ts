@@ -1,4 +1,4 @@
-import type { Settings, Opportunity } from "./types";
+import type { Settings, Opportunity } from "@core/types";
 import type { RemindersToday } from "./storage";
 import { canRemindNow } from "./reminders";
 import { localDateKey } from "@core/utils";

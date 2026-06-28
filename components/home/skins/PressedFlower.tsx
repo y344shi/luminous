@@ -1,4 +1,4 @@
-import type { SeedCategory } from "@/lib/types";
+import type { SeedCategory } from "@core/types";
 
 /**
  * A tiny pressed-flower mark for the paper skin — a faint botanical stamp that

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { SeedCategory } from "@/lib/types";
+import type { SeedCategory } from "@core/types";
 
 /**
  * Eight illustration "looks", one per library, hand-painted as small swatches in

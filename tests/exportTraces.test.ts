@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { formatTracesForExport } from "@/lib/exportTraces";
-import type { DailyTrace } from "@/lib/types";
+import type { DailyTrace } from "@core/types";
 import { copy } from "@/lib/copy";
 
 const today = new Date(2026, 5, 25);

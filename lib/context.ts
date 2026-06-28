@@ -1,4 +1,4 @@
-import type { ContextSnapshot, Energy, Mood, LocationType } from "./types";
+import type { ContextSnapshot, Energy, Mood, LocationType } from "@core/types";
 import { nowIso } from "@core/utils";
 import { isLateNightHour, isWeekend, semanticTimeFromDate } from "./semanticTime";
 

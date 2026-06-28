@@ -1,4 +1,4 @@
-import type { Seed, DailyTrace, Settings, ThemeName, Mood, Energy } from "./types";
+import type { Seed, DailyTrace, Settings, ThemeName, Mood, Energy } from "@core/types";
 import { deserializeSeeds, deserializeTraces } from "./serialize";
 import type { Coords } from "@core/geo";
 
@@ -17,7 +17,7 @@ export const STORAGE_KEYS = {
   reminders: "tdd.reminders",
 } as const;
 
-import { AESTHETIC } from "./aesthetic";
+import { AESTHETIC } from "@core/aesthetic";
 
 export const defaultSettings: Settings = {
   theme: "warm_paper",

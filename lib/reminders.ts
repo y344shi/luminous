@@ -1,4 +1,4 @@
-import type { Settings } from "./types";
+import type { Settings } from "@core/types";
 
 /**
  * Whether the current moment falls inside the user's quiet window.

@@ -1,4 +1,4 @@
-import type { Seed } from "@/lib/types";
+import type { Seed } from "@core/types";
 import { categoryMeta, energyLabel, durationLabel } from "@/lib/categoryMeta";
 import BreathingCard from "@/components/design/BreathingCard";
 import { IllustrationArt } from "@/components/home/shared/illustrationPacks";

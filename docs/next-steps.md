@@ -22,7 +22,9 @@ shipped. Keep core skin-agnostic; keep skins thin.
 ## Fresh (self-review — needs a green tick each)
 - [x] **Started `packages/core`**: real `packages/core/` dir + `@core/*` alias (tsconfig + vitest + Next all resolve it); moved the zero-dep sensing classifiers (sensors/dwell/battery) there; purity guard now scans it. Green end-to-end. _(core 31)_
 - [x] **packages/core — slice 2**: moved `utils` + `geo` (both zero-dep) into `@core` (25 importers rewritten). _(core 32)_
-- [ ] **packages/core — slice 3**: move `types` (the keystone; zero-dep, ~50 importers) — a dedicated mechanical tick — then `semanticTime`/`context` can follow.
+- [x] **packages/core — slice 3**: moved `types` + `aesthetic` (the keystone; 40 importers) into `@core`. _(core 33)_
+- [ ] **packages/core — slice 4**: now that `types` is in `@core`, move the type-dependent pure modules (`semanticTime`, `context`, `categoryMeta`, `copy`, `illustration`, `mockSeeds`, `seedParser`, `weather`, `ambient`, `scoring`) — the recommender brain — a slice per tick.
+- [ ] **packages/core — finish**: give `@core` a real `package.json` (`@luminous/core`) + npm workspace → a true shared dependency for the RN/iOS build.
 - [ ] **packages/core — slice 3**: move the recommender (`scoring`, `context`, `ambient`, `illustration`, `weather`, `mockSeeds`, `copy`) — the bulk of the brain.
 - [ ] **packages/core — finish**: give it a real `package.json` (`@luminous/core`) + npm workspace; then it's a true shared dependency for the RN/iOS build.
 - [x] Docs: refreshed `CONTEXT.md` (sensing fusion table + illustration packs + boxless wishes; dropped the dead café NavLayer) and wrote a real `README.md` (was create-next-app boilerplate). _(core 30)_

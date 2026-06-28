@@ -1,4 +1,4 @@
-import type { Opportunity, Seed } from "@/lib/types";
+import type { Opportunity, Seed } from "@core/types";
 import { energyLabel } from "@/lib/categoryMeta";
 import { copy } from "@/lib/copy";
 import BreathingCard from "@/components/design/BreathingCard";

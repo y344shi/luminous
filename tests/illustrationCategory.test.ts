@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { illustrationCategory, distinctIllustrationCategory } from "@/lib/illustration";
-import type { SeedCategory } from "@/lib/types";
+import type { SeedCategory } from "@core/types";
 
 describe("illustrationCategory", () => {
   it("returns the only category for a single-category wish", () => {

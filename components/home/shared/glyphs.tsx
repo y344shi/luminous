@@ -3,7 +3,7 @@ import {
   BookOpen, Heart, Footprints, Soup, PenLine, Leaf, Wind,
   type LucideIcon,
 } from "lucide-react";
-import type { SeedCategory } from "@/lib/types";
+import type { SeedCategory } from "@core/types";
 import type { SceneKey } from "@/lib/ambient";
 
 /**

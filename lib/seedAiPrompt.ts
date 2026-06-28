@@ -3,7 +3,7 @@ import type {
   Energy,
   LocationType,
   SemanticTime,
-} from "./types";
+} from "@core/types";
 import type { SeedDraft } from "./seedParser";
 
 /**

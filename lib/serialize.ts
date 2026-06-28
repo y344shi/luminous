@@ -6,7 +6,7 @@ import type {
   LocationType,
   SemanticTime,
   SeedStatus,
-} from "./types";
+} from "@core/types";
 
 /**
  * DB-agnostic (de)serialization boundary. The same plain-record shape works

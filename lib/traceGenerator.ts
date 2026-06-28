@@ -1,4 +1,4 @@
-import type { Seed, DailyTrace, SeedCategory } from "./types";
+import type { Seed, DailyTrace, SeedCategory } from "@core/types";
 import { uid, nowIso, localDateKey } from "@core/utils";
 import { copy } from "./copy";
 

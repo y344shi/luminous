@@ -1,4 +1,4 @@
-import type { ThemeName } from "./types";
+import type { ThemeName } from "@core/types";
 
 export type ThemeTokens = {
   background: string;

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { recommend } from "@/lib/scoring";
 import { ctx, fixedRng } from "./helpers";
-import type { Seed } from "@/lib/types";
+import type { Seed } from "@core/types";
 
 const seed = (over: Partial<Seed>): Seed => ({
   id: "x", rawText: "", title: "x", categories: ["creation"], minimumAction: "做一点",

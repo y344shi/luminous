@@ -1,4 +1,4 @@
-import type { SeedCategory } from "./types";
+import type { SeedCategory } from "@core/types";
 
 /**
  * Which category's illustration to show for a wish. A wish often has more than one

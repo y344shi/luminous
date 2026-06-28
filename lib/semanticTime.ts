@@ -1,4 +1,4 @@
-import type { SemanticTime } from "./types";
+import type { SemanticTime } from "@core/types";
 
 /**
  * Map a clock hour (and weekend flag) to a semantic time-of-day.
