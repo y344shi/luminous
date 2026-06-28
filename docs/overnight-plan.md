@@ -32,7 +32,7 @@ push the branch. Small > grand. Revert rather than leave red.
 - [x] B3. Floating nav: opt-in geolocation → OpenStreetMap **Overpass** (key-free) nearby cafés → a glass chip with a real **true-bearing arrow** (rotates with the device compass) + name + distance to the nearest Starbucks. `lib/places.ts` pure + tested. _(sense 3)_
 - [x] B4. Weather tint: when a home location is saved (already consented), `open-meteo` (key-free) → a soft scene veil for rain/cloud/snow/fog/storm (clear = warm glow). `lib/weather.ts` pure + tested; never changes recommendations. _(sense 4)_
 - [x] B5. Time-of-day color grading: the scene blends a soft light-arc veil by hour (破晓→上午→正午→黄昏前→黄昏→夜里), soft-light over the wallpaper. `lib/dayGrade.ts` pure + tested. _(sense 5)_
-- [ ] B6. Orb as a living window: the scene icon becomes a tiny illustrated/animated world.
+- [x] B6. Orb as a living window: a tiny animated illustrated scene inside the orb per state (moon+stars / café steam / swaying grass / glowing desk / moving road / lit home / city / sparkles), masked to the circle, reduced-motion safe. _(sense 6)_
 - [ ] B7. Poetic context read: one warm AI line for the moment ("周四的傍晚，电脑前的光").
 
 ## C · Calm Ritual  (branch `luminous-craft`)

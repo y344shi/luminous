@@ -964,3 +964,12 @@ What still feels wrong / not done yet:
   night + soft-light tint + zh label) + dayGrade.test.ts (4). SceneBackground
   blends the phase veil (mix-blend soft-light, 2s transition) over the wallpaper —
   the daily light arc. Never alters recommendations. 231 tests green.
+
+---
+
+## sense 6 (B6): Orb as a living window
+- New `SceneWindow` (pure SVG + CSS): a tiny animated illustrated world inside the
+  orb for each sensed scene — moon+twinkling stars (night), rising café steam,
+  swaying grass + sun, glowing desk monitor, a road with moving dashes (highway),
+  a lit home window, a city skyline (work), floating sparkles. Masked to the orb
+  circle under the glyph + label; all animations respect reduced-motion. 231 tests.
