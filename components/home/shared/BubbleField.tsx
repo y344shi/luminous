@@ -13,6 +13,7 @@ import { copy } from "@/lib/copy";
 import { CategoryGlyph, SceneGlyph } from "./glyphs";
 import { useSensors } from "./useSensors";
 import { IllustrationArt } from "./illustrationPacks";
+import { distinctIllustrationCategory } from "@/lib/illustration";
 import { cx } from "@/lib/utils";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
@@ -139,6 +140,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
     // ocean: on first load only, spawn bubbles at the floor so they rise into place
     const rise = buoyancy && !didRiseRef.current;
 
+    const usedCats = new Set<SeedCategory>();
     opps.forEach((o, i) => {
       const seed = findSeed(seeds, o.seedId);
       if (!seed) return;
@@ -151,7 +153,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
         ? Math.max(r + 10, Math.min(w - r - 10, w * (0.5 + (i - (n - 1) / 2) * 0.06)))
         : Math.max(r + 8, Math.min(w - r - 8, w / 2 + Math.cos(ang) * (ORB_R + 112)));
       const hy = buoyancy ? h * (0.12 + i * 0.21) : Math.max(r + 8, Math.min(h - r - 8, h / 2 + Math.sin(ang) * (ORB_R + 112)));
-      next.push({ id: o.id, seedId: o.seedId, title: seed.title, category: seed.categories[0], r, z, primary: true, opp: o });
+      next.push({ id: o.id, seedId: o.seedId, title: seed.title, category: distinctIllustrationCategory(seed.categories, seed.id, usedCats), r, z, primary: true, opp: o });
       bodies.push({ id: o.id, x: hx, y: rise ? h - r - rand(0, 18) : hy, vx: 0, vy: 0, r, m: r * r });
       homes[o.id] = { x: hx, y: hy };
       zmap[o.id] = z;

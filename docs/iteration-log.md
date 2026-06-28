@@ -1223,3 +1223,12 @@ What still feels wrong / not done yet:
 - SeedCard swapped its system category emoji for IllustrationArt(category, chosen
   pack) — the Garden now matches the home cards. SeedGarden passes settings.
   illustrationStyle. 254 tests; build green.
+
+---
+
+## core 21: Distinct wish illustrations (vary by category)
+- Wishes sharing a category drew the same icon (two creation wishes = two pens).
+  New lib/illustration: illustrationCategory picks deterministically from a wish's
+  OWN categories (stable per wish), distinctIllustrationCategory forces a small set
+  (the 3 home cards) to differ. Applied in BubbleField + Garden SeedCard. +4 tests
+  (258). The two creation+learning samples now show pen vs book.

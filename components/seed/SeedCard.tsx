@@ -2,6 +2,7 @@ import type { Seed } from "@/lib/types";
 import { categoryMeta, energyLabel, durationLabel } from "@/lib/categoryMeta";
 import BreathingCard from "@/components/design/BreathingCard";
 import { IllustrationArt } from "@/components/home/shared/illustrationPacks";
+import { illustrationCategory } from "@/lib/illustration";
 
 const statusLabel: Record<Seed["status"], string> = {
   active: "在等一个时机",
@@ -11,7 +12,7 @@ const statusLabel: Record<Seed["status"], string> = {
 };
 
 export default function SeedCard({ seed, illustrationStyle }: { seed: Seed; illustrationStyle: string }) {
-  const cat = seed.categories[0];
+  const cat = illustrationCategory(seed.categories, seed.id);
   return (
     <BreathingCard className="flex flex-col gap-3">
       <div className="flex items-start justify-between gap-3">

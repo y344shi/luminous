@@ -20,6 +20,9 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] Paper polish: notes are laid hand-by-hand (staggered `tdd-rise`), and each carries a faint **pressed-flower** mark — a botanical line-art stamp that varies by category. _(paper 3)_
 
 ## Fresh (self-review — needs a green tick each)
+- [x] **Distinct wish illustrations** (user: "icons too similar"): wishes sharing a category looked identical; now the illustration varies across a wish's own categories (lib/illustration), and the 3 home cards are forced distinct. _(core 21)_
+- [ ] Replace remaining system emojis with the illustration (OpportunityCard / SeedDetail / AddSeedFlow / RecentSeeds) — keep TraceCard warm.
+- [ ] **Smarter (temporal) sensing** (user): track dwell — e.g. how long at the desk today, session length, app-open cadence — and feed it to the ranking (on-device). Mirror into lib/sensors + scoring.
 - [x] Lighter wish cards: dropped the cramped action line — cards show illustration + title only (user). _(glass 11)_
 - [x] Garden wishes use the chosen illustration pack (dropped the system emoji) — consistent with the home cards. _(core 20)_
 - [x] Test coverage for the illustration pack system: all 8 packs registered, every pack category-aware (7 scenes), IllustrationArt renders + falls back. _(core 19)_
