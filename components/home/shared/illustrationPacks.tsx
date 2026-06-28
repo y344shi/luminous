@@ -74,6 +74,68 @@ const opendoodlesScenes: Record<SeedCategory, ReactNode> = {
   ),
 };
 
+// Storyset — flat geometric, accent + neutral fills (viewBox 80×56).
+const storysetScenes: Record<SeedCategory, ReactNode> = {
+  body: (
+    <g>
+      <path d="M22 28 Q40 44 58 28 Z" fill="#7d9a7a" />
+      <rect x="22" y="26" width="36" height="3" rx="1.5" fill="#5e7458" />
+      <rect x="33" y="14" width="3" height="9" rx="1.5" fill="#c4d6bb" />
+      <rect x="44" y="14" width="3" height="9" rx="1.5" fill="#c4d6bb" />
+    </g>
+  ),
+  creation: (
+    <g>
+      <rect x="20" y="18" width="22" height="30" rx="2" fill="#e9e1d4" />
+      <rect x="24" y="26" width="14" height="2" fill="#c9c4ba" />
+      <rect x="24" y="31" width="14" height="2" fill="#c9c4ba" />
+      <g transform="rotate(38 50 32)">
+        <rect x="44" y="14" width="6" height="26" rx="2" fill="#7d9a7a" />
+        <path d="M44 40 L50 40 L47 46 Z" fill="#5e7458" />
+      </g>
+    </g>
+  ),
+  connection: (
+    <g>
+      <circle cx="26" cy="22" r="6" fill="#e8c8a8" />
+      <path d="M18 44 q0 -10 8 -10 q8 0 8 10 Z" fill="#7d9a7a" />
+      <circle cx="52" cy="22" r="6" fill="#e8c8a8" />
+      <path d="M44 44 q0 -10 8 -10 q8 0 8 10 Z" fill="#c4d6bb" />
+      <path d="M39 13 a3 3 0 0 1 6 0 c0 3 -3 4 -3 6 c0 -2 -3 -3 -3 -6 Z" fill="#d98f6a" />
+    </g>
+  ),
+  exploration: (
+    <g>
+      <circle cx="56" cy="18" r="6" fill="#e8c8a8" />
+      <path d="M14 42 Q34 22 54 42 Z" fill="#7d9a7a" />
+      <rect x="33" y="20" width="2" height="14" fill="#5e7458" />
+      <path d="M35 20 L43 23 L35 26 Z" fill="#d98f6a" />
+    </g>
+  ),
+  recovery: (
+    <g>
+      <rect x="12" y="38" width="56" height="10" rx="3" fill="#c4d6bb" />
+      <path d="M28 22 C28 14 42 12 50 18 C50 26 36 28 28 22 Z" fill="#7d9a7a" />
+      <path d="M30 21 L47 17" stroke="#cfe0c8" strokeWidth="1.5" />
+    </g>
+  ),
+  learning: (
+    <g>
+      <path d="M40 42 L20 38 V20 L40 24 Z" fill="#7d9a7a" />
+      <path d="M40 42 L60 38 V20 L40 24 Z" fill="#c4d6bb" />
+      <rect x="38" y="24" width="4" height="18" fill="#5e7458" />
+    </g>
+  ),
+  aesthetic: (
+    <g>
+      <path d="M30 34 H50 L48 47 H32 Z" fill="#c9c4ba" />
+      <rect x="39" y="18" width="2" height="16" fill="#5e7458" />
+      <path d="M40 27 q-9 -2 -10 -10 q8 0 10 7 Z" fill="#7d9a7a" />
+      <path d="M40 25 q9 -3 11 -10 q-8 0 -11 8 Z" fill="#c4d6bb" />
+    </g>
+  ),
+};
+
 export const illustrationStyles: IllustrationStyle[] = [
   {
     key: "opendoodles",
@@ -95,6 +157,7 @@ export const illustrationStyles: IllustrationStyle[] = [
     key: "storyset",
     name: "Storyset",
     note: "扁平可换色 · 免费",
+    scene: (c) => storysetScenes[c],
     art: (
       <g>
         <rect x="12" y="15" width="18" height="33" rx="5" fill="#7d9a7a" />

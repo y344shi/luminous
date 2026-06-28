@@ -1152,3 +1152,11 @@ What still feels wrong / not done yet:
   scenes (loose line: bowl/pen/two-forms/path+hill/leaf+water/open-book/bloom). The
   wish tap-sheet passes the wish's category; the Settings preview passes "learning"
   (so 记法语单词 shows a book). Other 7 packs grow into scene() next. 251 tests green.
+
+---
+
+## core 16: Storyset category-aware (flat 7 scenes)
+- Second pack to grow per-category art: Storyset draws all 7 wish categories in its
+  flat accent+neutral style (bowl, pencil+paper, two figures+heart, hill+flag+sun,
+  leaf on water, open book, potted plant). Verified in the Settings preview. 2 of 8
+  packs now category-aware; 6 to go. 251 tests green.
