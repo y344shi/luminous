@@ -4,7 +4,7 @@ import type {
   LocationType,
   SemanticTime,
 } from "@core/types";
-import type { SeedDraft } from "./seedParser";
+import type { SeedDraft } from "@core/seedParser";
 
 /**
  * System prompt for the real-AI seed parser. Encodes the SeedDraft schema AND

@@ -4,7 +4,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { SeedCategory } from "@core/types";
-import type { SceneKey } from "@/lib/ambient";
+import type { SceneKey } from "@core/ambient";
 
 /**
  * Transparent line-art glyphs (Lucide, MIT) — a refined, cohesive icon language

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useStore } from "@/lib/store";
 import { copy } from "@core/copy";
-import { formatTracesForExport } from "@/lib/exportTraces";
+import { formatTracesForExport } from "@core/exportTraces";
 import SoftButton from "@/components/design/SoftButton";
 
 type Status = "idle" | "done" | "failed";

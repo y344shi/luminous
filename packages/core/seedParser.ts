@@ -6,7 +6,7 @@ import type {
   SemanticTime,
 } from "@core/types";
 import { uid, nowIso } from "@core/utils";
-import { mockSeeds, type SeedTemplate } from "./mockSeeds";
+import { mockSeeds, type SeedTemplate } from "@core/mockSeeds";
 
 export type SeedDraft = SeedTemplate;
 

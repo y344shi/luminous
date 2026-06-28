@@ -5,8 +5,8 @@ import {
   deserializeSeeds,
   deserializeTraces,
 } from "@/lib/serialize";
-import { seedMockGarden } from "@/lib/mockSeeds";
-import { buildTrace } from "@/lib/traceGenerator";
+import { seedMockGarden } from "@core/mockSeeds";
+import { buildTrace } from "@core/traceGenerator";
 
 describe("serialize — seeds", () => {
   it("round-trips a real seed unchanged through JSON", () => {

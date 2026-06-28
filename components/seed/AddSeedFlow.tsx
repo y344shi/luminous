@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { draftToSeed, type SeedDraft } from "@/lib/seedParser";
+import { draftToSeed, type SeedDraft } from "@core/seedParser";
 import { parseSeed } from "@/lib/aiParser";
 import { useStore } from "@/lib/store";
 import { copy } from "@core/copy";

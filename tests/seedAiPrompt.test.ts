@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseModelDraft, SEED_PARSER_SYSTEM_PROMPT } from "@/lib/seedAiPrompt";
+import { parseModelDraft, SEED_PARSER_SYSTEM_PROMPT } from "@core/seedAiPrompt";
 
 const RAW = "我想找个天气好的时候坐一会野外";
 

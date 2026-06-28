@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { copy, forbiddenWords } from "@core/copy";
 import { useStore } from "@/lib/store";
-import { seedMockGarden } from "@/lib/mockSeeds";
+import { seedMockGarden } from "@core/mockSeeds";
 
 // Components that touch next/navigation need it stubbed in jsdom.
 vi.mock("next/navigation", () => ({

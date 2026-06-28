@@ -14,7 +14,7 @@ import type {
 } from "@core/types";
 import { storage, defaultSettings, type LastPick } from "./storage";
 import type { Coords } from "@core/geo";
-import { seedMockGarden } from "./mockSeeds";
+import { seedMockGarden } from "@core/mockSeeds";
 import { localDateKey } from "@core/utils";
 
 type Store = {

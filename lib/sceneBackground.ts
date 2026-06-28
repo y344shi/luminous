@@ -1,4 +1,4 @@
-import type { SceneKey } from "./ambient";
+import type { SceneKey } from "@core/ambient";
 
 /**
  * Wallpaper for each sensed scene — the background reflects where you seem to be.

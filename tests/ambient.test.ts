@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { guessLocation, ambientLabel, buildAmbientContext, isWorkday, orbScene } from "@/lib/ambient";
+import { guessLocation, ambientLabel, buildAmbientContext, isWorkday, orbScene } from "@core/ambient";
 
 // 2026-06-24 is a Wednesday; 2026-06-27 is a Saturday.
 const wedAfternoon = new Date(2026, 5, 24, 15, 0, 0);

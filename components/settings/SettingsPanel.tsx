@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useStore } from "@/lib/store";
 import { copy } from "@core/copy";
 import { cx } from "@core/utils";
-import { isQuietNow } from "@/lib/reminders";
+import { isQuietNow } from "@core/reminders";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 import ThemeSwitcher from "@/components/design/ThemeSwitcher";

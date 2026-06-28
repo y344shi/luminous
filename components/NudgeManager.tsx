@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useStore } from "@/lib/store";
 import { storage, type RemindersToday } from "@/lib/storage";
-import { buildAmbientContext, guessLocation } from "@/lib/ambient";
+import { buildAmbientContext, guessLocation } from "@core/ambient";
 import { recommend } from "@core/scoring";
 import { shouldNudge, bumpReminders, nudgeText } from "@/lib/nudge";
 

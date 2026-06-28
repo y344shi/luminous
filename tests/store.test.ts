@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { useStore } from "@/lib/store";
-import { buildTrace } from "@/lib/traceGenerator";
-import { materializeSeed, mockSeeds } from "@/lib/mockSeeds";
+import { buildTrace } from "@core/traceGenerator";
+import { materializeSeed, mockSeeds } from "@core/mockSeeds";
 import { storage } from "@/lib/storage";
 
 beforeEach(() => {

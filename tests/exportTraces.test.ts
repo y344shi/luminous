@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatTracesForExport } from "@/lib/exportTraces";
+import { formatTracesForExport } from "@core/exportTraces";
 import type { DailyTrace } from "@core/types";
 import { copy } from "@core/copy";
 

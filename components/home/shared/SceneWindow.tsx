@@ -1,4 +1,4 @@
-import type { SceneKey } from "@/lib/ambient";
+import type { SceneKey } from "@core/ambient";
 
 /**
  * The orb as a tiny living window: a small illustrated, gently animated world for

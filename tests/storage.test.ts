@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { storage, STORAGE_KEYS, defaultSettings } from "@/lib/storage";
-import { seedMockGarden } from "@/lib/mockSeeds";
+import { seedMockGarden } from "@core/mockSeeds";
 
 beforeEach(() => {
   window.localStorage.clear();

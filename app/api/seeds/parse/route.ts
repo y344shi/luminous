@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { parseSeedMock, type SeedDraft } from "@/lib/seedParser";
-import { SEED_PARSER_SYSTEM_PROMPT, parseModelDraft } from "@/lib/seedAiPrompt";
+import { parseSeedMock, type SeedDraft } from "@core/seedParser";
+import { SEED_PARSER_SYSTEM_PROMPT, parseModelDraft } from "@core/seedAiPrompt";
 
 export const runtime = "nodejs";
 

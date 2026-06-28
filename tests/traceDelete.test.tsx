@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { useStore } from "@/lib/store";
-import { buildTrace } from "@/lib/traceGenerator";
-import { materializeSeed, mockSeeds } from "@/lib/mockSeeds";
+import { buildTrace } from "@core/traceGenerator";
+import { materializeSeed, mockSeeds } from "@core/mockSeeds";
 import { copy } from "@core/copy";
 
 vi.mock("next/navigation", () => ({

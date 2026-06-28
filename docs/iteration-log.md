@@ -1381,3 +1381,14 @@ What still feels wrong / not done yet:
   (context/ambient/mockSeeds/seedParser/traceGenerator) follows next; storage+store
   stay app-side (the platform boundary). 272 tests; typecheck clean; all skins build
   green; no behavior change.
+
+---
+
+## core 35: packages/core slice 5 (rest of the pure domain)
+- Moved context/ambient/mockSeeds/seedParser/traceGenerator/seedAiPrompt/reminders/
+  exportTraces into packages/core (36 importers rewritten; intra-batch relatives stay
+  valid as both move together). @core is now 21 modules — the whole framework-free
+  domain. lib/ now holds the genuine platform boundary (store/storage + browser/UI
+  helpers: feedback/webpush/sceneBackground/themes/keepsake/dayGrade/serialize/nudge/
+  bubblePhysics/aiParser). 272 tests; typecheck clean; all skins build green; no
+  behavior change. Next: package.json-ify @core.

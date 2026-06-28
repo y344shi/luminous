@@ -1,4 +1,4 @@
-import { parseSeedMock, type SeedDraft } from "./seedParser";
+import { parseSeedMock, type SeedDraft } from "@core/seedParser";
 
 export type AiMode = "mock" | "real";
 

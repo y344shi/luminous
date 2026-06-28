@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isQuietNow, remindersRemaining, canRemindNow } from "@/lib/reminders";
+import { isQuietNow, remindersRemaining, canRemindNow } from "@core/reminders";
 import { defaultSettings } from "@/lib/storage";
 import type { Settings } from "@core/types";
 

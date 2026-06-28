@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { guessLocation, orbScene } from "@/lib/ambient";
+import { guessLocation, orbScene } from "@core/ambient";
 import { sceneVisual, type SceneVisual } from "@/lib/sceneBackground";
 import { useStore } from "@/lib/store";
 import { roundCoarse } from "@core/geo";

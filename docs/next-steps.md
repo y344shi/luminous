@@ -24,7 +24,8 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] **packages/core — slice 2**: moved `utils` + `geo` (both zero-dep) into `@core` (25 importers rewritten). _(core 32)_
 - [x] **packages/core — slice 3**: moved `types` + `aesthetic` (the keystone; 40 importers) into `@core`. _(core 33)_
 - [x] **packages/core — slice 4**: moved `semanticTime`/`categoryMeta`/`copy`/`illustration`/`weather`/**`scoring`** (the recommender) into `@core` (52 importers). _(core 34)_
-- [ ] **packages/core — slice 5**: move the remaining pure domain (`context`, `ambient`, `mockSeeds`, `seedParser`, `traceGenerator`, `seedAiPrompt`). `storage`(localStorage) + `store`(zustand) stay app-side as the platform boundary.
+- [x] **packages/core — slice 5**: moved the rest of the pure domain (context/ambient/mockSeeds/seedParser/traceGenerator/seedAiPrompt/reminders/exportTraces). `@core` = 21 modules; `lib/` is now the platform boundary. _(core 35)_
+- [ ] **packages/core — finish**: give `@core` a real `package.json` (`@luminous/core`) + npm workspace → an importable shared dependency for RN/iOS. (Optional cleanup: `bubblePhysics`/`aiParser` if kept pure.)
 - [ ] **packages/core — finish**: give `@core` a real `package.json` (`@luminous/core`) + npm workspace → a true shared dependency for the RN/iOS build.
 - [ ] **packages/core — slice 3**: move the recommender (`scoring`, `context`, `ambient`, `illustration`, `weather`, `mockSeeds`, `copy`) — the bulk of the brain.
 - [ ] **packages/core — finish**: give it a real `package.json` (`@luminous/core`) + npm workspace; then it's a true shared dependency for the RN/iOS build.
