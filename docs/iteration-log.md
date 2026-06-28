@@ -1276,3 +1276,13 @@ What still feels wrong / not done yet:
   WeatherKind via weatherTint (rain→cool blue, snow→pale, fog→grey, storm→deep,
   cloud→soft; clear adds nothing). Shows only once a coarse home is saved + the
   fetch resolves, so the default view is untouched. glass+ocean build green; 266 tests.
+
+---
+
+## paper 1: Dwell + weather sensing parity on paper
+- PaperHome had activity/ambient but not dwell or weather, so paper users got
+  less-keen ranking + no weather in the day-line. Wired useDwell + useWeather
+  (homeLocation) into PaperHome's buildAmbientContext + ambientLabel. The weather
+  *tint* stays glass/ocean (paper keeps its clean notebook look); paper gets the
+  ranking + the 晴/多云/坐了一会 day-line. All sensing now uniform across skins.
+  266 tests; paper builds green.

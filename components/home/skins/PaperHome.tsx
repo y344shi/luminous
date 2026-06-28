@@ -13,6 +13,8 @@ import { cx } from "@/lib/utils";
 import { CategoryGlyph } from "../shared/glyphs";
 import PressedFlower from "./PressedFlower";
 import { useSensors } from "../shared/useSensors";
+import { useDwell } from "../shared/useDwell";
+import { useWeather, isGoodOutdoorWeather } from "../shared/useWeather";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 
@@ -39,6 +41,10 @@ export default function PaperHome() {
   const { activity, ambient, ambientOn, enableAmbient } = useSensors();
   const senseAround = useStore((s) => s.settings.senseAround);
   const updateSettings = useStore((s) => s.updateSettings);
+  const homeLocation = useStore((s) => s.homeLocation);
+  const deskMinutesToday = useDwell();
+  const weatherKind = useWeather(homeLocation);
+  const isOutdoorWeatherGood = isGoodOutdoorWeather(weatherKind);
 
   const [mounted, setMounted] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
@@ -63,10 +69,10 @@ export default function PaperHome() {
 
   useEffect(() => {
     if (!mounted || !now) return;
-    const ctx = buildAmbientContext({ now, isMobile: isMobileDevice(), locationHint: location, energy: lastPick.energy, activity, ambient });
+    const ctx = buildAmbientContext({ now, isMobile: isMobileDevice(), locationHint: location, energy: lastPick.energy, activity, ambient, deskMinutesToday, isOutdoorWeatherGood });
     setOpps(recommend(seeds, ctx, { limit: 4 }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, now, seeds, location, lastPick.energy, activity, ambient]);
+  }, [mounted, now, seeds, location, lastPick.energy, activity, ambient, deskMinutesToday, isOutdoorWeatherGood]);
 
   if (!mounted || !hydrated || !now) return null;
   const shown = opps.filter((o) => !doneSeedIds.includes(o.seedId));
@@ -87,7 +93,7 @@ export default function PaperHome() {
     <div className="paper relative -mx-5 min-h-[82dvh] px-7 pb-12 pt-6">
       <header className="pl-7">
         <h1 className="hand text-[30px] leading-tight text-[var(--text)]">今天别消失</h1>
-        <p className="hand mt-1 text-[15px] text-[var(--text-secondary)]">{ambientLabel(now, location, { activity, ambient })}</p>
+        <p className="hand mt-1 text-[15px] text-[var(--text-secondary)]">{ambientLabel(now, location, { activity, ambient, deskMinutesToday }, weatherKind)}</p>
       </header>
 
       <p className="hand mt-6 pl-7 text-[16px] text-[var(--text-secondary)]">也许现在，可以做一点这些——</p>
