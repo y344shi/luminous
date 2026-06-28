@@ -1403,3 +1403,12 @@ What still feels wrong / not done yet:
   holds ONLY the platform boundary (store/storage/feedback/webpush/sceneBackground/
   themes/keepsake/dayGrade/serialize/nudge). 272 tests; typecheck clean; all skins
   build green; no behavior change. RN/iOS can now depend on @luminous/core directly.
+
+---
+
+## core 37: Guard the @core boundary (no back-edges)
+- After the extraction, added a boundary guard to corePurity: every packages/core file
+  must import only @core/external — no `@/` (app alias) or `../` escape. Verified @core
+  is already clean; the guard locks the invariant so a future edit can't silently
+  reintroduce an app dependency that would break RN/iOS portability. +24 tests (296);
+  typecheck clean; build green; no behavior change.
