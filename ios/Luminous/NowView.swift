@@ -191,6 +191,7 @@ struct NowView: View {
     }
 
     private func complete(_ kind: CompletionKind) {
+        Feedback.completion(kind)
         let seed = store.findSeed(chosen?.seedId)
         if kind == .skipped {
             traceText = Copy.Completion.skippedMsg

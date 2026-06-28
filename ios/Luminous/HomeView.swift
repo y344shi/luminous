@@ -76,7 +76,8 @@ struct HomeView: View {
                 }
                 .padding(Spacing.lg)
             }
-            .themedScreen()
+            .background(PaperBackground().ignoresSafeArea())
+            .task { if store.theme != .fieldNotebook && store.theme != .warmPaper { store.setTheme(.fieldNotebook) } }
             .hiddenNavBar()
             .navigationDestination(for: Route.self) { route in
                 switch route {
