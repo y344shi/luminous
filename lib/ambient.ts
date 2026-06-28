@@ -73,13 +73,22 @@ const LOCATION_LABEL: Record<LocationType, string> = {
 
 /** A short, human sentence describing the sensed moment, e.g.
  * "周三 · 下午 · 在电脑前" or "周六 · 晚上 · 在家". */
-export function ambientLabel(now: Date, locationHint: LocationType): string {
+export function ambientLabel(
+  now: Date,
+  locationHint: LocationType,
+  sensed?: Pick<ContextSnapshot, "activity" | "ambient">
+): string {
   const wd = WEEKDAY[now.getDay()];
   // Time of day ignoring the weekend override, so we still say "下午" on Sat.
   const t = semanticTimeFromHour(now.getHours(), false);
   const parts = [wd, TIME_LABEL[t] ?? ""];
   const loc = LOCATION_LABEL[locationHint];
   if (loc) parts.push(loc);
+  // Surface the fused senses so the app's keenness is visible.
+  if (sensed?.activity === "walking") parts.push("走着");
+  else if (sensed?.activity === "transit" && locationHint !== "transit") parts.push("在路上");
+  if (sensed?.ambient === "quiet") parts.push("周围很安静");
+  else if (sensed?.ambient === "lively") parts.push("周围有点热闹");
   return parts.filter(Boolean).join(" · ");
 }
 

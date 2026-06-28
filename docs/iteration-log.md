@@ -1079,3 +1079,12 @@ What still feels wrong / not done yet:
   the recommendations re-rank as senses arrive; a gentle `感受周围` opt-in in the
   controls. Heart-rate `arousal` stays an unused seam (iOS HealthKit later).
   251 tests green; typecheck + all skins build clean.
+
+---
+
+## core 10: Surface the sensed context (visible keenness)
+- ambientLabel now appends the fused senses when present: 走着 / 在路上 (activity)
+  and 周围很安静 / 周围有点热闹 (ambient loudness), de-duped against the location
+  word. Both Homes pass the live signals. The app's awareness is now legible in the
+  header line (e.g. "周五 · 下午 · 在路上 · 周围有点热闹"). Default render unchanged.
+  251 tests green.

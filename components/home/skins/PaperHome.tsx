@@ -80,7 +80,7 @@ export default function PaperHome() {
     <div className="paper relative -mx-5 min-h-[82dvh] px-7 pb-12 pt-6">
       <header className="pl-7">
         <h1 className="hand text-[30px] leading-tight text-[var(--text)]">今天别消失</h1>
-        <p className="hand mt-1 text-[15px] text-[var(--text-secondary)]">{ambientLabel(now, location)}</p>
+        <p className="hand mt-1 text-[15px] text-[var(--text-secondary)]">{ambientLabel(now, location, { activity, ambient })}</p>
       </header>
 
       <p className="hand mt-6 pl-7 text-[16px] text-[var(--text-secondary)]">也许现在，可以做一点这些——</p>
