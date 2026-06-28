@@ -11,7 +11,6 @@ import { buildTrace, type CompletionKind } from "@/lib/traceGenerator";
 import { step, type Body } from "@/lib/bubblePhysics";
 import { copy } from "@/lib/copy";
 import { CategoryGlyph, SceneGlyph } from "./glyphs";
-import SceneWindow from "./SceneWindow";
 import { useSensors } from "./useSensors";
 import { cx } from "@/lib/utils";
 import BreathingCard from "@/components/design/BreathingCard";
@@ -59,7 +58,6 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const elsRef = useRef<Record<string, HTMLButtonElement | null>>({});
-  const blobsRef = useRef<Record<string, HTMLSpanElement | null>>({});
   const bodiesRef = useRef<Body[]>([]);
   const homesRef = useRef<Record<string, { x: number; y: number }>>({});
   const tiltRef = useRef<{ gamma: number | null; beta: number | null } | null>(null);
@@ -129,7 +127,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
     const primaryIds = new Set(opps.map((o) => o.seedId));
     const ambientSeeds = seeds
       .filter((s) => (s.status === "active" || s.status === "sleeping") && !primaryIds.has(s.id))
-      .slice(0, 8);
+      .slice(0, 3);
 
     const next: Bubble[] = [];
     const bodies: Body[] = [];
@@ -149,8 +147,8 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
       // buoyancy skin: most relevant float highest (surface); glass skin: ring round orb
       const hx = buoyancy
         ? Math.max(r + 10, Math.min(w - r - 10, w * (0.5 + (i - (n - 1) / 2) * 0.22)))
-        : w / 2 + Math.cos(ang) * (ORB_R + 64);
-      const hy = buoyancy ? h * (0.15 + i * 0.07) : h / 2 + Math.sin(ang) * (ORB_R + 64);
+        : Math.max(r + 8, Math.min(w - r - 8, w / 2 + Math.cos(ang) * (ORB_R + 96)));
+      const hy = buoyancy ? h * (0.15 + i * 0.07) : Math.max(r + 8, Math.min(h - r - 8, h / 2 + Math.sin(ang) * (ORB_R + 96)));
       next.push({ id: o.id, seedId: o.seedId, title: seed.title, category: seed.categories[0], r, z, primary: true, opp: o });
       bodies.push({ id: o.id, x: hx, y: rise ? h - r - rand(0, 18) : hy, vx: 0, vy: 0, r, m: r * r });
       homes[o.id] = { x: hx, y: hy };
@@ -189,7 +187,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
     let last = 0;
     const orb = () => {
       const { w, h } = sizeRef.current;
-      return { x: w / 2, y: h / 2, r: ORB_R + 6 };
+      return { x: w / 2, y: h / 2, r: ORB_R + 18 };
     };
     function frame(t: number) {
       const dt = Math.min(last ? (t - last) / 1000 : 0.016, 0.05);
@@ -215,8 +213,6 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
         const node = elsRef.current[b.id];
         if (!node) continue;
         node.style.transform = `translate3d(${b.x - b.r}px, ${b.y - b.r}px, 0)`;
-        const blob = blobsRef.current[b.id];
-        if (blob) blob.style.transform = `translate3d(${b.x - b.r}px, ${b.y - b.r}px, 0)`;
       }
       rafRef.current = requestAnimationFrame(frame);
     }
@@ -241,8 +237,6 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
       }
       const node = elsRef.current[b.id];
       if (node) node.style.transform = `translate3d(${b.x - b.r}px, ${b.y - b.r}px, 0)`;
-      const blob = blobsRef.current[b.id];
-      if (blob) blob.style.transform = `translate3d(${b.x - b.r}px, ${b.y - b.r}px, 0)`;
     }
   }, [mounted, bubbles]);
 
@@ -337,17 +331,6 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
           />
         ))}
       </div>
-      {/* liquid metaball layer — soft blobs under the glass that fuse when close */}
-      <div className="goo-layer" aria-hidden>
-        {shown.map((b) => (
-          <span
-            key={`goo_${b.id}`}
-            ref={(n) => { blobsRef.current[b.id] = n; }}
-            className="goo-blob"
-            style={{ width: b.r * 2, height: b.r * 2 }}
-          />
-        ))}
-      </div>
       {/* drifting glass bubbles */}
       {shown.map((b, i) => (
         <button
@@ -369,17 +352,19 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
         </button>
       ))}
 
+      {/* a soft warm bloom of light, holding the orb */}
+      <div className="orb-bloom" aria-hidden />
       {/* central orb — the AI's read of where you are, glowing */}
       <Link
         href="/now"
         aria-label={copy.home.primary}
+        data-orb
         className="glass-liquid orb-glow glass-glint tdd-breathe absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 overflow-hidden rounded-full transition-transform active:scale-[0.97]"
         style={{ width: ORB_R * 2, height: ORB_R * 2 }}
       >
         <span className="glass-refract" aria-hidden />
-        <SceneWindow icon={scene.icon} />
         <span className="relative">
-          <SceneGlyph icon={scene.icon} size={32} />
+          <SceneGlyph icon={scene.icon} size={40} />
         </span>
         <span className="serif text-[11px] tracking-[0.14em] text-[var(--text-secondary)]">
           {scene.label}

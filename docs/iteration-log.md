@@ -1098,3 +1098,13 @@ What still feels wrong / not done yet:
 - Sensing made automatic as well as clickable: new `settings.senseAround` persists
   the opt-in; both Homes auto-resume ambient sensing on load when set (mic permission
   persists, no re-prompt). Motion is already passive. 251 tests green.
+
+---
+
+## glass 8: Artistic redesign (drop goo, clean orb, warm bloom)
+- The glass skin read as "weird / not artistic" — scattered green goo metaballs
+  looked like smudges, the orb was a muddle (grey clip-art monitor + redundant
+  glyph + label), and bubbles collided with the orb. Removed the goo layer entirely;
+  the orb is now a clean luminous glass sphere (single line glyph + label) cradled
+  in a soft warm `.orb-bloom`; ambient bubbles thinned 8→3 and clamped on-screen;
+  primaries spaced further from the orb. Calm, warm, luminous. 251 tests green.
