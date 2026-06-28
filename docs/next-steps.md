@@ -21,7 +21,7 @@ shipped. Keep core skin-agnostic; keep skins thin.
 
 ## Fresh (self-review — needs a green tick each)
 - [x] **Distinct wish illustrations** (user: "icons too similar"): wishes sharing a category looked identical; now the illustration varies across a wish's own categories (lib/illustration), and the 3 home cards are forced distinct. _(core 21)_
-- [ ] Replace remaining system emojis with the illustration (OpportunityCard / SeedDetail / AddSeedFlow / RecentSeeds) — keep TraceCard warm.
+- [x] Replaced the remaining system emojis with the illustration (Now flow / seed detail / add preview / recent list), varied by category. TraceCard stays warm. _(core 23)_
 - [x] **Dwell sensing** (smarter/temporal): tracks active minutes at the desk today (on-device, per-day localStorage); long sit → ranking favors body/rest/outside + the day-line says 坐了一会/坐了挺久. _(core 22)_
 - [ ] Dwell follow-ups: wire useDwell into PaperHome too; add session-length + app-open cadence; iOS gets system-wide Screen Time (note in ios-sensor-port.md).
 - [x] Lighter wish cards: dropped the cramped action line — cards show illustration + title only (user). _(glass 11)_

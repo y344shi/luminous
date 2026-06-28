@@ -34,6 +34,7 @@ export default function NowFlow() {
   const soundEnabled = useStore((s) => s.settings.soundEnabled);
   const hydrated = useStore((s) => s.hydrated);
   const lastPick = useStore((s) => s.lastPick);
+  const illustrationStyle = useStore((s) => s.settings.illustrationStyle);
   const rememberPick = useStore((s) => s.rememberPick);
 
   const [step, setStep] = useState<Step>("context");
@@ -198,6 +199,7 @@ export default function NowFlow() {
           key={o.id}
           opportunity={o}
           seed={seed}
+          illustrationStyle={illustrationStyle}
           canSwap={opps.length > 1}
           onStart={() => handleStart(o)}
           onSwap={handleSwap}

@@ -1241,3 +1241,13 @@ What still feels wrong / not done yet:
   toward body/recovery/outside after a long sit and eases off computer-focus.
   ambientLabel surfaces 坐了一会 / 坐了挺久. useDwell hook wired into BubbleField.
   On-device only; system-wide app usage stays an iOS Screen Time job. +6 tests (264).
+
+---
+
+## core 23: Remaining wish emojis → illustration system
+- OpportunityCard (Now flow), SeedDetail, AddSeedFlow (add preview), and RecentSeeds
+  swapped their system category emoji for IllustrationArt(chosen pack, varied
+  category via illustrationCategory). NowFlow passes settings.illustrationStyle to
+  OpportunityCard. The illustration system is now consistent everywhere a wish shows
+  (home cards, tap-sheet, Garden, Now, detail, add, recent) — only the keepsake
+  TraceCard keeps its warm emoji by decision. 264 tests; build green.
