@@ -1088,3 +1088,13 @@ What still feels wrong / not done yet:
   word. Both Homes pass the live signals. The app's awareness is now legible in the
   header line (e.g. "周五 · 下午 · 在路上 · 周围有点热闹"). Default render unchanged.
   251 tests green.
+
+---
+
+## core 11: Mac iOS-sensor brief + clickable-and-automatic sensing
+- New `docs/ios-sensor-port.md`: a detailed workload doc for the Mac/Xcode agent to
+  port the sensor fusion to iOS (CoreMotion, AVAudioSession, HealthKit heart-rate →
+  arousal, CoreLocation; mirror lib/sensors.ts + sensorBonus; privacy + Info.plist).
+- Sensing made automatic as well as clickable: new `settings.senseAround` persists
+  the opt-in; both Homes auto-resume ambient sensing on load when set (mic permission
+  persists, no re-prompt). Motion is already passive. 251 tests green.

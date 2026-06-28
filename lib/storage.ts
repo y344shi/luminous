@@ -27,6 +27,7 @@ export const defaultSettings: Settings = {
   maxRemindersPerDay: 3,
   nudgesEnabled: false,
   soundEnabled: false,
+  senseAround: false,
   aesthetic: AESTHETIC,
 };
 

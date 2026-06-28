@@ -37,6 +37,8 @@ export default function PaperHome() {
   const setSeedStatus = useStore((s) => s.setSeedStatus);
   const soundEnabled = useStore((s) => s.settings.soundEnabled);
   const { activity, ambient, ambientOn, enableAmbient } = useSensors();
+  const senseAround = useStore((s) => s.settings.senseAround);
+  const updateSettings = useStore((s) => s.updateSettings);
 
   const [mounted, setMounted] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
@@ -53,6 +55,11 @@ export default function PaperHome() {
     setLocation(loc);
     setMounted(true);
   }, []);
+
+  // Sense automatically once opted in (mic permission persists → no re-prompt).
+  useEffect(() => {
+    if (senseAround) enableAmbient();
+  }, [senseAround, enableAmbient]);
 
   useEffect(() => {
     if (!mounted || !now) return;
@@ -128,7 +135,7 @@ export default function PaperHome() {
         <Link href="/add" aria-label="接住一个新愿望" className="hand text-[22px] text-[var(--text-secondary)]">＋</Link>
         {!ambientOn && (
           <button
-            onClick={enableAmbient}
+            onClick={() => { updateSettings({ senseAround: true }); enableAmbient(); }}
             className="hand rounded-[4px] border border-[var(--text)]/15 bg-[var(--surface)] px-3.5 py-2 text-[13px] text-[var(--text-secondary)]"
           >
             {copy.home.senseAround}

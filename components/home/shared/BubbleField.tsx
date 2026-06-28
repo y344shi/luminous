@@ -54,6 +54,8 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
   const homeLocation = useStore((s) => s.homeLocation);
   const setHomeLocation = useStore((s) => s.setHomeLocation);
   const { activity, ambient, ambientOn, enableAmbient } = useSensors();
+  const senseAround = useStore((s) => s.settings.senseAround);
+  const updateSettings = useStore((s) => s.updateSettings);
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const elsRef = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -101,6 +103,11 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
     );
     setMounted(true);
   }, []);
+
+  // Sense automatically once opted in (mic permission persists → no re-prompt).
+  useEffect(() => {
+    if (senseAround) enableAmbient();
+  }, [senseAround, enableAmbient]);
 
   // (re)build bubbles + bodies whenever the field inputs change
   useEffect(() => {
@@ -414,7 +421,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
           )}
           {!ambientOn && (
             <button
-              onClick={enableAmbient}
+              onClick={() => { updateSettings({ senseAround: true }); enableAmbient(); }}
               className="glass rounded-full px-4 py-2 text-[12px] text-[var(--text-secondary)]"
             >
               {copy.home.senseAround}

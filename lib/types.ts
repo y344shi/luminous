@@ -126,5 +126,6 @@ export type Settings = {
   maxRemindersPerDay: number;
   nudgesEnabled: boolean;
   soundEnabled: boolean;
+  senseAround: boolean;
   aesthetic: import("./aesthetic").Aesthetic;
 };
