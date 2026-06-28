@@ -27,7 +27,7 @@ export const copy = {
     sensedFail: "没能感知到位置，可以自己点一下你在哪。",
     locationCorrect: "不对的话，点一下你现在在哪：",
     bubbleLater: "先放着",
-    feelGravity: "感受重力",
+    feelGravity: "感受水流",
     traceHeading: "今日痕迹",
     traceEmpty: "还没有，但可以很小。",
     seedsHeading: "最近的小愿望",

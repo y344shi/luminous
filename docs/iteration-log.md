@@ -966,3 +966,12 @@ What still feels wrong / not done yet:
 - Tilt is low-pass smoothed (0.82/0.18) so motion glides; a devicemotion **shake**
   (accel jump > 22) flings all bubbles apart (debounced 900ms); when the device is
   near-flat the field eases back to a gentle cluster. 214 tests green.
+
+---
+
+## ocean 1 (D1): Buoyancy / floatiness (new branch)
+- Reframed the field from gravity to **buoyancy**: the bottom edge is the ocean
+  floor; each wish floats toward a relevance-height (most relevant near the surface
+  /top, lesser ones lower) with a gentle bob. Gyro now stirs a horizontal current
+  instead of pulling gravity; shake-to-scatter kept. Branched off glass (keeps the
+  refraction/caustic/depth/gooey/dreamier look). 214 tests green.

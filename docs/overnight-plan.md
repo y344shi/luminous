@@ -47,3 +47,11 @@ push the branch. Small > grand. Revert rather than leave red.
 ## Scene library + graphics sources
 See `docs/scene-library.md` for the ~100 scenario list and the recommended
 free, transparent, high-quality graphics/image/3D libraries to draw from.
+
+## D · Ocean  (branch `luminous-ocean` → luminous `ocean`)
+A buoyancy reskin of the glass field: the screen is water, the **bottom edge is the
+ocean floor**, and wishes **float by relevance** — the most relevant rise to the
+surface (top), lesser ones hover lower. Gentle bob; gyro = a horizontal current.
+- [x] D1. Buoyancy model: relevance→float-height, vertical bob, gyro as current (not gravity); floor = bottom edge. _(ocean 1)_
+- [ ] D2. Rise-from-the-floor load: bubbles spawn at the floor and float up into place (staggered).
+- [ ] D3. Caustic water surface + light shafts from the top; faint bubble streams.

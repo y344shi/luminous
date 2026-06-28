@@ -8,7 +8,7 @@ import { recommend } from "@/lib/scoring";
 import { buildAmbientContext, guessLocation, ambientLabel, orbScene } from "@/lib/ambient";
 import { roundCoarse, isAtHome, isMovingSpeed, type Coords } from "@/lib/geo";
 import { buildTrace, type CompletionKind } from "@/lib/traceGenerator";
-import { step, gravityFromOrientation, type Body } from "@/lib/bubblePhysics";
+import { step, type Body } from "@/lib/bubblePhysics";
 import { copy } from "@/lib/copy";
 import { CategoryGlyph, SceneGlyph } from "./glyphs";
 import { cx } from "@/lib/utils";
@@ -36,11 +36,11 @@ function rand(a: number, b: number) {
 }
 
 /**
- * A dreamy field of glass bubbles. The most-fitting wishes float bigger and
- * brighter near the central orb; lesser ones drift smaller and dimmer across the
- * whole screen. They collide softly, and — if you grant motion access — feel the
- * device's gravity, sliding and clustering when you tilt. Tap one to do it; it
- * dissolves into light and leaves a trace.
+ * A dreamy ocean of glass bubbles. The screen is water: the bottom edge is the
+ * ocean floor, and wishes have buoyancy — the most relevant float highest toward
+ * the surface, lesser ones hover lower. They bob and collide softly; granting
+ * motion access stirs a gentle horizontal current (and a shake scatters them).
+ * Tap one to do it; it dissolves into light and leaves a trace.
  */
 export default function BubbleField() {
   const hydrated = useStore((s) => s.hydrated);
@@ -61,6 +61,7 @@ export default function BubbleField() {
   const sizeRef = useRef({ w: 0, h: 0 });
   const lastAccelRef = useRef(0);
   const lastShakeRef = useRef(0);
+  const phaseRef = useRef<Record<string, number>>({});
   const pointerRef = useRef({ px: 0, py: 0 });
   const zRef = useRef<Record<string, number>>({});
 
@@ -121,36 +122,41 @@ export default function BubbleField() {
     const bodies: Body[] = [];
     const homes: Record<string, { x: number; y: number }> = {};
     const zmap: Record<string, number> = {};
+    const phasemap: Record<string, number> = {};
 
     opps.forEach((o, i) => {
       const seed = findSeed(seeds, o.seedId);
       if (!seed) return;
       const r = 34 + (3 - i) * 3; // best slightly bigger
       const z = 0.86 + (3 - i) * 0.04; // primaries sit near (crisp)
-      const angle = (-90 + (360 / Math.max(opps.length, 1)) * i) * (Math.PI / 180);
-      const hx = w / 2 + Math.cos(angle) * (ORB_R + 64);
-      const hy = h / 2 + Math.sin(angle) * (ORB_R + 64);
+      // buoyancy: the most relevant float highest (toward the surface), spread wide
+      const n = opps.length;
+      const hx = Math.max(r + 10, Math.min(w - r - 10, w * (0.5 + (i - (n - 1) / 2) * 0.22)));
+      const hy = h * (0.15 + i * 0.07);
       next.push({ id: o.id, seedId: o.seedId, title: seed.title, category: seed.categories[0], r, z, primary: true, opp: o });
       bodies.push({ id: o.id, x: hx, y: hy, vx: 0, vy: 0, r, m: r * r });
       homes[o.id] = { x: hx, y: hy };
       zmap[o.id] = z;
+      phasemap[o.id] = rand(0, Math.PI * 2);
     });
 
     ambientSeeds.forEach((seed) => {
       const id = `amb_${seed.id}`;
       const r = rand(15, 22);
-      const z = rand(0.25, 0.5); // lesser wishes drift far (soft)
+      const z = rand(0.25, 0.5); // lesser wishes hover lower, near the floor
       const hx = rand(r + 6, w - r - 6);
-      const hy = rand(r + 6, h - r - 6);
+      const hy = h * 0.6 + rand(0, h * 0.3); // lower band toward the ocean floor
       next.push({ id, seedId: seed.id, title: seed.title, category: seed.categories[0], r, z, primary: false });
       bodies.push({ id, x: hx, y: hy, vx: rand(-8, 8), vy: rand(-8, 8), r, m: r * r });
       homes[id] = { x: hx, y: hy };
       zmap[id] = z;
+      phasemap[id] = rand(0, Math.PI * 2);
     });
 
     bodiesRef.current = bodies;
     homesRef.current = homes;
     zRef.current = zmap;
+    phaseRef.current = phasemap;
     setBubbles(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted, now, seeds, location, lastPick.energy]);
@@ -180,29 +186,20 @@ export default function BubbleField() {
       const bodies = bodiesRef.current;
       const tilt = tiltRef.current;
       const live = gyroOn && tilt;
-      if (live) {
-        const g = gravityFromOrientation(tilt.gamma, tilt.beta, 1200);
-        // Settle-to-cluster: when the device is near flat, ease bubbles gently
-        // back toward the orb instead of leaving them flung to the edges.
-        const flat = Math.abs(tilt.gamma ?? 0) + Math.abs(tilt.beta ?? 0) < 9;
-        if (flat) {
-          const c = orb();
-          for (const b of bodies) {
-            b.vx += (c.x - b.x) * 0.5 * dt;
-            b.vy += (c.y - b.y) * 0.5 * dt;
-          }
-        }
-        step(bodies, { w, h, gx: g.gx, gy: g.gy, dt, anchor: orb(), damping: 0.99, restitution: 0.78 });
-      } else {
-        for (const b of bodies) {
-          const home = homesRef.current[b.id];
-          if (home) {
-            b.vx += (home.x - b.x) * 0.42 * dt + rand(-3, 3) * dt;
-            b.vy += (home.y - b.y) * 0.42 * dt + rand(-3, 3) * dt;
-          }
-        }
-        step(bodies, { w, h, gx: 0, gy: 0, dt, anchor: orb(), damping: 0.94, restitution: 0.55 });
+      // Floatiness: every bubble rises toward its relevance-height (most relevant
+      // near the surface/top, lesser ones lower toward the ocean floor = the
+      // bottom edge), with a gentle buoyant bob. Gyro just stirs a horizontal
+      // current; the floor stays the bottom of the screen.
+      const sway = live ? Math.max(-1, Math.min(1, (tilt.gamma ?? 0) / 45)) * 620 : 0;
+      for (const b of bodies) {
+        const home = homesRef.current[b.id];
+        if (!home) continue;
+        const ph = phaseRef.current[b.id] ?? 0;
+        const bob = Math.sin(t * 0.0011 + ph) * 5;
+        b.vx += (home.x - b.x) * 0.26 * dt + rand(-3, 3) * dt;
+        b.vy += (home.y + bob - b.y) * 0.5 * dt;
       }
+      step(bodies, { w, h, gx: sway, gy: 0, dt, anchor: orb(), damping: 0.95, restitution: 0.5 });
       const { px, py } = pointerRef.current;
       for (const b of bodies) {
         const node = elsRef.current[b.id];
