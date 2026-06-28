@@ -59,6 +59,8 @@ export default function BubbleField() {
   const tiltRef = useRef<{ gamma: number | null; beta: number | null } | null>(null);
   const rafRef = useRef<number>(0);
   const sizeRef = useRef({ w: 0, h: 0 });
+  const lastAccelRef = useRef(0);
+  const lastShakeRef = useRef(0);
   const pointerRef = useRef({ px: 0, py: 0 });
   const zRef = useRef<Record<string, number>>({});
 
@@ -180,6 +182,16 @@ export default function BubbleField() {
       const live = gyroOn && tilt;
       if (live) {
         const g = gravityFromOrientation(tilt.gamma, tilt.beta, 1200);
+        // Settle-to-cluster: when the device is near flat, ease bubbles gently
+        // back toward the orb instead of leaving them flung to the edges.
+        const flat = Math.abs(tilt.gamma ?? 0) + Math.abs(tilt.beta ?? 0) < 9;
+        if (flat) {
+          const c = orb();
+          for (const b of bodies) {
+            b.vx += (c.x - b.x) * 0.5 * dt;
+            b.vy += (c.y - b.y) * 0.5 * dt;
+          }
+        }
         step(bodies, { w, h, gx: g.gx, gy: g.gy, dt, anchor: orb(), damping: 0.99, restitution: 0.78 });
       } else {
         for (const b of bodies) {
@@ -237,8 +249,32 @@ export default function BubbleField() {
     const D = (window as unknown as { DeviceOrientationEvent?: { requestPermission?: () => Promise<string> } })
       .DeviceOrientationEvent;
     const start = () => {
+      // Smooth the tilt (low-pass) so gravity glides instead of jittering.
       window.addEventListener("deviceorientation", (e) => {
-        tiltRef.current = { gamma: e.gamma, beta: e.beta };
+        const g = e.gamma ?? 0;
+        const b = e.beta ?? 0;
+        const prev = tiltRef.current;
+        if (!prev || prev.gamma == null || prev.beta == null) {
+          tiltRef.current = { gamma: g, beta: b };
+        } else {
+          tiltRef.current = { gamma: prev.gamma * 0.82 + g * 0.18, beta: prev.beta * 0.82 + b * 0.18 };
+        }
+      });
+      // Shake to scatter — a sharp jolt flings the bubbles apart.
+      window.addEventListener("devicemotion", (e) => {
+        const a = e.accelerationIncludingGravity;
+        if (!a) return;
+        const mag = Math.abs(a.x ?? 0) + Math.abs(a.y ?? 0) + Math.abs(a.z ?? 0);
+        const prev = lastAccelRef.current;
+        lastAccelRef.current = mag;
+        const now = Date.now();
+        if (prev && mag - prev > 22 && now - lastShakeRef.current > 900) {
+          lastShakeRef.current = now;
+          for (const body of bodiesRef.current) {
+            body.vx += rand(-280, 280);
+            body.vy += rand(-280, 280);
+          }
+        }
       });
       setGyroOn(true);
     };

@@ -959,3 +959,10 @@ What still feels wrong / not done yet:
   field drifts slower. Added a `.dream-motes` layer (9 faint rising light dots,
   staggered) and a soft `.dream-vignette` framing the field. Reduced-motion stills
   the motes. 214 tests green; typecheck + build clean.
+
+---
+
+## glass 6 (A6): Gyro polish
+- Tilt is low-pass smoothed (0.82/0.18) so motion glides; a devicemotion **shake**
+  (accel jump > 22) flings all bubbles apart (debounced 900ms); when the device is
+  near-flat the field eases back to a gentle cluster. 214 tests green.
