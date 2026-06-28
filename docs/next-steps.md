@@ -14,7 +14,7 @@ shipped. Keep core skin-agnostic; keep skins thin.
 
 ## ocean skin
 - [x] Rise-from-the-floor load (ocean): on first load bubbles spawn at the bottom edge and float up to their relevance-heights via buoyancy; once only (no re-rise on rebuild). _(ocean 3)_
-- [ ] Caustic water surface + light shafts from the top; faint bubble streams.
+- [x] Ocean ambience: a caustic water **surface** band, slow **light shafts** from the top, and faint rising **bubble streams** — a decorative layer in the OceanField skin only; reduced-motion safe. _(ocean 4)_
 
 ## paper skin
 - [ ] Hand-drawn entrance for the notes; a pressed-flower mark per category.

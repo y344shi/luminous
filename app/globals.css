@@ -456,6 +456,68 @@ body {
   .tdd-condense { animation: none; }
 }
 
+/* ── Ocean skin ambience: a caustic surface, light shafts, rising streams ──── */
+.ocean-ambience {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+/* the water surface at the top — a soft caustic shimmer band */
+.ocean-surface {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background:
+    repeating-linear-gradient(104deg, color-mix(in srgb, white 28%, transparent) 0 2px, transparent 2px 22px),
+    linear-gradient(to bottom, color-mix(in srgb, white 40%, transparent), transparent);
+  filter: blur(2px);
+  opacity: 0.5;
+  animation: tdd-caustic 9s ease-in-out infinite alternate;
+}
+@keyframes tdd-caustic {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 42px 0, 0 0; }
+}
+/* god-rays slanting down from the surface */
+.ocean-shaft {
+  position: absolute;
+  top: -8%;
+  width: 48px;
+  height: 116%;
+  background: linear-gradient(to bottom, color-mix(in srgb, white 22%, transparent), transparent 72%);
+  filter: blur(9px);
+  transform: rotate(7deg);
+  animation: tdd-shaft 15s ease-in-out infinite alternate;
+}
+@keyframes tdd-shaft {
+  from { opacity: 0.28; transform: rotate(7deg) translateX(-12px); }
+  to { opacity: 0.55; transform: rotate(7deg) translateX(12px); }
+}
+/* faint streams of tiny bubbles rising from the floor */
+.ocean-stream {
+  position: absolute;
+  bottom: -16px;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, white 70%, transparent);
+  animation: tdd-stream var(--st-dur, 9s) linear var(--st-delay, 0s) infinite;
+}
+@keyframes tdd-stream {
+  0% { transform: translateY(0) scale(0.7); opacity: 0; }
+  14% { opacity: 0.5; }
+  88% { opacity: 0.35; }
+  100% { transform: translateY(-78dvh) scale(1); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ocean-surface, .ocean-shaft { animation: none; }
+  .ocean-stream { animation: none; opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tdd-rise,
   .tdd-breathe,

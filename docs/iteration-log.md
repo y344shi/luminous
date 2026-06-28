@@ -1009,3 +1009,11 @@ What still feels wrong / not done yet:
   floor) and the buoyancy physics floats them up to their relevance-heights — a
   gentle rise into place. One-shot via didRiseRef (no re-rise when the field
   rebuilds after an interaction). Glass unaffected. 250 tests green.
+
+---
+
+## ocean 4: Caustic surface + light shafts + bubble streams
+- Ocean skin only: an `.ocean-ambience` decorative layer (in OceanField, not the
+  shared field) adds a shimmering caustic water surface band at the top, three slow
+  drifting light shafts, and six faint rising bubble streams. CSS-only,
+  pointer-events-none, reduced-motion safe. Glass/paper untouched. 250 tests green.
