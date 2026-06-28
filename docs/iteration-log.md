@@ -966,3 +966,13 @@ What still feels wrong / not done yet:
 - Tilt is low-pass smoothed (0.82/0.18) so motion glides; a devicemotion **shake**
   (accel jump > 22) flings all bubbles apart (debounced 900ms); when the device is
   near-flat the field eases back to a gentle cluster. 214 tests green.
+
+---
+
+## core 1: Runtime skin picker (Settings → 外观风格)
+- `settings.aesthetic` (default = NEXT_PUBLIC_AESTHETIC) now drives the Home look at
+  runtime. New `HomeSkin` client component reads the setting (falls back to the env
+  default before hydration, no flash) and renders GlassField / OceanField / PaperHome;
+  `app/page.tsx` is now a thin wrapper. Settings gains a 3-way 外观风格 picker
+  (琉璃/海洋/纸页). Switching is instant + persisted; no rebuild. New homeSkin.test.tsx
+  (3); 250 tests green; typecheck + build clean.

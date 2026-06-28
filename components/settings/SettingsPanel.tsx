@@ -122,6 +122,30 @@ export default function SettingsPanel() {
         </BreathingCard>
       </Section>
 
+      <Section title={copy.settings.skinLabel}>
+        <BreathingCard className="flex gap-2">
+          {([
+            ["glass", copy.settings.skinGlass],
+            ["ocean", copy.settings.skinOcean],
+            ["paper", copy.settings.skinPaper],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => updateSettings({ aesthetic: key })}
+              aria-pressed={settings.aesthetic === key}
+              className={cx(
+                "flex-1 rounded-2xl px-3 py-2.5 text-[14px] transition-colors",
+                settings.aesthetic === key
+                  ? "bg-[var(--accent)] text-[var(--on-accent)]"
+                  : "bg-[var(--surface-soft)] text-[var(--text-secondary)]"
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </BreathingCard>
+      </Section>
+
       <Section title={copy.settings.soundLabel}>
         <BreathingCard className="flex items-center justify-between">
           <span className="text-[15px] text-[var(--text)]">

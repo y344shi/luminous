@@ -17,6 +17,8 @@ export const STORAGE_KEYS = {
   reminders: "tdd.reminders",
 } as const;
 
+import { AESTHETIC } from "./aesthetic";
+
 export const defaultSettings: Settings = {
   theme: "warm_paper",
   aiMode: "mock",
@@ -25,6 +27,7 @@ export const defaultSettings: Settings = {
   maxRemindersPerDay: 3,
   nudgesEnabled: false,
   soundEnabled: false,
+  aesthetic: AESTHETIC,
 };
 
 export type RemindersToday = { date: string; count: number };

@@ -7,8 +7,7 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [ ] Folder tidy: move shared home pieces into `components/home/shared/` and
   update imports (cosmetic; current code already shares them).
 - [ ] Real `packages/core` / `packages/design` extraction + CI on luminous (was C6).
-- [ ] A Settings "外观/skin" picker that sets the aesthetic at runtime (localStorage),
-  so users can switch glass/ocean/paper without a rebuild.
+- [x] A Settings "外观风格" picker sets the aesthetic at **runtime** (persisted): `HomeSkin` reads `settings.aesthetic` (falls back to `NEXT_PUBLIC_AESTHETIC` pre-hydration); flip glass/ocean/paper in-app, no rebuild. _(core 1)_
 - [ ] Perf pass on the glass effects for large desktop viewports (backdrop-filter +
   SVG goo/turbulence cost).
 
