@@ -1025,3 +1025,11 @@ What still feels wrong / not done yet:
   tdd-rise entrance), like being laid down one by one; each note carries a faint
   PressedFlower mark — a tiny botanical line-art stamp keyed to the wish's category
   (sprig/bloom/clover/fern/bud/wheat/tulip). New PressedFlower.tsx; 250 tests green.
+
+---
+
+## core 5: Skin-aware motion-button label
+- The shared bubble field's "grant motion" button (mobile-only) now reads
+  感受水流 (feel the current) on the ocean skin and 感受重力 on glass — fixing a tone
+  mismatch where the buoyancy/no-gravity ocean still said "feel gravity". One new
+  copy key (feelCurrent), switched by the buoyancy prop. 250 tests green.

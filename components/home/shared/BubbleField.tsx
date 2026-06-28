@@ -426,7 +426,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
               onClick={enableMotion}
               className="glass rounded-full px-4 py-2 text-[12px] text-[var(--text-secondary)]"
             >
-              {copy.home.feelGravity}
+              {buoyancy ? copy.home.feelCurrent : copy.home.feelGravity}
             </button>
           )}
           <Link

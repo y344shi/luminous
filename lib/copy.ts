@@ -33,6 +33,7 @@ export const copy = {
     navFail: "没能定位，先算了",
     navNorthUp: "（箭头以正北为上）",
     feelGravity: "感受重力",
+    feelCurrent: "感受水流",
     traceHeading: "今日痕迹",
     traceEmpty: "还没有，但可以很小。",
     seedsHeading: "最近的小愿望",
