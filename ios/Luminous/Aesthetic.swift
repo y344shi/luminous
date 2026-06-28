@@ -28,8 +28,8 @@ enum Aesthetic: String, CaseIterable {
 struct AestheticField: View {
     var body: some View {
         switch Aesthetic.current {
-        case .glass: GlassField()
-        case .ocean: OceanField()
+        case .glass: ZStack { SceneBackground(); GlassField() }
+        case .ocean: ZStack { SceneBackground(); OceanField() }
         case .paper: PaperField()
         }
     }

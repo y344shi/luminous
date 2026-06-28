@@ -82,7 +82,7 @@ struct GlassField: View {
 
     var body: some View {
         ZStack {
-            theme.background.ignoresSafeArea()
+            theme.background.opacity(0.42).ignoresSafeArea()  // scrim over SceneBackground
 
             TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion)) { tl in
                 let t = reduceMotion ? 0 : tl.date.timeIntervalSinceReferenceDate

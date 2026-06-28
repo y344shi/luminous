@@ -101,6 +101,11 @@ struct HomeView: View {
                 .font(.system(size: 15))
                 .foregroundStyle(theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
+            Text(DayGrade.line(hour: Calendar.current.component(.hour, from: Date())))
+                .font(.system(size: 14))
+                .italic()
+                .foregroundStyle(theme.textMuted)
+                .padding(.top, Spacing.xs)
         }
         .padding(.top, Spacing.sm)
     }
