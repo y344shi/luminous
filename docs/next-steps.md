@@ -20,6 +20,8 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] Paper polish: notes are laid hand-by-hand (staggered `tdd-rise`), and each carries a faint **pressed-flower** mark — a botanical line-art stamp that varies by category. _(paper 3)_
 
 ## Fresh (self-review — needs a green tick each)
+- [x] **Weather sensing wired** (was a written-but-unused helper): when a coarse home is saved, fetch open-meteo (key-free), classify, derive isOutdoorWeatherGood → lifts "step outside" wishes. On-device opt-in; never forces. _(core 24)_
+- [ ] Surface weather in the day-line (晴/多云/雨…) + optional scene tint (weatherTint already written).
 - [x] **Distinct wish illustrations** (user: "icons too similar"): wishes sharing a category looked identical; now the illustration varies across a wish's own categories (lib/illustration), and the 3 home cards are forced distinct. _(core 21)_
 - [x] Replaced the remaining system emojis with the illustration (Now flow / seed detail / add preview / recent list), varied by category. TraceCard stays warm. _(core 23)_
 - [x] **Dwell sensing** (smarter/temporal): tracks active minutes at the desk today (on-device, per-day localStorage); long sit → ranking favors body/rest/outside + the day-line says 坐了一会/坐了挺久. _(core 22)_

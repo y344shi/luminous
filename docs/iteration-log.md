@@ -1251,3 +1251,12 @@ What still feels wrong / not done yet:
   OpportunityCard. The illustration system is now consistent everywhere a wish shows
   (home cards, tap-sheet, Garden, Now, detail, add, recent) — only the keepsake
   TraceCard keeps its warm emoji by decision. 264 tests; build green.
+
+---
+
+## core 24: Weather sensing wired into the fusion
+- lib/weather (open-meteo, key-free) was written but unused. New useWeather hook
+  fetches current weather for the *saved coarse home* (only coords already opt-in
+  leave the device), classifies it, and isGoodOutdoorWeather → isOutdoorWeatherGood
+  feeds the ranking (the weather_good bonus lifts "step outside" wishes). Gentle,
+  never forces; no home → no fetch. +1 test (265). Next: surface it in the day-line.

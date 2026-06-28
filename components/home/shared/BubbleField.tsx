@@ -15,6 +15,7 @@ import { useSensors } from "./useSensors";
 import { IllustrationArt } from "./illustrationPacks";
 import { distinctIllustrationCategory } from "@/lib/illustration";
 import { useDwell } from "./useDwell";
+import { useWeather, isGoodOutdoorWeather } from "./useWeather";
 import { cx } from "@/lib/utils";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
@@ -60,6 +61,8 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
   const updateSettings = useStore((s) => s.updateSettings);
   const illustrationStyle = useStore((s) => s.settings.illustrationStyle);
   const deskMinutesToday = useDwell();
+  const weatherKind = useWeather(homeLocation);
+  const isOutdoorWeatherGood = isGoodOutdoorWeather(weatherKind);
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const elsRef = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -128,6 +131,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
       activity,
       ambient,
       deskMinutesToday,
+      isOutdoorWeatherGood,
     });
     const opps = recommend(seeds, ctx, { limit: 3 });
     const primaryIds = new Set(opps.map((o) => o.seedId));
@@ -183,7 +187,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
     phaseRef.current = phasemap;
     setBubbles(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, now, seeds, location, lastPick.energy, activity, ambient, deskMinutesToday]);
+  }, [mounted, now, seeds, location, lastPick.energy, activity, ambient, deskMinutesToday, isOutdoorWeatherGood]);
 
   // physics loop
   useEffect(() => {
