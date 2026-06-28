@@ -1392,3 +1392,14 @@ What still feels wrong / not done yet:
   helpers: feedback/webpush/sceneBackground/themes/keepsake/dayGrade/serialize/nudge/
   bubblePhysics/aiParser). 272 tests; typecheck clean; all skins build green; no
   behavior change. Next: package.json-ify @core.
+
+---
+
+## core 36: Finish packages/core — @luminous/core package
+- Moved the last pure modules (bubblePhysics, aiParser) into packages/core and gave it
+  a real package.json (@luminous/core). @core is now 23 framework-free modules — the
+  whole domain + physics + parsing. The web app keeps consuming via the @core/* path
+  alias (the package.json is inert for web, names the package for future RN). lib/ now
+  holds ONLY the platform boundary (store/storage/feedback/webpush/sceneBackground/
+  themes/keepsake/dayGrade/serialize/nudge). 272 tests; typecheck clean; all skins
+  build green; no behavior change. RN/iOS can now depend on @luminous/core directly.

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { draftToSeed, type SeedDraft } from "@core/seedParser";
-import { parseSeed } from "@/lib/aiParser";
+import { parseSeed } from "@core/aiParser";
 import { useStore } from "@/lib/store";
 import { copy } from "@core/copy";
 import { durationLabel } from "@core/categoryMeta";

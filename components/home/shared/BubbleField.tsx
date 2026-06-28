@@ -8,7 +8,7 @@ import { recommend } from "@core/scoring";
 import { buildAmbientContext, guessLocation, ambientLabel, orbScene } from "@core/ambient";
 import { roundCoarse, isAtHome, isMovingSpeed, type Coords } from "@core/geo";
 import { buildTrace, type CompletionKind } from "@core/traceGenerator";
-import { step, type Body } from "@/lib/bubblePhysics";
+import { step, type Body } from "@core/bubblePhysics";
 import { copy } from "@core/copy";
 import { CategoryGlyph, SceneGlyph } from "./glyphs";
 import { IllustrationArt } from "./illustrationPacks";

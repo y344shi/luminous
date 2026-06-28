@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { step, collide, gravityFromOrientation, type Body } from "@/lib/bubblePhysics";
+import { step, collide, gravityFromOrientation, type Body } from "@core/bubblePhysics";
 
 function body(over: Partial<Body> = {}): Body {
   return { id: "b", x: 100, y: 100, vx: 0, vy: 0, r: 20, m: 1, ...over };
