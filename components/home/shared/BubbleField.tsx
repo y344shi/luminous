@@ -401,7 +401,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
           onClick={senseLocation}
           className="pointer-events-auto text-[12.5px] tracking-[0.12em] text-[var(--text-secondary)] transition-opacity hover:opacity-75"
         >
-          {senseText ?? ambientLabel(now, location, { activity, ambient, deskMinutesToday })}
+          {senseText ?? ambientLabel(now, location, { activity, ambient, deskMinutesToday }, weatherKind)}
         </button>
         {sense === "offerHome" && pendingCoords && (
           <button

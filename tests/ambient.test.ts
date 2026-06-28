@@ -30,6 +30,10 @@ describe("ambient — human label", () => {
   it("omits an empty/unknown place", () => {
     expect(ambientLabel(wedAfternoon, "anywhere")).toBe("周三 · 下午");
   });
+  it("appends the weather beside the place when known", () => {
+    expect(ambientLabel(wedAfternoon, "computer", undefined, "clear")).toBe("周三 · 下午 · 在电脑前 · 晴");
+    expect(ambientLabel(wedAfternoon, "home", undefined, "rain")).toBe("周三 · 下午 · 在家 · 雨");
+  });
 });
 
 describe("ambient — orb scene (visible AI read of the situation)", () => {

@@ -2,6 +2,7 @@ import type { ContextSnapshot, LocationType, Energy } from "./types";
 import { buildContext } from "./context";
 import { semanticTimeFromHour, isWeekend } from "./semanticTime";
 import { dwellLevel } from "./dwell";
+import { weatherLabel, type WeatherKind } from "./weather";
 
 /**
  * Ambient context: what the app can sense on its own when you open Home —
@@ -84,7 +85,8 @@ const LOCATION_LABEL: Record<LocationType, string> = {
 export function ambientLabel(
   now: Date,
   locationHint: LocationType,
-  sensed?: Pick<ContextSnapshot, "activity" | "ambient" | "deskMinutesToday">
+  sensed?: Pick<ContextSnapshot, "activity" | "ambient" | "deskMinutesToday">,
+  weather?: WeatherKind
 ): string {
   const wd = WEEKDAY[now.getDay()];
   // Time of day ignoring the weekend override, so we still say "下午" on Sat.
@@ -92,6 +94,8 @@ export function ambientLabel(
   const parts = [wd, TIME_LABEL[t] ?? ""];
   const loc = LOCATION_LABEL[locationHint];
   if (loc) parts.push(loc);
+  // Weather sits beside place — a small read of the world outside.
+  if (weather) parts.push(weatherLabel(weather));
   // Surface the fused senses so the app's keenness is visible.
   if (sensed?.activity === "walking") parts.push("走着");
   else if (sensed?.activity === "transit" && locationHint !== "transit") parts.push("在路上");

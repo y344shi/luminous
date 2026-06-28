@@ -1260,3 +1260,11 @@ What still feels wrong / not done yet:
   leave the device), classifies it, and isGoodOutdoorWeather → isOutdoorWeatherGood
   feeds the ranking (the weather_good bonus lifts "step outside" wishes). Gentle,
   never forces; no home → no fetch. +1 test (265). Next: surface it in the day-line.
+
+---
+
+## core 25: Weather in the day-line
+- ambientLabel gained an optional weather param; BubbleField passes the sensed
+  WeatherKind, so the day-line reads e.g. "周三 · 下午 · 在电脑前 · 晴" — the weather
+  signal is now felt, not just ranked. Shows only once a coarse home is saved + the
+  fetch resolves. +1 test (266). Next: optional weather scene tint.
