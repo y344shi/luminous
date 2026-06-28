@@ -5,15 +5,27 @@
 so iOS is *keen* about which tiny action fits now — and so **heart rate** (web
 can't read it) finally comes alive via HealthKit.
 
-This is the iOS counterpart of web commits `sense 1–3` + `core 10`. Match the web
-behavior; don't invent new ranking rules.
+This is the iOS counterpart of the web sensing work. Match the web behavior; don't
+invent new ranking rules.
 
-## Read first (the web source of truth)
-- `lib/sensors.ts` — pure classifiers + thresholds (port verbatim):
+> **Update (post-extraction):** the whole framework-free brain now lives in
+> **`@luminous/core`** (`packages/core/`) — recommender + classifiers + `scoreSeed`
+> with the sensor/dwell/weather/battery bonuses, guarded React-free *and* app-free.
+> Two ways to build the native app:
+> - **React Native (recommended):** add `@luminous/core` as a workspace dep and
+>   **consume the ranking + classifiers directly — zero reimplementation.** Only the
+>   *sampling* is platform-specific (expo-sensors / expo-av / HealthKit / CoreLocation),
+>   feeding the same pure classifiers. This is the whole point of the extraction.
+> - **SwiftUI:** reimplement in Swift, mirroring `@core` exactly (the rules below).
+> The web fusion has grown past this brief — also port **dwell** (`@core/dwell`),
+> **weather** (`@core/weather`), and **battery** (`@core/battery`) bonuses.
+
+## Read first (the source of truth — now in `@luminous/core`)
+- `@core/sensors` (packages/core/sensors.ts) — pure classifiers + thresholds (port verbatim):
   - `classifyActivity(magnitudes)` → `still | walking | transit` (mean-abs-deviation: `<0.6` still, `<3.5` walking, else transit; needs ≥4 samples)
   - `classifyAmbient(rms)` → `quiet | lively` (`rms >= 0.08` → lively)
   - `classifyArousal(bpm, resting=70)` → `calm | elevated` (`bpm >= resting+18` → elevated)
-- `lib/scoring.ts` → `sensorBonus(seed, ctx)` — the **exact** rules to mirror:
+- `@core/scoring` → `sensorBonus` (+ `dwellBonus`/`batteryBonus`) — the **exact** rules to mirror:
   - transit: `+0.1` if `estimatedDurationMin <= 10`; `-0.12` if focus(learning|creation) & `locationType == computer`; `+0.05` if recovery|body
   - walking: `+0.1` if outdoor | exploration | body
   - still: `+0.05` if focus
@@ -22,9 +34,9 @@ behavior; don't invent new ranking rules.
   - elevated: `+0.12` recovery|body; `-0.08` if energy high | exploration
   - calm: `+0.06` focus
   - **clamp to ±0.25**, add into `scoreSeed` total alongside `triggerBonus`
-- `lib/types.ts` → `ContextSnapshot.activity/ambient/arousal` (optional)
+- `@core/types` → `ContextSnapshot.activity/ambient/arousal/deskMinutesToday/batteryLow` (optional)
 - `components/home/shared/useSensors.ts` — the web sampling model (passive motion + opt-in mic). Note the **both clickable + automatic** behavior (see below).
-- `lib/ambient.ts` → `ambientLabel(...)` appends `走着/在路上` + `周围很安静/周围有点热闹` when sensed — surface the same on iOS.
+- `@core/ambient` → `ambientLabel(...)` appends `走着/在路上` + `周围很安静/周围有点热闹` when sensed — surface the same on iOS.
 
 ## Build on iOS (`ios/Luminous/`)
 1. **Domain** (`Domain.swift` or new): add `enum Activity {still,walking,transit}`,

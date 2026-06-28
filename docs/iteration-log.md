@@ -1422,3 +1422,13 @@ What still feels wrong / not done yet:
   core/copy.ts reference. Added a subpath `exports` map ("./*": "./*.ts") to the
   package so a future RN/iOS workspace can import @luminous/core/<module> (inert for
   web, which uses the @core/* alias). 296 tests; typecheck clean; build green.
+
+---
+
+## core 39: Native handoff brief reflects the @core extraction
+- docs/ios-sensor-port.md predated packages/core — it told the Mac agent to mirror
+  lib/sensors etc. Updated all paths to @core/* and added the key post-extraction note:
+  React Native can add @luminous/core as a workspace dep and consume the recommender +
+  classifiers directly (only sampling is platform-specific) — zero reimplementation;
+  SwiftUI still mirrors. Also flagged dwell/weather/battery to port. Docs-only; 296
+  tests green.
