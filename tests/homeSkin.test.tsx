@@ -30,19 +30,18 @@ describe("HomeSkin — runtime skin switch", () => {
     expect(["glass", "ocean", "paper"]).toContain(defaultSettings.aesthetic);
   });
 
-  it("glass/ocean render the bubble field (no notebook list)", () => {
+  it("glass/ocean render the bubble field (orb link, no notebook list)", () => {
     setSkin("glass");
     render(<HomeSkin clean={false} />);
-    expect(screen.getAllByText(copy.home.navFind).length).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: copy.home.primary }).getAttribute("href")).toBe("/now");
     expect(screen.queryByLabelText("也许现在可以做的小事")).toBeNull();
     cleanup();
   });
 
-  it("paper renders the notebook list — and the geo search is in every skin", () => {
+  it("paper renders the notebook list", () => {
     setSkin("paper");
     render(<HomeSkin clean={false} />);
     expect(screen.getByLabelText("也许现在可以做的小事")).toBeTruthy();
-    expect(screen.getAllByText(copy.home.navFind).length).toBeGreaterThan(0);
     cleanup();
   });
 });

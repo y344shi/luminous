@@ -12,7 +12,6 @@ import { step, type Body } from "@/lib/bubblePhysics";
 import { copy } from "@/lib/copy";
 import { CategoryGlyph, SceneGlyph } from "./glyphs";
 import SceneWindow from "./SceneWindow";
-import NavLayer from "./NavLayer";
 import { cx } from "@/lib/utils";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
@@ -401,7 +400,6 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
           </p>
         )}
         <div className="pointer-events-auto flex flex-wrap items-center justify-center gap-3">
-          <NavLayer />
           {canGyro && !gyroOn && (
             <button
               onClick={enableMotion}

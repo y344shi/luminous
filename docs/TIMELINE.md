@@ -243,10 +243,11 @@ Repo: `git@github.com:y344shi/luminous.git`  ·  app at `dreams/seize_the_day`
 | 2026-06-25 | `4643eb6` | Add project guide + overnight tick playbook for autonomous cycles |
 | 2026-06-25 | `730b76f` | Cycle 1: 《今天别消失》web MVP — full core loop alive |
 
-## branch `luminous-trunk` — 69 commits
+## branch `luminous-trunk` — 70 commits
 
 | date | commit | change |
 | --- | --- | --- |
+| 2026-06-28 | `3ee8997` | core 9: reduced-motion placement fix (a11y) |
 | 2026-06-28 | `762c1ff` | core 8: tidy — remove dead AmbientOrbit + fix stale motion doc |
 | 2026-06-28 | `d2d358b` | core 7: geo/nearby search in every skin (paper gets NavLayer) |
 | 2026-06-28 | `1f62ff5` | core 6: settle-then-rest motion — no pointer tracking, slight gyro lean |

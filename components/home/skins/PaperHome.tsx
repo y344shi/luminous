@@ -12,7 +12,6 @@ import { completeFeedback } from "@/lib/feedback";
 import { cx } from "@/lib/utils";
 import { CategoryGlyph } from "../shared/glyphs";
 import PressedFlower from "./PressedFlower";
-import NavLayer from "../shared/NavLayer";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 
@@ -125,7 +124,6 @@ export default function PaperHome() {
           {copy.home.primary}
         </Link>
         <Link href="/add" aria-label="接住一个新愿望" className="hand text-[22px] text-[var(--text-secondary)]">＋</Link>
-        <NavLayer variant="soft" />
       </div>
 
       {selected && (() => {
