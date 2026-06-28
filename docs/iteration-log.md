@@ -1108,3 +1108,11 @@ What still feels wrong / not done yet:
   the orb is now a clean luminous glass sphere (single line glyph + label) cradled
   in a soft warm `.orb-bloom`; ambient bubbles thinned 8→3 and clamped on-screen;
   primaries spaced further from the orb. Calm, warm, luminous. 251 tests green.
+
+---
+
+## docs: lifestyle-illustration libraries
+- Appended a ranked list of lifestyle/painterly illustration sources to
+  `docs/scene-library.md` (Open Doodles CC0, Storyset, Pixeltrue, Blush, DrawKit,
+  Humaaans/Open Peeps, unDraw, big banks) + the small-size caveat + integration
+  notes. Groundwork for the "art figure / lifestyle" icon direction. Docs-only.

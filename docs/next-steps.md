@@ -20,6 +20,8 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] Paper polish: notes are laid hand-by-hand (staggered `tdd-rise`), and each carries a faint **pressed-flower** mark — a botanical line-art stamp that varies by category. _(paper 3)_
 
 ## Fresh (self-review — needs a green tick each)
+- [x] Researched + recorded **lifestyle-illustration libraries** in `docs/scene-library.md` (Open Doodles / Storyset / Pixeltrue / Blush…) for the "art figure" direction.
+- [ ] **Lifestyle-card presentation** (user direction): show each wish as a lifestyle scene + a text description, one tap to start — not an abstract sphere. Illustration source TBD (library pick pending); card layout first.
 - [x] **Artistic glass redesign** (user: "weird, not artistic"): removed the green goo-metaball smudges; the orb is now a clean glass sphere (elegant line glyph + label) cradled in a soft **warm bloom**; fewer, on-screen bubbles. Calm + luminous. _(glass 8)_
 - [x] Sensing is now **clickable + automatic**: motion samples passively; ambient (mic) auto-resumes on load once opted-in (`settings.senseAround`, permission persists → no re-prompt); 感受周围 is the one-time trigger. _(core 11)_
 - [x] Make the sensing visible: the ambient line now surfaces the fused senses — 走着/在路上 (motion) and 周围很安静/周围有点热闹 (loudness) — so the app's keenness shows. _(core 10)_
