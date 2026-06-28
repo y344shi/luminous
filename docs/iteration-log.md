@@ -1133,3 +1133,13 @@ What still feels wrong / not done yet:
   --surface-soft card, which is dark in soft_ritual → dark-on-dark, invisible. Gave
   the preview card a fixed light background so library-style art reads in every
   theme. 251 tests green.
+
+---
+
+## core 14: All libraries, switch on demand (pluggable illustration packs)
+- Made the 8-library picker do something: moved the registry to a shared
+  components/home/shared/illustrationPacks.tsx with an IllustrationArt renderer —
+  one interface for all 8 looks. settings.illustrationStyle now drives a real
+  illustration on the wish tap-sheet (glass/ocean) + a live "sample wish" preview
+  under the Settings picker. Real downloaded library assets can replace the
+  code-drawn art behind the same interface later. 251 tests green.

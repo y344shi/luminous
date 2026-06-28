@@ -9,7 +9,7 @@ import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 import ThemeSwitcher from "@/components/design/ThemeSwitcher";
 import ConfirmSheet from "@/components/design/ConfirmSheet";
-import { illustrationStyles, StylePreview } from "./IllustrationStyles";
+import { illustrationStyles, StylePreview, IllustrationArt } from "../home/shared/illustrationPacks";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -200,6 +200,15 @@ export default function SettingsPanel() {
               </button>
             );
           })}
+        </div>
+        <div className="mt-1 flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
+          <span className="h-16 w-24 shrink-0 overflow-hidden rounded-xl bg-[#f1ece2]">
+            <IllustrationArt style={settings.illustrationStyle} />
+          </span>
+          <div className="flex flex-col gap-0.5">
+            <span className="serif text-[15px] text-[var(--text)]">{copy.settings.illustrationSample}</span>
+            <span className="text-[12px] text-[var(--text-secondary)]">{copy.settings.illustrationSampleAction}</span>
+          </div>
         </div>
       </Section>
 

@@ -123,6 +123,8 @@ export const copy = {
     skinLabel: "外观风格",
     illustrationLabel: "插画风格",
     illustrationHelp: "选一种你喜欢的画风，之后会用在每个小愿望上。",
+    illustrationSample: "记三个法语单词",
+    illustrationSampleAction: "看懂就好，不用背。",
     skinGlass: "琉璃",
     skinOcean: "海洋",
     skinPaper: "纸页",

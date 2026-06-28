@@ -129,3 +129,14 @@ export function StylePreview({ art }: { art: ReactNode }) {
     </svg>
   );
 }
+
+/** Render the illustration for the active library pack (by settings.illustrationStyle).
+ * One interface for all 8 looks — real library assets can replace the art later. */
+export function IllustrationArt({ style, className }: { style: string; className?: string }) {
+  const pack = illustrationStyles.find((s) => s.key === style) ?? illustrationStyles[0];
+  return (
+    <svg viewBox="0 0 80 56" className={className ?? "h-full w-full"} aria-hidden>
+      {pack.art}
+    </svg>
+  );
+}

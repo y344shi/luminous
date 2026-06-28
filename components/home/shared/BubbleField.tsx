@@ -12,6 +12,7 @@ import { step, type Body } from "@/lib/bubblePhysics";
 import { copy } from "@/lib/copy";
 import { CategoryGlyph, SceneGlyph } from "./glyphs";
 import { useSensors } from "./useSensors";
+import { IllustrationArt } from "./illustrationPacks";
 import { cx } from "@/lib/utils";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
@@ -55,6 +56,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
   const { activity, ambient, ambientOn, enableAmbient } = useSensors();
   const senseAround = useStore((s) => s.settings.senseAround);
   const updateSettings = useStore((s) => s.updateSettings);
+  const illustrationStyle = useStore((s) => s.settings.illustrationStyle);
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const elsRef = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -432,6 +434,9 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
           <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true">
             <button aria-label="关闭" onClick={() => setSelected(null)} className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
             <BreathingCard rise className="relative m-3 flex w-full max-w-md flex-col gap-4" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)" }}>
+              <span className="mx-auto h-28 w-48 overflow-hidden rounded-2xl bg-[#f1ece2]">
+                <IllustrationArt style={illustrationStyle} />
+              </span>
               <div className="flex items-center gap-2">
                 <CategoryGlyph category={seed.categories[0]} size={24} />
                 <h3 className="serif text-[19px] font-medium text-[var(--text)]">{seed.title}</h3>
