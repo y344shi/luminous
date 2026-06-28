@@ -1202,3 +1202,12 @@ What still feels wrong / not done yet:
   action (2 lines) — so the card says what to do, not just name the wish. Tuned card
   size (r41) so cards still clear the orb on a narrow screen, and widened the ocean
   vertical step so the taller cards don't overlap. 251 tests; glass+ocean green.
+
+---
+
+## core 19: Test the illustration pack registry
+- New tests/illustrationPacks.test: asserts all 8 library packs are registered with
+  name+note+signature art, every pack is category-aware (scene() truthy for all 7
+  categories), and IllustrationArt renders an svg per category + falls back for an
+  unknown style. Locks the pack system (the big recent feature) against regressions.
+  254 tests green.
