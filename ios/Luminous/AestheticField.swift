@@ -15,10 +15,13 @@ struct AestheticField: View {
     @Environment(AppStore.self) private var store
     @Environment(\.colorScheme) private var colorScheme
 
+    /// The sensed weather, when available — tints the sky (clouds / rain / fog).
+    var weather: WeatherKind? = nil
+
     var body: some View {
         switch store.effectiveAesthetic(dark: colorScheme == .dark) {
-        case .glass: SceneBackground(mode: .sky)   // open sky, lit by the hour
-        case .ocean: SceneBackground(mode: .sea)   // sky + water catching the light
+        case .glass: SceneBackground(mode: .sky, weather: weather)   // open sky, lit by the hour
+        case .ocean: SceneBackground(mode: .sea, weather: weather)   // sky + water catching the light
         case .paper: PaperField()
         }
     }

@@ -11,6 +11,7 @@ import SwiftUI
 struct RootView: View {
     @State private var store = AppStore()
     @State private var router = AppRouter()
+    @State private var sensed = SensedSignals()
 
     var body: some View {
         @Bindable var router = router
@@ -33,7 +34,10 @@ struct RootView: View {
         .tint(tokens.accentText)
         .environment(store)
         .environment(router)
+        .environment(sensed)
         .environment(\.theme, tokens)
+        .task { sensed.start(enabled: store.senseAround) }
+        .onChange(of: store.senseAround) { _, on in sensed.start(enabled: on) }
         // In auto-skin mode we follow the system appearance (so the skin can
         // track Dark/Light); otherwise the theme drives the color scheme.
         .preferredColorScheme(store.aestheticAuto ? nil : (store.theme == .softRitual ? .dark : .light))

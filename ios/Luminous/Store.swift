@@ -28,7 +28,8 @@ final class AppStore {
         static let introSeen = "tdd.introSeen"
         static let aesthetic = "tdd.aesthetic"
         static let aestheticAuto = "tdd.aestheticAuto"
-        static let all = [seeds, traces, settings, samplesPlanted, lastPick, introSeen, aesthetic, aestheticAuto]
+        static let senseAround = "tdd.senseAround"
+        static let all = [seeds, traces, settings, samplesPlanted, lastPick, introSeen, aesthetic, aestheticAuto, senseAround]
     }
 
     // MARK: Persisted state
@@ -46,6 +47,10 @@ final class AppStore {
     /// When true the skin follows the system appearance instead of `aesthetic`:
     /// Dark Mode → glass, Light Mode → paper. Persisted.
     var aestheticAuto: Bool = false
+
+    /// Opt-in to sensing the surroundings (location → weather; mic/HR later).
+    /// Motion is permission-free and always on; this gates the rest. Persisted.
+    var senseAround: Bool = false
 
     // MARK: Transient state (not persisted)
     var opportunities: [Opportunity] = []
@@ -74,6 +79,7 @@ final class AppStore {
         aesthetic = defaults.string(forKey: Key.aesthetic)
             .flatMap(Aesthetic.init(rawValue:)) ?? .fallback
         aestheticAuto = defaults.bool(forKey: Key.aestheticAuto)
+        senseAround = defaults.bool(forKey: Key.senseAround)
 
         // First run: plant a small mock garden so the app never feels empty.
         if seeds.isEmpty && traces.isEmpty {
@@ -179,6 +185,12 @@ final class AppStore {
         defaults.set(on, forKey: Key.aestheticAuto)
     }
 
+    /// Opt in / out of sensing the surroundings. Persisted.
+    func setSenseAround(_ on: Bool) {
+        senseAround = on
+        defaults.set(on, forKey: Key.senseAround)
+    }
+
     /// The skin to actually render. In auto mode it follows the system
     /// appearance; otherwise it's the user's chosen `aesthetic`.
     func effectiveAesthetic(dark: Bool) -> Aesthetic {
@@ -207,6 +219,7 @@ final class AppStore {
         introSeen = false
         aesthetic = .fallback
         aestheticAuto = false
+        senseAround = false
         opportunities = []
         lastContext = nil
     }

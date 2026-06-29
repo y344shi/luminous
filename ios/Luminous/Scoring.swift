@@ -126,6 +126,47 @@ enum Scoring {
         return bonus
     }
 
+    /// Additive bonus from the on-device senses (motion / loudness / arousal).
+    /// Ported verbatim from `@core/scoring`. Clamped to ±0.25.
+    static func sensorBonus(_ seed: Seed, _ ctx: ContextSnapshot) -> Double {
+        var b = 0.0
+        let cats = Set(seed.categories)
+        let focus = cats.contains(.learning) || cats.contains(.creation)
+
+        switch ctx.activity {
+        case .transit:
+            if seed.estimatedDurationMin <= 10 { b += 0.1 }
+            if focus && seed.locationType == .computer { b -= 0.12 }
+            if cats.contains(.recovery) || cats.contains(.body) { b += 0.05 }
+        case .walking:
+            if seed.locationType == .outdoor || cats.contains(.exploration) || cats.contains(.body) { b += 0.1 }
+        case .still:
+            if focus { b += 0.05 }
+        case .none: break
+        }
+
+        switch ctx.ambient {
+        case .quiet:
+            if focus || cats.contains(.aesthetic) { b += 0.1 }
+        case .lively:
+            if cats.contains(.connection) { b += 0.1 }
+            if cats.contains(.recovery) { b += 0.05 }
+            if focus { b -= 0.06 }
+        case .none: break
+        }
+
+        switch ctx.arousal {
+        case .elevated:
+            if cats.contains(.recovery) || cats.contains(.body) { b += 0.12 }
+            if ctx.energy == .high || cats.contains(.exploration) { b -= 0.08 }
+        case .calm:
+            if focus { b += 0.06 }
+        case .none: break
+        }
+
+        return DomainUtil.clamp(b, -0.25, 0.25)
+    }
+
     /// True if this seed is UNSAFE to recommend late at night.
     static func isUnsafeLateNight(_ seed: Seed) -> Bool {
         if seed.triggerConditions.contains("late_night") || seed.triggerConditions.contains("rescue_mode") {
@@ -187,6 +228,7 @@ enum Scoring {
 
         var total = tf * 0.2 + df * 0.2 + ef * 0.2 + lf * 0.2 + mf * 0.1 + fr * 0.05 + ser * 0.05
         total += triggerBonus(seed, ctx)
+        total += sensorBonus(seed, ctx)
         if ctx.isLateNight && isRescueSeed(seed) { total += 0.5 }
 
         return ScoreBreakdown(

@@ -19,8 +19,11 @@ enum SceneMode { case sky, sea }
 struct SceneBackground: View {
     var mode: SceneMode = .sky
     var hour: Int = Calendar.current.component(.hour, from: Date())
+    /// Sensed weather — tints the sky toward overcast / fog when present.
+    var weather: WeatherKind? = nil
 
     private var isNight: Bool { DayGrade.phase(hour: hour) == .night }
+    private var isOvercast: Bool { weather == .clouds || weather == .rain || weather == .fog || weather == .snow }
 
     var body: some View {
         GeometryReader { geo in
@@ -55,6 +58,9 @@ struct SceneBackground: View {
                     waterLayer(size: size, horizonY: horizonY, sky: sky, light: light, lp: lp)
                 }
 
+                // 4.5) sensed weather: soft overcast / fog veil + still clouds
+                weatherOverlay(size: size)
+
                 // 5) a soft vignette to settle the edges
                 RadialGradient(
                     gradient: Gradient(colors: [.clear, .black.opacity(0.18)]),
@@ -69,10 +75,12 @@ struct SceneBackground: View {
     // MARK: Water (ocean skin)
 
     private func waterLayer(size: CGSize, horizonY: CGFloat, sky: [Color], light: Color, lp: UnitPoint) -> some View {
-        ZStack(alignment: .top) {
-            // deep water gradient, tinted by the sky at the horizon
+        let surface = isNight ? Color(hue: 0.58, saturation: 0.50, brightness: 0.30)
+                              : Color(hue: 0.54, saturation: 0.44, brightness: 0.64)
+        return ZStack(alignment: .top) {
+            // clearly-water gradient: a teal surface catching the sky → deep below
             LinearGradient(
-                gradient: Gradient(colors: [sky[1].opacity(0.9), waterDeep]),
+                gradient: Gradient(colors: [sky[1].opacity(0.55), surface, waterDeep]),
                 startPoint: .top, endPoint: .bottom)
             // a soft column of reflected light under the sun/moon
             LinearGradient(
@@ -89,6 +97,44 @@ struct SceneBackground: View {
         }
         .frame(width: size.width, height: size.height - horizonY)
         .position(x: size.width / 2, y: horizonY + (size.height - horizonY) / 2)
+    }
+
+    // MARK: Weather (calm, still)
+
+    @ViewBuilder private func weatherOverlay(size: CGSize) -> some View {
+        switch weather {
+        case .clouds:
+            ZStack { clouds(size: size, opacity: 0.55); veil(.gray, 0.10) }
+        case .rain:
+            ZStack { clouds(size: size, opacity: 0.7); veil(.gray, 0.22) }
+        case .fog:
+            veil(.white, 0.22)
+        case .snow:
+            ZStack { clouds(size: size, opacity: 0.5); veil(.white, 0.16) }
+        default:
+            EmptyView()
+        }
+    }
+
+    private func veil(_ color: Color, _ opacity: Double) -> some View {
+        color.opacity(opacity)
+    }
+
+    /// A few soft, still cloud banks across the upper sky.
+    private func clouds(size: CGSize, opacity: Double) -> some View {
+        Canvas { ctx, sz in
+            let bands: [(CGFloat, CGFloat, CGFloat)] = [
+                (0.24, 0.22, 0.30), (0.66, 0.16, 0.34), (0.46, 0.34, 0.26),
+            ]
+            for (cx, cy, w) in bands {
+                let rw = sz.width * w
+                let rh = rw * 0.42
+                let rect = CGRect(x: cx * sz.width - rw / 2, y: cy * sz.height - rh / 2, width: rw, height: rh)
+                ctx.fill(Capsule().path(in: rect), with: .color(.white.opacity(opacity * 0.6)))
+            }
+        }
+        .blur(radius: 18)
+        .allowsHitTesting(false)
     }
 
     // MARK: Lighting

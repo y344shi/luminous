@@ -40,6 +40,20 @@ enum SeedStatus: String, Codable, Hashable {
     case active, sleeping, completed, archived
 }
 
+// MARK: - Sensed signals (mirror @core/sensors + @core/weather)
+
+/// Coarse motion state derived on-device from the accelerometer.
+enum Activity: String, Codable, Hashable { case still, walking, transit }
+
+/// Coarse loudness derived on-device from the mic (never recorded).
+enum Ambient: String, Codable, Hashable { case quiet, lively }
+
+/// Coarse arousal derived on-device from heart rate (HealthKit).
+enum Arousal: String, Codable, Hashable { case calm, elevated }
+
+/// Coarse weather kind from open-meteo (only a coarsened home coord leaves device).
+enum WeatherKind: String, Codable, Hashable { case clear, clouds, rain, snow, fog, unknown }
+
 enum ThemeName: String, Codable, CaseIterable, Hashable {
     case warmPaper = "warm_paper"
     case duskGarden = "dusk_garden"
@@ -90,6 +104,12 @@ struct ContextSnapshot: Codable, Hashable {
     var locationHint: LocationType?
 
     var deviceContext: DeviceContext?
+
+    // Sensed (on-device, all optional — degrade to nil when unavailable).
+    var activity: Activity?
+    var ambient: Ambient?
+    var arousal: Arousal?
+    var weatherKind: WeatherKind?
 }
 
 struct Opportunity: Codable, Identifiable, Hashable {

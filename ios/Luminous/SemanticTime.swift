@@ -44,6 +44,12 @@ struct ContextInput {
     var now: Date = Date()
     var isMobile: Bool = true
     var isAtComputer: Bool?
+
+    // Sensed (on-device), all optional.
+    var activity: Activity?
+    var ambient: Ambient?
+    var arousal: Arousal?
+    var weatherKind: WeatherKind?
 }
 
 enum ContextBuilder {
@@ -63,7 +69,11 @@ enum ContextBuilder {
             isWeekend: weekend,
             isOutdoorWeatherGood: input.isOutdoorWeatherGood,
             locationHint: input.locationHint,
-            deviceContext: DeviceContext(isMobile: input.isMobile, isAtComputer: input.isAtComputer)
+            deviceContext: DeviceContext(isMobile: input.isMobile, isAtComputer: input.isAtComputer),
+            activity: input.activity,
+            ambient: input.ambient,
+            arousal: input.arousal,
+            weatherKind: input.weatherKind
         )
     }
 }

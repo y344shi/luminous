@@ -21,6 +21,7 @@ struct SettingsView: View {
                     PageHeader(title: Copy.SettingsCopy.title)
 
                     skinSection
+                    senseSection
                     themeSection
                     nudgeSection
                     resetSection
@@ -174,6 +175,34 @@ struct SettingsView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
             .strokeBorder(theme.border, lineWidth: 1))
+    }
+
+    // 感受周围 — opt in to coarse on-device sensing (location → weather).
+    private var senseSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("感受周围")
+                .font(.system(size: 14))
+                .foregroundStyle(theme.textMuted)
+            Toggle(isOn: Binding(
+                get: { store.senseAround },
+                set: { store.setSenseAround($0) }
+            )) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(store.senseAround ? "让它感受此刻的环境" : "只看时间，不感受环境")
+                        .font(.system(size: 15))
+                        .foregroundStyle(theme.textPrimary)
+                    Text("只在本机：粗略的位置→天气，帮我挑现在合适的事。不记录、不上传原始数据。")
+                        .font(.system(size: 12)).lineSpacing(2)
+                        .foregroundStyle(theme.textSecondary)
+                }
+            }
+            .tint(theme.accent)
+            .padding(Spacing.md)
+            .background(theme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(store.senseAround ? theme.accent : theme.border, lineWidth: 1))
+        }
     }
 
     private var nudgeSection: some View {

@@ -50,6 +50,7 @@ struct SeedMetaRow: View {
 struct HomeView: View {
     @Environment(AppStore.self) private var store
     @Environment(\.theme) private var theme
+    @Environment(SensedSignals.self) private var sensed
     @State private var path = NavigationPath()
 
     /// A floating wish — a primary (ringed, illustrated) or a lesser dot.
@@ -78,7 +79,7 @@ struct HomeView: View {
                 let center = CGPoint(x: size.width / 2, y: size.height * 0.46)
 
                 ZStack {
-                    AestheticField().ignoresSafeArea()
+                    AestheticField(weather: sensed.weatherKind).ignoresSafeArea()
 
                     bloom.position(center)
                     orb.position(center)
@@ -120,7 +121,29 @@ struct HomeView: View {
                 }
             }
             .onChange(of: store.seeds) { _, _ in rebuild() }
+            .onChange(of: sensed.activity) { _, _ in rebuild() }
+            .onChange(of: sensed.weatherKind) { _, _ in rebuild() }
         }
+    }
+
+    /// The day-line, with sensed bits appended (走着/在路上 · 晴/多云…) when present.
+    private var dayLine: String {
+        var bits: [String] = []
+        switch sensed.activity {
+        case .walking: bits.append("走着")
+        case .transit: bits.append("在路上")
+        default: break
+        }
+        switch sensed.weatherKind {
+        case .clear: bits.append("晴")
+        case .clouds: bits.append("多云")
+        case .rain: bits.append("有雨")
+        case .snow: bits.append("下雪")
+        case .fog: bits.append("有雾")
+        default: break
+        }
+        let base = DayGrade.line(hour: hour)
+        return bits.isEmpty ? base : base + " · " + bits.joined(separator: " · ")
     }
 
     private var shown: [Wish] { wishes.filter { !doneIds.contains($0.id) } }
@@ -229,7 +252,7 @@ struct HomeView: View {
                 .font(.system(size: 13))
                 .tracking(6)
                 .foregroundStyle(theme.textMuted)
-            Text(DayGrade.line(hour: hour))
+            Text(dayLine)
                 .font(.system(size: 12))
                 .italic()
                 .foregroundStyle(theme.textSecondary)
@@ -312,7 +335,11 @@ struct HomeView: View {
         let ctx = ContextBuilder.build(ContextInput(
             mood: store.lastPick.mood ?? .okay,
             energy: store.lastPick.energy ?? .medium,
-            isMobile: true
+            locationHint: sensed.locationHint,
+            isOutdoorWeatherGood: sensed.isOutdoorWeatherGood,
+            isMobile: true,
+            activity: sensed.activity,
+            weatherKind: sensed.weatherKind
         ))
         let opps = Scoring.recommend(store.seeds, ctx, limit: 3)
         let primaryIds = Set(opps.map { $0.seedId })
