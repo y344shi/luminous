@@ -208,7 +208,7 @@ struct HomeView: View {
         let emoji = Meta.category[wish.seed.categories.first ?? .recovery]?.emoji ?? "🫧"
         if wish.primary {
             Button { picked = wish } label: {
-                VStack(spacing: 5) {
+                VStack(spacing: 4) {
                     Text(emoji).font(.system(size: 38))
                         .shadow(color: .black.opacity(0.12), radius: 2, y: 1)
                     Text(wish.seed.title)
@@ -217,6 +217,11 @@ struct HomeView: View {
                         .lineLimit(2)
                         .foregroundStyle(theme.textPrimary)
                         .frame(width: 96)
+                    if let place = matchedPlace(for: wish.seed) {
+                        Text("\(place.emoji)\(place.distanceLabel)")
+                            .font(.system(size: 10))
+                            .foregroundStyle(theme.textMuted)
+                    }
                 }
             }
             .buttonStyle(.plain)
@@ -371,7 +376,6 @@ struct HomeView: View {
                     .frame(maxWidth: 270)
                     .transition(.opacity)
             }
-            nearbyRow
             Button { path.append(Route.add) } label: {
                 ZStack {
                     Circle().fill(.ultraThinMaterial)
@@ -393,37 +397,6 @@ struct HomeView: View {
     /// evening. Going out isn't a kindness at 1 AM.
     private var nearbyAppropriate: Bool {
         !isLateNight && (8...20).contains(hour)
-    }
-
-    /// A gentle horizontal row of nearby places (cafe / store / market).
-    @ViewBuilder private var nearbyRow: some View {
-        if nearbyAppropriate && !sensed.nearby.isEmpty {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(sensed.nearby) { place in
-                        Button {
-                            place.mapItem.openInMaps()
-                        } label: {
-                            HStack(spacing: 4) {
-                                Text(place.emoji).font(.system(size: 13))
-                                Text(place.name).font(.system(size: 12)).lineLimit(1)
-                                Text(place.distanceLabel)
-                                    .font(.system(size: 11))
-                                    .foregroundStyle(theme.textMuted)
-                            }
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(.ultraThinMaterial)
-                            .clipShape(Capsule())
-                            .foregroundStyle(theme.textSecondary)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .padding(.horizontal, 16)
-            }
-            .frame(maxWidth: .infinity)
-        }
     }
 
     // MARK: Tap-a-wish sheet

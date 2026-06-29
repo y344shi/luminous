@@ -120,3 +120,30 @@ word and I'll wire it.
 
 Both are multi-file features; will tackle after the HealthKit decision + confirming the
 current on-device build feels right.
+
+---
+
+## Glass "planetarium" home — design captured (2026-06-29, to build next)
+A cohesive redesign of the **glass** skin's Home, from your rapid notes:
+- **Planetarium orbits** — the top wishes orbit the central orb like planets (slow,
+  calm elliptical motion), replacing the static ring.
+- **Tilt = an extra gravity pull** — device tilt acts like a star, perturbing the
+  orbits toward the tilt direction (builds on the gravity vector already wired).
+- **Draggable wishes** (done) — drag a planet; it springs back.
+- **Drag to reveal more** — pulling/expanding brings in lower-ranked wishes
+  (beyond the top 3) into outer orbits.
+- **Place-aware** (done) — a wish lifts + shows "do it at the nearby cafe/library".
+- **Glowing suggestions** (done) — context-born new tasks as glowing icons.
+
+## Skins not aligned with web (to reconcile)
+Glass / ocean / paper backdrops were replaced with the time-of-day environment
+scene; the web has distinct **liquid-glass refraction / ocean buoyancy / paper
+notebook-with-marks** looks. Plan: keep the env scene's *lighting*, but restore each
+skin's signature character (glass = orbits + refractive orb; ocean = wishes rising
+from a water floor to the surface; paper = ruled notebook + pressed-flower marks),
+referencing the now-merged `components/home/skins/*` from the web.
+
+## Still queued
+- Duration + per-metric histograms → **mentality estimate** → **FoundationModels**
+  on-device LLM for phrasing/selecting suggestions (your iPhone 17 Pro supports it).
+- HealthKit arousal (needs paid program).
