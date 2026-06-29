@@ -1452,3 +1452,11 @@ What still feels wrong / not done yet:
   missing API / denial → sets ambientBlocked; BubbleField + PaperHome show a gentle
   note (copy.home.senseBlocked) instead of a dead button. Motion still samples
   passively. 296 tests; typecheck clean; all skins build green; default view unchanged.
+
+---
+
+## core 42: dev:https for on-phone sensor testing
+- Followup to core 41: the senses need a secure context, which a plain-http LAN IP
+  isn't. Added an `npm run dev:https` script (next dev --experimental-https) + a README
+  "Testing the senses on a phone" note (open https://<LAN-IP>:3000, accept the
+  self-signed cert; or use a tunnel). Dev-ergonomics only; 296 tests green.

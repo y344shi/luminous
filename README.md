@@ -39,11 +39,18 @@ styles (Settings → 插画风格) and drawn per category.
 ## Run / verify
 ```bash
 npm run dev        # local dev → http://localhost:3000
+npm run dev:https  # HTTPS dev (self-signed) → test mic/motion sensors on a phone
 npm run typecheck  # tsc --noEmit — stays clean
-npm test           # vitest — 270+ tests, stays green
+npm test           # vitest — 290+ tests, stays green
 npm run build      # next build — all routes compile
 ```
 Node 22+. (On WSL: `export PATH="$HOME/.local/bin:$PATH"`.)
+
+**Testing the senses on a phone:** the mic (感受周围) and motion need a *secure
+context* — `localhost` works on the same machine, but a plain-http LAN IP does not.
+Run `npm run dev:https`, open `https://<your-LAN-IP>:3000` on the phone, accept the
+self-signed-cert warning once, then 感受周围 can open the mic. (A tunnel like
+`ngrok http 3000` gives a real https URL instead.)
 
 ## Layout
 - `packages/core/` — **`@luminous/core`**: the framework-free domain (recommender,
