@@ -380,9 +380,16 @@ struct HomeView: View {
         .padding(.bottom, 14)
     }
 
+    /// Only surface "out and about" places when it actually fits the moment —
+    /// never late at night (the stop-loss gate), and only during daytime/early
+    /// evening. Going out isn't a kindness at 1 AM.
+    private var nearbyAppropriate: Bool {
+        !isLateNight && (8...20).contains(hour)
+    }
+
     /// A gentle horizontal row of nearby places (cafe / store / market).
     @ViewBuilder private var nearbyRow: some View {
-        if !sensed.nearby.isEmpty {
+        if nearbyAppropriate && !sensed.nearby.isEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(sensed.nearby) { place in
