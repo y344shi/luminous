@@ -1,8 +1,8 @@
-import type { Settings, Opportunity } from "./types";
+import type { Settings, Opportunity } from "@core/types";
 import type { RemindersToday } from "./storage";
-import { canRemindNow } from "./reminders";
-import { localDateKey } from "./utils";
-import { copy } from "./copy";
+import { canRemindNow } from "@core/reminders";
+import { localDateKey } from "@core/utils";
+import { copy } from "@core/copy";
 
 /**
  * Pure decision layer for gentle nudges. The UI (NudgeManager) handles

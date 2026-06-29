@@ -1,6 +1,6 @@
-import type { DailyTrace } from "@/lib/types";
-import { categoryMeta } from "@/lib/categoryMeta";
-import { copy } from "@/lib/copy";
+import type { DailyTrace } from "@core/types";
+import { categoryMeta } from "@core/categoryMeta";
+import { copy } from "@core/copy";
 import BreathingCard from "@/components/design/BreathingCard";
 
 export default function TraceCard({

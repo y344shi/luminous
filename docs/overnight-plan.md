@@ -23,7 +23,7 @@ push the branch. Small > grand. Revert rather than leave red.
 - [x] A3. Depth field: each bubble gets a `z` (primaries near/crisp, lesser ones far) → progressive blur + size, and pointer/tilt **parallax** scaled by z (near moves more). Reduced-motion → static. _(glass 3)_
 - [x] A4. Gooey coalesce: an SVG `#tdd-goo` (blur + alpha threshold) on a metaball layer of soft accent blobs synced under each bubble — they fuse into liquid bridges when bubbles drift close, separate as they part. _(glass 4)_
 - [x] A5. Dreamier ambience: calmer drift (gentler home-pull + less jitter), faint drifting light **motes**, and a soft **vignette** framing the field. Reduced-motion stills the motes. _(glass 5)_
-- [ ] A6. Gyro polish: smoothed tilt→gravity, "shake to scatter", settle-to-cluster easing.
+- [x] A6. Gyro polish: low-pass **smoothed tilt**, **shake-to-scatter** (devicemotion jolt flings bubbles), settle easing when near-flat. _(glass 6)_
 - [ ] A7. Page-load choreography: bubbles condense out of light into place (staggered).
 
 ## B · Living World  (branch `luminous-sense`)

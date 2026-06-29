@@ -1,5 +1,5 @@
-import type { ContextSnapshot, Mood, Energy } from "@/lib/types";
-import { seedMockGarden } from "@/lib/mockSeeds";
+import type { ContextSnapshot, Mood, Energy } from "@core/types";
+import { seedMockGarden } from "@core/mockSeeds";
 
 export const fixedRng = () => 0.5;
 

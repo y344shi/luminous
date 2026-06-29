@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { draftToSeed, type SeedDraft } from "@/lib/seedParser";
-import { parseSeed } from "@/lib/aiParser";
+import { draftToSeed, type SeedDraft } from "@core/seedParser";
+import { parseSeed } from "@core/aiParser";
 import { useStore } from "@/lib/store";
-import { copy } from "@/lib/copy";
-import { categoryMeta, durationLabel } from "@/lib/categoryMeta";
+import { copy } from "@core/copy";
+import { durationLabel } from "@core/categoryMeta";
+import { IllustrationArt } from "@/components/home/shared/illustrationPacks";
+import { illustrationCategory } from "@core/illustration";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 
@@ -25,6 +27,7 @@ export default function AddSeedFlow() {
   const router = useRouter();
   const addSeed = useStore((s) => s.addSeed);
   const aiMode = useStore((s) => s.settings.aiMode);
+  const illustrationStyle = useStore((s) => s.settings.illustrationStyle);
   const [text, setText] = useState("");
   const [draft, setDraft] = useState<SeedDraft | null>(null);
   const [saved, setSaved] = useState(false);
@@ -69,7 +72,9 @@ export default function AddSeedFlow() {
         <p className="text-[14px] text-[var(--text-secondary)]">{copy.add.caught}</p>
         <BreathingCard className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg">{categoryMeta[draft.categories[0]]?.emoji}</span>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#f1ece2]">
+              <IllustrationArt style={illustrationStyle} category={illustrationCategory(draft.categories, draft.title)} className="h-full w-full" />
+            </span>
             <h2 className="text-[18px] font-medium">{draft.title}</h2>
           </div>
 

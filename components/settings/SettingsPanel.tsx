@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useStore } from "@/lib/store";
-import { copy } from "@/lib/copy";
-import { cx } from "@/lib/utils";
-import { isQuietNow } from "@/lib/reminders";
+import { copy } from "@core/copy";
+import { cx } from "@core/utils";
+import { isQuietNow } from "@core/reminders";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 import ThemeSwitcher from "@/components/design/ThemeSwitcher";
 import ConfirmSheet from "@/components/design/ConfirmSheet";
+import { illustrationStyles, StylePreview, IllustrationArt } from "../home/shared/illustrationPacks";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -120,6 +121,95 @@ export default function SettingsPanel() {
             />
           </button>
         </BreathingCard>
+      </Section>
+
+      <Section title={copy.settings.skinLabel}>
+        <BreathingCard className="flex gap-2">
+          {([
+            ["glass", copy.settings.skinGlass],
+            ["ocean", copy.settings.skinOcean],
+            ["paper", copy.settings.skinPaper],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => updateSettings({ aesthetic: key })}
+              aria-pressed={settings.aesthetic === key}
+              className={cx(
+                "flex-1 rounded-2xl px-3 py-2.5 text-[14px] transition-colors",
+                settings.aesthetic === key
+                  ? "bg-[var(--accent)] text-[var(--on-accent)]"
+                  : "bg-[var(--surface-soft)] text-[var(--text-secondary)]"
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </BreathingCard>
+      </Section>
+
+      <Section title={copy.settings.soundLabel}>
+        <BreathingCard className="flex items-center justify-between">
+          <span className="text-[15px] text-[var(--text)]">
+            {settings.soundEnabled ? copy.settings.soundOn : copy.settings.soundOff}
+          </span>
+          <button
+            onClick={() => updateSettings({ soundEnabled: !settings.soundEnabled })}
+            className={cx(
+              "relative h-7 w-12 rounded-full transition-colors",
+              settings.soundEnabled ? "bg-[var(--accent)]" : "bg-[var(--surface-soft)]"
+            )}
+            aria-label="切换完成时的轻响"
+            aria-pressed={settings.soundEnabled}
+          >
+            <span
+              className={cx(
+                "absolute top-1 h-5 w-5 rounded-full bg-[var(--surface)] transition-all",
+                settings.soundEnabled ? "left-6" : "left-1"
+              )}
+            />
+          </button>
+        </BreathingCard>
+      </Section>
+
+      <Section title={copy.settings.illustrationLabel}>
+        <p className="-mt-1 mb-2 text-[12px] text-[var(--text-muted)]">
+          {copy.settings.illustrationHelp}
+        </p>
+        <div className="grid grid-cols-2 gap-2.5">
+          {illustrationStyles.map((st) => {
+            const on = settings.illustrationStyle === st.key;
+            return (
+              <button
+                key={st.key}
+                onClick={() => updateSettings({ illustrationStyle: st.key })}
+                aria-pressed={on}
+                className={cx(
+                  "flex flex-col gap-1.5 rounded-2xl border p-2 text-left transition-colors",
+                  on
+                    ? "border-[var(--accent)] bg-[var(--accent-soft)]"
+                    : "border-[var(--border)] bg-[var(--surface)]"
+                )}
+              >
+                {/* fixed light card so the library-style art (some dark line-work)
+                    reads in every theme, including the dark soft_ritual */}
+                <span className="h-16 w-full overflow-hidden rounded-xl bg-[#f1ece2]">
+                  <StylePreview art={st.art} />
+                </span>
+                <span className="text-[13px] font-medium text-[var(--text)]">{st.name}</span>
+                <span className="text-[11px] text-[var(--text-muted)]">{st.note}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="mt-1 flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
+          <span className="h-16 w-24 shrink-0 overflow-hidden rounded-xl bg-[#f1ece2]">
+            <IllustrationArt style={settings.illustrationStyle} category="learning" />
+          </span>
+          <div className="flex flex-col gap-0.5">
+            <span className="serif text-[15px] text-[var(--text)]">{copy.settings.illustrationSample}</span>
+            <span className="text-[12px] text-[var(--text-secondary)]">{copy.settings.illustrationSampleAction}</span>
+          </div>
+        </div>
       </Section>
 
       <Section title={copy.settings.nudgeLabel}>

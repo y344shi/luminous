@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { useStore } from "@/lib/store";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 import IntroCard from "@/components/IntroCard";
 
 beforeEach(() => {

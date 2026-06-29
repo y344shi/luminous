@@ -1,0 +1,11 @@
+{
+  "name": "@luminous/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Framework-free heart of luminous — shared by web + (future) React Native/iOS.",
+  "sideEffects": false,
+  "comment": "Web resolves these via the @core/* tsconfig alias; the exports map lets a future RN/iOS workspace import @luminous/core/<module>.",
+  "exports": {
+    "./*": "./*.ts"
+  }
+}

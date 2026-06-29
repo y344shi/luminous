@@ -3,7 +3,7 @@ import PageHeader from "@/components/design/PageHeader";
 import SeedGarden from "@/components/seed/SeedGarden";
 import GardenNote from "@/components/seed/GardenNote";
 import SoftButton from "@/components/design/SoftButton";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 
 export default function SeedsPage() {
   return (

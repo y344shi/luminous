@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseSeedMock, draftToSeed } from "@/lib/seedParser";
+import { parseSeedMock, draftToSeed } from "@core/seedParser";
 
 describe("seedParser (mock)", () => {
   it("turns an outdoor wish into a small minimum action", () => {

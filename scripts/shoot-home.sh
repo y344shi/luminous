@@ -5,6 +5,8 @@ set -uo pipefail
 export PATH="$HOME/.local/bin:$PATH"
 cd "$(dirname "$0")/.." || exit 0
 LABEL="${1:-home}"
+# Render the skin matching the label when it is a known aesthetic.
+case "$LABEL" in glass|ocean|paper) export NEXT_PUBLIC_AESTHETIC="$LABEL";; esac
 CHROME="/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
 [ -x "$CHROME" ] || { echo "no chrome; skip shot"; exit 0; }
 

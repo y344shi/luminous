@@ -4,12 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { copy } from "@/lib/copy";
-import { categoryMeta, energyLabel, durationLabel } from "@/lib/categoryMeta";
-import type { SeedStatus } from "@/lib/types";
+import { copy } from "@core/copy";
+import { categoryMeta, energyLabel, durationLabel } from "@core/categoryMeta";
+import type { SeedStatus } from "@core/types";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 import EmptyState from "@/components/design/EmptyState";
+import { IllustrationArt } from "@/components/home/shared/illustrationPacks";
+import { illustrationCategory } from "@core/illustration";
 
 const statusText: Record<SeedStatus, string> = {
   active: copy.seedDetail.statusActive,
@@ -24,6 +26,7 @@ export default function SeedDetail({ id }: { id: string }) {
   const seed = useStore((s) => s.seeds.find((x) => x.id === id));
   const updateSeed = useStore((s) => s.updateSeed);
   const setSeedStatus = useStore((s) => s.setSeedStatus);
+  const illustrationStyle = useStore((s) => s.settings.illustrationStyle);
 
   const [title, setTitle] = useState(seed?.title ?? "");
   const [minimumAction, setMinimumAction] = useState(seed?.minimumAction ?? "");
@@ -59,7 +62,7 @@ export default function SeedDetail({ id }: { id: string }) {
     if (leave) router.push("/seeds");
   }
 
-  const meta = categoryMeta[seed.categories[0]];
+  const cat = illustrationCategory(seed.categories, seed.id);
 
   return (
     <div className="flex flex-col gap-5">
@@ -69,8 +72,8 @@ export default function SeedDetail({ id }: { id: string }) {
 
       <BreathingCard className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-2xl" aria-hidden>
-            {meta?.emoji}
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#f1ece2]">
+            <IllustrationArt style={illustrationStyle} category={cat} className="h-full w-full" />
           </span>
           <span className="rounded-full bg-[var(--surface-soft)] px-3 py-1 text-[12px] text-[var(--text-muted)]">
             {statusText[seed.status]}

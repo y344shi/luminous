@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { friendlyDate } from "@/lib/utils";
+import { friendlyDate } from "@core/utils";
 
 const today = new Date(2026, 5, 25); // 2026-06-25 (local)
 

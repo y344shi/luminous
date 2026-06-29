@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   semanticTimeFromHour,
   isLateNightHour,
-} from "@/lib/semanticTime";
+} from "@core/semanticTime";
 
 describe("semanticTime", () => {
   it("maps late hours to late_night", () => {

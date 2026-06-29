@@ -5,9 +5,9 @@ import { useStore } from "@/lib/store";
 import TraceCard from "./TraceCard";
 import EmptyState from "@/components/design/EmptyState";
 import ConfirmSheet from "@/components/design/ConfirmSheet";
-import { copy } from "@/lib/copy";
-import { friendlyDate } from "@/lib/utils";
-import type { DailyTrace } from "@/lib/types";
+import { copy } from "@core/copy";
+import { friendlyDate } from "@core/utils";
+import type { DailyTrace } from "@core/types";
 
 function groupByDate(traces: DailyTrace[]): [string, DailyTrace[]][] {
   const map = new Map<string, DailyTrace[]>();

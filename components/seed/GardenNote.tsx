@@ -1,7 +1,7 @@
 "use client";
 
 import { useStore } from "@/lib/store";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 import BreathingCard from "@/components/design/BreathingCard";
 
 /**

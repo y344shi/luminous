@@ -2,12 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Mood, Energy, Opportunity, LocationType } from "@/lib/types";
+import type { Mood, Energy, Opportunity, LocationType } from "@core/types";
 import { useStore, findSeed } from "@/lib/store";
-import { buildContext } from "@/lib/context";
-import { recommend } from "@/lib/scoring";
-import { buildTrace, buildRestTrace, type CompletionKind } from "@/lib/traceGenerator";
-import { copy } from "@/lib/copy";
+import { buildContext } from "@core/context";
+import { recommend } from "@core/scoring";
+import { useSensedSignals } from "@/components/home/shared/useSensedSignals";
+import { buildTrace, buildRestTrace, type CompletionKind } from "@core/traceGenerator";
+import { copy } from "@core/copy";
+import { completeFeedback } from "@/lib/feedback";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
 import EmptyState from "@/components/design/EmptyState";
@@ -30,8 +32,11 @@ export default function NowFlow() {
   const addTrace = useStore((s) => s.addTrace);
   const updateTrace = useStore((s) => s.updateTrace);
   const updateSeed = useStore((s) => s.updateSeed);
+  const soundEnabled = useStore((s) => s.settings.soundEnabled);
   const hydrated = useStore((s) => s.hydrated);
   const lastPick = useStore((s) => s.lastPick);
+  const { activity, ambient, deskMinutesToday, isOutdoorWeatherGood, batteryLow } = useSensedSignals();
+  const illustrationStyle = useStore((s) => s.settings.illustrationStyle);
   const rememberPick = useStore((s) => s.rememberPick);
 
   const [step, setStep] = useState<Step>("context");
@@ -68,14 +73,21 @@ export default function NowFlow() {
   function handleFind() {
     if (!ready) return;
     rememberPick(mood!, energy!);
-    const ctx = buildContext({
-      mood: mood!,
-      energy: energy!,
-      freeMinutes: freeTouched ? freeMinutes : undefined,
-      locationHint,
-      isOutdoorWeatherGood: weatherGood || undefined,
-      isAtComputer: locationHint === "computer",
-    });
+    const ctx = {
+      ...buildContext({
+        mood: mood!,
+        energy: energy!,
+        freeMinutes: freeTouched ? freeMinutes : undefined,
+        locationHint,
+        isOutdoorWeatherGood: weatherGood || isOutdoorWeatherGood || undefined,
+        isAtComputer: locationHint === "computer",
+      }),
+      // fuse the passive senses so the deliberate ask is as keen as the home
+      activity,
+      ambient,
+      deskMinutesToday,
+      batteryLow,
+    };
     const result = recommend(seeds, ctx, { limit: 3 });
     setOpps(result);
     setActiveIndex(0);
@@ -101,6 +113,7 @@ export default function NowFlow() {
     }
     const trace = buildTrace(seed, kind, chosen?.id);
     addTrace(trace);
+    completeFeedback(soundEnabled);
     if (seed && kind === "completed") {
       updateSeed(seed.id, { status: "sleeping" });
     }
@@ -195,6 +208,7 @@ export default function NowFlow() {
           key={o.id}
           opportunity={o}
           seed={seed}
+          illustrationStyle={illustrationStyle}
           canSwap={opps.length > 1}
           onStart={() => handleStart(o)}
           onSwap={handleSwap}

@@ -1,6 +1,8 @@
-import type { Seed } from "@/lib/types";
-import { categoryMeta, energyLabel, durationLabel } from "@/lib/categoryMeta";
+import type { Seed } from "@core/types";
+import { categoryMeta, energyLabel, durationLabel } from "@core/categoryMeta";
 import BreathingCard from "@/components/design/BreathingCard";
+import { IllustrationArt } from "@/components/home/shared/illustrationPacks";
+import { illustrationCategory } from "@core/illustration";
 
 const statusLabel: Record<Seed["status"], string> = {
   active: "在等一个时机",
@@ -9,15 +11,14 @@ const statusLabel: Record<Seed["status"], string> = {
   archived: "收起来了",
 };
 
-export default function SeedCard({ seed }: { seed: Seed }) {
-  const cat = seed.categories[0];
-  const meta = categoryMeta[cat];
+export default function SeedCard({ seed, illustrationStyle }: { seed: Seed; illustrationStyle: string }) {
+  const cat = illustrationCategory(seed.categories, seed.id);
   return (
     <BreathingCard className="flex flex-col gap-3">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-lg" aria-hidden>
-            {meta?.emoji}
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#f1ece2]">
+            <IllustrationArt style={illustrationStyle} category={cat} className="h-full w-full" />
           </span>
           <h3 className="text-[16px] font-medium text-[var(--text)]">{seed.title}</h3>
         </div>

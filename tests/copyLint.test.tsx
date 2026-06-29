@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import { copy, forbiddenWords } from "@/lib/copy";
+import { copy, forbiddenWords } from "@core/copy";
 import { useStore } from "@/lib/store";
-import { seedMockGarden } from "@/lib/mockSeeds";
+import { seedMockGarden } from "@core/mockSeeds";
 
 // Components that touch next/navigation need it stubbed in jsdom.
 vi.mock("next/navigation", () => ({
@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/",
 }));
 
-import BubbleField from "@/components/home/BubbleField";
+import BubbleField from "@/components/home/shared/BubbleField";
 import SeedGarden from "@/components/seed/SeedGarden";
 import TraceJournal from "@/components/trace/TraceJournal";
 import SettingsPanel from "@/components/settings/SettingsPanel";

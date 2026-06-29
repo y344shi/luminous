@@ -62,3 +62,30 @@ rainy-window · snowfall · foggy-morning · thunderstorm · clear-noon · auror
 Coarse location (`guessLocation` / opt-in geo) + time-of-day + (later) weather +
 nearby-places (Overpass) → a scene key → `sceneVisual` (gradient) and, when
 available, a curated image / 3D. See `docs/overnight-plan.md` direction **B**.
+
+## Lifestyle-illustration libraries (for the category "art figures")
+The category icons should read as small **lifestyle paintings/illustrations**, not
+plain symbols. These are sources, ranked for luminous's warm, tender, ISFP-dreamy
+palette. Caveat: detailed illustrations shine at 60–120px (orb / wish cards / Now
+sheet) but turn to mush in a ~30px bubble — keep a simple line mark in tiny bubbles.
+
+### Best mood-fit (warm, painterly lifestyle)
+- **Pixeltrue** — soft pastel wellness/lifestyle; static + Lottie. Free w/ attribution (or paid). `pixeltrue.com/illustrations`
+- **Open Doodles** — loose hand-drawn "art figure" people; **CC0** (no attribution), recolorable SVG. Closest to "hand-painted figure". `opendoodles.com`
+- **Blush** — artist packs (e.g. *Wholesome*, *Milano*); painterly, customizable. Per-artist license (many free w/ attribution, Pro paid). `blush.design`
+- **Storyset (Freepik)** — flat lifestyle scenes, **recolorable to the sage/cream palette** + animatable. Free w/ attribution. `storyset.com`
+- **DrawKit** — soft wellness/lifestyle, hand-drawn + painterly. Free packs + premium. `drawkit.com`
+
+### People / figure kits
+- **Open Peeps** — hand-drawn build-your-own people. CC0. `openpeeps.com`
+- **Humaaans** — mix-and-match lifestyle figures. CC BY 4.0. `humaaans.com`
+- **unDraw** — clean flat lifestyle/work, single-accent recolor. Free, open. `undraw.co`
+- **absurd.design** — surreal hand-drawn art figures (edgy). Free + paid. `absurd.design`
+
+### Big freemium banks (many lifestyle sets/styles)
+- **Icons8 Ouch!** `icons8.com/illustrations` · **Streamline** `streamlinehq.com` · **ManyPixels** `manypixels.co/gallery` · **illlustrations.co** (MIT)
+
+**Recommendation:** Open Doodles (CC0, free, recolor to sage) or Storyset (recolors
+to the exact palette); Pixeltrue if attribution is OK. **Integration:** put the
+painting on the **orb** (per sensed state) and/or the **wish cards / Now sheet**;
+keep tiny bubbles to a simple line mark. All assets local + recolored to theme.

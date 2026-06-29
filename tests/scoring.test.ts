@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { rankSeeds, recommend, isUnsafeLateNight } from "@/lib/scoring";
+import { rankSeeds, recommend, isUnsafeLateNight } from "@core/scoring";
 import { ctx, garden, fixedRng } from "./helpers";
 
 describe("scoring — late night safety", () => {

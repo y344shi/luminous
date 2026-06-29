@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { useStore } from "@/lib/store";
-import { seedMockGarden } from "@/lib/mockSeeds";
-import { copy } from "@/lib/copy";
-import BubbleField from "@/components/home/BubbleField";
+import { seedMockGarden } from "@core/mockSeeds";
+import { copy } from "@core/copy";
+import BubbleField from "@/components/home/shared/BubbleField";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),

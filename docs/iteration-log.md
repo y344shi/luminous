@@ -962,17 +962,529 @@ What still feels wrong / not done yet:
 
 ---
 
-## native: iOS + macOS + watchOS, switchable skins (Mac session, 2026-06-28)
-- Verified on the Mac (Xcode 26.6) that the `ios-glass` reconciliation **compiles
-  and runs** — previously "verified by reading only". `BUILD SUCCEEDED` for iOS
-  (iPhone 17 Pro sim), macOS (native), and a new **watchOS** target.
-- **Skins now switchable at runtime + persisted** (`tdd.aesthetic`): split
-  `Aesthetic` (pure enum) from `AestheticField` (view); `AppStore.aesthetic` +
-  `setAesthetic`; Settings → 外观风格 picker (glass/ocean/paper). Drove the field
-  from the store so Home re-skins live. Screens: `ios/shots/ios-{glass,ocean,paper}.png`.
-- **watchOS**: new "Luminous Watch App" target sharing the 10 pure-core files +
-  watch-native UI in `ios/LuminousWatch/` (same Now→trace loop, skin picker, per-skin
-  gradient). Screen: `ios/shots/watch-home.png`.
-- All work in worktree `wt-macos` on branch `macos` (Xcode stayed open on the live
-  copy — never branch-switched it, per CLAUDE.md). Open decisions + safe-pull steps:
-  see `ios/MAC-SESSION-NOTES.md`.
+## glass 6 (A6): Gyro polish
+- Tilt is low-pass smoothed (0.82/0.18) so motion glides; a devicemotion **shake**
+  (accel jump > 22) flings all bubbles apart (debounced 900ms); when the device is
+  near-flat the field eases back to a gentle cluster. 214 tests green.
+
+---
+
+## core 1: Runtime skin picker (Settings → 外观风格)
+- `settings.aesthetic` (default = NEXT_PUBLIC_AESTHETIC) now drives the Home look at
+  runtime. New `HomeSkin` client component reads the setting (falls back to the env
+  default before hydration, no flash) and renders GlassField / OceanField / PaperHome;
+  `app/page.tsx` is now a thin wrapper. Settings gains a 3-way 外观风格 picker
+  (琉璃/海洋/纸页). Switching is instant + persisted; no rebuild. New homeSkin.test.tsx
+  (3); 250 tests green; typecheck + build clean.
+
+---
+
+## core 2: Folder tidy — shared/ + skins/
+- Moved the shared home pieces (BubbleField, SceneBackground, NavLayer, SceneWindow,
+  GlassFilters, glyphs) into `components/home/shared/`, and PaperHome into
+  `components/home/skins/` (dropping the re-export shim). Updated all importers +
+  tests. Matches docs/architecture-skins.md. No visual change. 250 tests green.
+
+---
+
+## core 3: Desktop perf pass on the glass effects
+- The animated SVG turbulence (`.glass-refract`, per bubble + orb every frame) and
+  the full-screen goo metaball filter (`.goo-layer`) are the costly bits on large
+  viewports. On `@media (pointer: fine)` (desktop/laptop, where lag was reported)
+  they're swapped for a cheap CSS blur; touch devices keep the full richness.
+  CSS-only; 250 tests green; typecheck + build clean.
+
+---
+
+## glass 7 (A7): Condense-from-light page-load
+- Each bubble now condenses out of light into place on load — opacity + the
+  independent CSS `scale` property (so it composes with the rAF position transform),
+  staggered via animationDelay. Mutually exclusive with the dissolve animation;
+  reduced-motion stills it. Shared field, so glass + ocean both get it. 250 tests green.
+
+---
+
+## ocean 3: Rise-from-the-floor load
+- Ocean skin only: on first build, bubbles spawn at the bottom edge (the ocean
+  floor) and the buoyancy physics floats them up to their relevance-heights — a
+  gentle rise into place. One-shot via didRiseRef (no re-rise when the field
+  rebuilds after an interaction). Glass unaffected. 250 tests green.
+
+---
+
+## ocean 4: Caustic surface + light shafts + bubble streams
+- Ocean skin only: an `.ocean-ambience` decorative layer (in OceanField, not the
+  shared field) adds a shimmering caustic water surface band at the top, three slow
+  drifting light shafts, and six faint rising bubble streams. CSS-only,
+  pointer-events-none, reduced-motion safe. Glass/paper untouched. 250 tests green.
+
+---
+
+## paper 3: Hand-laid notes + pressed-flower marks
+- Paper skin only: the notes now appear staggered (per-index animationDelay on the
+  tdd-rise entrance), like being laid down one by one; each note carries a faint
+  PressedFlower mark — a tiny botanical line-art stamp keyed to the wish's category
+  (sprig/bloom/clover/fern/bud/wheat/tulip). New PressedFlower.tsx; 250 tests green.
+
+---
+
+## core 5: Skin-aware motion-button label
+- The shared bubble field's "grant motion" button (mobile-only) now reads
+  感受水流 (feel the current) on the ocean skin and 感受重力 on glass — fixing a tone
+  mismatch where the buoyancy/no-gravity ocean still said "feel gravity". One new
+  copy key (feelCurrent), switched by the buoyancy prop. 250 tests green.
+
+---
+
+## core 6: Settle-then-rest motion (user feedback)
+- Removed all pointer-tracking (BubbleField sway/parallax + SceneBackground pointer
+  parallax) — it felt disturbing on the web. Replaced the slow, jittery, drifting
+  physics with a firm spring (pull 2.0, damping 0.8, no jitter) so bubbles flow in
+  and rest in place. Gyro tilt now leans the whole cluster only slightly (±24px);
+  on desktop (no input) they simply rest. Flow-in keeps the condense (glass) +
+  rise-from-floor (ocean) entrances. 250 tests green.
+
+---
+
+## core 7: Geo/nearby search in every skin (user feedback)
+- The NavLayer (opt-in geolocation → OpenStreetMap Overpass nearby café/attraction
+  → true-bearing arrow + distance) lived only in the bubble field (glass/ocean).
+  Added it to the paper skin too, with a new `variant="soft"` so the chip fits the
+  notebook instead of the glass look. Geo sensing is now present in all three web
+  skins. Updated homeSkin.test (paper now has the nav). 250 tests green.
+
+---
+
+## core 8: Tidy — drop dead AmbientOrbit + fix stale doc
+- Removed `components/home/AmbientOrbit.tsx` + `tests/ambientOrbit.test.tsx` (an
+  old pre-bubble-field Home, no longer imported anywhere). Corrected the BubbleField
+  doc comment, which still described the old "feel gravity / cluster on tilt" model,
+  to the current settle-then-rest + slight-gyro-lean behaviour. 248 tests green.
+
+---
+
+## core 9: Reduced-motion placement fix (a11y)
+- Bubble positions were only ever set by the rAF physics loop, which is gated off
+  under prefers-reduced-motion — so reduced-motion users saw every bubble stacked
+  unpositioned in the top-left corner. Added a one-shot effect that places each
+  bubble at its home (no animation) under reduced-motion. Affects all bubble-field
+  skins (glass/ocean); default render unchanged. 248 tests green.
+
+---
+
+## sense 3/3: live sensing + opt-in (the fusion is now wired)
+- New `useSensors` hook: passive accelerometer → activity; opt-in mic → ambient
+  loudness (also unlocks iOS motion). Nothing recorded or sent — reads levels,
+  derives a coarse signal, forgets the raw. Wired into BubbleField + PaperHome so
+  the recommendations re-rank as senses arrive; a gentle `感受周围` opt-in in the
+  controls. Heart-rate `arousal` stays an unused seam (iOS HealthKit later).
+  251 tests green; typecheck + all skins build clean.
+
+---
+
+## core 10: Surface the sensed context (visible keenness)
+- ambientLabel now appends the fused senses when present: 走着 / 在路上 (activity)
+  and 周围很安静 / 周围有点热闹 (ambient loudness), de-duped against the location
+  word. Both Homes pass the live signals. The app's awareness is now legible in the
+  header line (e.g. "周五 · 下午 · 在路上 · 周围有点热闹"). Default render unchanged.
+  251 tests green.
+
+---
+
+## core 11: Mac iOS-sensor brief + clickable-and-automatic sensing
+- New `docs/ios-sensor-port.md`: a detailed workload doc for the Mac/Xcode agent to
+  port the sensor fusion to iOS (CoreMotion, AVAudioSession, HealthKit heart-rate →
+  arousal, CoreLocation; mirror lib/sensors.ts + sensorBonus; privacy + Info.plist).
+- Sensing made automatic as well as clickable: new `settings.senseAround` persists
+  the opt-in; both Homes auto-resume ambient sensing on load when set (mic permission
+  persists, no re-prompt). Motion is already passive. 251 tests green.
+
+---
+
+## glass 8: Artistic redesign (drop goo, clean orb, warm bloom)
+- The glass skin read as "weird / not artistic" — scattered green goo metaballs
+  looked like smudges, the orb was a muddle (grey clip-art monitor + redundant
+  glyph + label), and bubbles collided with the orb. Removed the goo layer entirely;
+  the orb is now a clean luminous glass sphere (single line glyph + label) cradled
+  in a soft warm `.orb-bloom`; ambient bubbles thinned 8→3 and clamped on-screen;
+  primaries spaced further from the orb. Calm, warm, luminous. 251 tests green.
+
+---
+
+## docs: lifestyle-illustration libraries
+- Appended a ranked list of lifestyle/painterly illustration sources to
+  `docs/scene-library.md` (Open Doodles CC0, Storyset, Pixeltrue, Blush, DrawKit,
+  Humaaans/Open Peeps, unDraw, big banks) + the small-size caveat + integration
+  notes. Groundwork for the "art figure / lifestyle" icon direction. Docs-only.
+
+---
+
+## core 12: Illustration-style picker (8 library swatches in Settings)
+- New `settings.illustrationStyle` + a Settings section "插画风格" with 8 hand-painted
+  SVG swatches, each evoking a library's signature look (Open Doodles loose line,
+  Storyset flat, Pixeltrue pastel, Blush painterly, Humaaans/Open Peeps figures,
+  unDraw mono-accent, DrawKit soft duotone). Persists the choice; wiring the picked
+  style onto the wishes is the next step. 251 tests green.
+
+---
+
+## core 13: Illustration swatches legible in the dark theme
+- The 8 插画风格 swatches drew dark line-art (Open Doodles / Open Peeps ink) on a
+  --surface-soft card, which is dark in soft_ritual → dark-on-dark, invisible. Gave
+  the preview card a fixed light background so library-style art reads in every
+  theme. 251 tests green.
+
+---
+
+## core 14: All libraries, switch on demand (pluggable illustration packs)
+- Made the 8-library picker do something: moved the registry to a shared
+  components/home/shared/illustrationPacks.tsx with an IllustrationArt renderer —
+  one interface for all 8 looks. settings.illustrationStyle now drives a real
+  illustration on the wish tap-sheet (glass/ocean) + a live "sample wish" preview
+  under the Settings picker. Real downloaded library assets can replace the
+  code-drawn art behind the same interface later. 251 tests green.
+
+---
+
+## core 15: Per-category pack art (API + Open Doodles)
+- IllustrationStyle gains optional scene(category); IllustrationArt renders it when
+  a category is passed, else the signature art. Open Doodles now has all 7 category
+  scenes (loose line: bowl/pen/two-forms/path+hill/leaf+water/open-book/bloom). The
+  wish tap-sheet passes the wish's category; the Settings preview passes "learning"
+  (so 记法语单词 shows a book). Other 7 packs grow into scene() next. 251 tests green.
+
+---
+
+## core 16: Storyset category-aware (flat 7 scenes)
+- Second pack to grow per-category art: Storyset draws all 7 wish categories in its
+  flat accent+neutral style (bowl, pencil+paper, two figures+heart, hill+flag+sun,
+  leaf on water, open book, potted plant). Verified in the Settings preview. 2 of 8
+  packs now category-aware; 6 to go. 251 tests green.
+
+---
+
+## core 17: Pixeltrue category-aware (soft pastel 7 scenes)
+- Third pack grows per-category art: Pixeltrue draws all 7 wish categories in its
+  soft rounded pastel style (bowl, pencil+paper, two forms+heart, hills+sun, leaf on
+  water, open book, flower). Verified in the Settings preview. 3/8 packs
+  category-aware; 5 to go. 251 tests green.
+
+---
+
+## core 18: All 8 illustration packs category-aware (parallel agents)
+- Blush, Humaaans, Open Peeps, unDraw, DrawKit each authored their 7 category scenes
+  in parallel (5 subagents), assembled into illustrationPacks + wired scene(). Now
+  every wish category renders art in every one of the 8 library styles; verified
+  Humaaans (figures) in the preview. Next: home card sharing the bubble physics.
+  251 tests green.
+
+---
+
+## glass 9: Home wishes become floating cards (shared physics)
+- Primary wishes now render as small cards (per-category illustration chip + title)
+  instead of abstract spheres, on the SAME bubble physics body — glass rings them
+  round the orb, ocean floats them in a staircase. Reduced to 3 primaries, bigger
+  bodies + wider ring/buoyancy spacing so cards clear the orb; ambient wishes stay
+  small bubbles. Physics engine untouched. 251 tests; all skins build green.
+
+---
+
+## ocean 1: Floating-card spacing (no graze)
+- Ocean buoyancy was pulling the lower cards together. Switched the buoyancy homes
+  to a near-centered column (tiny horizontal stagger) + wider vertical gap, so the
+  collision step scatters the 3 cards into a clean, non-overlapping spread as they
+  float. Glass (ring) unchanged. 251 tests; ocean builds green.
+
+---
+
+## glass 10: One-line action on the wish cards
+- The floating wish cards now show illustration + title (1 line) + the suggested
+  action (2 lines) — so the card says what to do, not just name the wish. Tuned card
+  size (r41) so cards still clear the orb on a narrow screen, and widened the ocean
+  vertical step so the taller cards don't overlap. 251 tests; glass+ocean green.
+
+---
+
+## core 19: Test the illustration pack registry
+- New tests/illustrationPacks.test: asserts all 8 library packs are registered with
+  name+note+signature art, every pack is category-aware (scene() truthy for all 7
+  categories), and IllustrationArt renders an svg per category + falls back for an
+  unknown style. Locks the pack system (the big recent feature) against regressions.
+  254 tests green.
+
+---
+
+## glass 11: Lighter wish cards (title only)
+- Removed the one-line action from the floating cards — it was too cramped. Cards now
+  show illustration + title only (title can breathe to 2 lines, bigger illustration).
+  The action still lives on the tap-sheet. Reshot glass+ocean. 254 tests green.
+
+## core 20: Garden wishes use the chosen illustration
+- SeedCard swapped its system category emoji for IllustrationArt(category, chosen
+  pack) — the Garden now matches the home cards. SeedGarden passes settings.
+  illustrationStyle. 254 tests; build green.
+
+---
+
+## core 21: Distinct wish illustrations (vary by category)
+- Wishes sharing a category drew the same icon (two creation wishes = two pens).
+  New lib/illustration: illustrationCategory picks deterministically from a wish's
+  OWN categories (stable per wish), distinctIllustrationCategory forces a small set
+  (the 3 home cards) to differ. Applied in BubbleField + Garden SeedCard. +4 tests
+  (258). The two creation+learning samples now show pen vs book.
+
+---
+
+## core 22: Dwell sensing (how long at the desk today)
+- A temporal sense: lib/dwell accumulates active minutes-at-desk today (per-day
+  localStorage, desktop + visible only; gaps ignored). dwellBonus in scoring leans
+  toward body/recovery/outside after a long sit and eases off computer-focus.
+  ambientLabel surfaces 坐了一会 / 坐了挺久. useDwell hook wired into BubbleField.
+  On-device only; system-wide app usage stays an iOS Screen Time job. +6 tests (264).
+
+---
+
+## core 23: Remaining wish emojis → illustration system
+- OpportunityCard (Now flow), SeedDetail, AddSeedFlow (add preview), and RecentSeeds
+  swapped their system category emoji for IllustrationArt(chosen pack, varied
+  category via illustrationCategory). NowFlow passes settings.illustrationStyle to
+  OpportunityCard. The illustration system is now consistent everywhere a wish shows
+  (home cards, tap-sheet, Garden, Now, detail, add, recent) — only the keepsake
+  TraceCard keeps its warm emoji by decision. 264 tests; build green.
+
+---
+
+## core 24: Weather sensing wired into the fusion
+- lib/weather (open-meteo, key-free) was written but unused. New useWeather hook
+  fetches current weather for the *saved coarse home* (only coords already opt-in
+  leave the device), classifies it, and isGoodOutdoorWeather → isOutdoorWeatherGood
+  feeds the ranking (the weather_good bonus lifts "step outside" wishes). Gentle,
+  never forces; no home → no fetch. +1 test (265). Next: surface it in the day-line.
+
+---
+
+## core 25: Weather in the day-line
+- ambientLabel gained an optional weather param; BubbleField passes the sensed
+  WeatherKind, so the day-line reads e.g. "周三 · 下午 · 在电脑前 · 晴" — the weather
+  signal is now felt, not just ranked. Shows only once a coarse home is saved + the
+  fetch resolves. +1 test (266). Next: optional weather scene tint.
+
+---
+
+## glass 12: Weather scene tint
+- BubbleField lays a soft full-bleed veil behind the bubbles, tinted by the sensed
+  WeatherKind via weatherTint (rain→cool blue, snow→pale, fog→grey, storm→deep,
+  cloud→soft; clear adds nothing). Shows only once a coarse home is saved + the
+  fetch resolves, so the default view is untouched. glass+ocean build green; 266 tests.
+
+---
+
+## paper 1: Dwell + weather sensing parity on paper
+- PaperHome had activity/ambient but not dwell or weather, so paper users got
+  less-keen ranking + no weather in the day-line. Wired useDwell + useWeather
+  (homeLocation) into PaperHome's buildAmbientContext + ambientLabel. The weather
+  *tint* stays glass/ocean (paper keeps its clean notebook look); paper gets the
+  ranking + the 晴/多云/坐了一会 day-line. All sensing now uniform across skins.
+  266 tests; paper builds green.
+
+---
+
+## core 26: Battery sensing (winding-down proxy)
+- lib/battery.isBatteryLow (low + unplugged). scoring.batteryBonus leans toward
+  small/restful + short, eases off long/high-energy when low (capped ±0.12). useBattery
+  hook (Battery API; absent on iOS Safari/Firefox → no signal) wired into BubbleField +
+  PaperHome. Ranking-only — kept off the day-line to avoid noise. On-device, no
+  permission. +5 tests (271).
+
+---
+
+## core 27: The Now flow is sensor-aware
+- /now built its context only from the question answers (mood/energy/place), ignoring
+  the passive senses the home already fuses — so the explicit ask was less keen than
+  the casual home. NowFlow now reads useSensors/useDwell/useWeather/useBattery and
+  spreads activity/ambient/deskMinutesToday/batteryLow + sensed weather onto the
+  recommend context. Stated + sensed, everywhere. 271 tests; build green.
+
+---
+
+## core 28: One useSensedSignals() hook (DRY the fusion)
+- The passive senses were wired in three places (BubbleField, PaperHome, NowFlow),
+  each repeating ~5 hook calls. Consolidated into components/home/shared/
+  useSensedSignals() — one hook fusing motion/loudness/dwell/weather/battery (+ the
+  mic opt-in handles). All three consumers now read the bundle; adding a sense touches
+  one file. Behavior-neutral; 271 tests; all skins build green. Also tidies the path
+  toward packages/core (one portable seam).
+
+---
+
+## core 29: End-to-end sensor-fusion test
+- The per-signal bonuses were unit-tested alone; nothing proved they compose through
+  scoreSeed → rankSeeds → recommend. New fusionIntegration.test: a weary context
+  (deskMinutesToday 220 + batteryLow) provably raises a restful wish's score, lowers a
+  focus wish's, and surfaces rest first — a differential vs the neutral context. Guards
+  the whole fusion pipeline. 272 tests; build green.
+
+---
+
+## glass 13: Boxless wishes (bigger floating illustration + title)
+- Per user: removed the glass card + inner chip around primary wishes — the icon was
+  too small inside the box. Primary wishes now render as a free-floating, larger
+  illustration (h-62%, soft drop-shadow) + title, no container. Bumped r 41→47 for a
+  bigger icon; pushed the glass ring (ORB_R+132) and re-scattered the ocean wishes into
+  the upper band so they clear the orb. Ambient wishes stay small glass dots. 272 tests;
+  glass+ocean reshot + build green.
+
+---
+
+## core 30: Docs — CONTEXT + README reflect reality
+- CONTEXT.md was 30+ commits stale (still listed the deleted café NavLayer, no sensing
+  / illustration / boxless wishes). Refreshed the skins block, added a Sensing-fusion
+  signal table + an Illustration-packs section, updated the iOS section (sensor-port
+  brief + the RN/packages-core call). Replaced the create-next-app boilerplate README
+  with a real one (what luminous is, the loop, the fusion, skins, run/verify, privacy).
+  Docs-only; 272 tests green.
+
+---
+
+## core 31: Start packages/core (the shared-core extraction)
+- Created packages/core/ (the framework-free heart, toward RN/iOS sharing). First
+  slice: moved the zero-dependency sensing classifiers (sensors/dwell/battery) there.
+  Added the @core/* path alias (tsconfig) + vitest alias; Next resolves it natively.
+  Updated the 9 importers; extended corePurity to scan packages/core too. Incremental
+  by design — more modules follow one safe slice per tick. 272 tests; all skins build
+  green; no behavior/visual change.
+
+---
+
+## core 32: packages/core slice 2 (utils + geo)
+- Moved the next two zero-dependency leaves — lib/utils + lib/geo — into packages/core
+  via git mv; rewrote 25 importers (@/lib/* and ./* → @core/*). @core now holds
+  sensors/dwell/battery/utils/geo. Purity guard already covers the dir. 272 tests; all
+  skins build green; no behavior/visual change. Next keystone: types.
+
+---
+
+## core 33: packages/core slice 3 (types + aesthetic — the keystone)
+- Moved lib/types (+ lib/aesthetic, which types references via an inline import) into
+  packages/core; both move together so the inline import("./aesthetic") stays valid.
+  Rewrote 40 importers to @core/types / @core/aesthetic. @core now holds
+  sensors/dwell/battery/utils/geo/types/aesthetic. With types in core, the dependent
+  pure modules can follow. 272 tests; typecheck clean; all skins build green; no
+  behavior change.
+
+---
+
+## core 34: packages/core slice 4 (recommender + pure helpers)
+- Moved semanticTime/categoryMeta/copy/illustration/weather/scoring into packages/core
+  (52 importers rewritten). All imported only @core already, so no back-edges. @core
+  now holds 13 modules incl. the recommender (scoring). Remaining lib pure domain
+  (context/ambient/mockSeeds/seedParser/traceGenerator) follows next; storage+store
+  stay app-side (the platform boundary). 272 tests; typecheck clean; all skins build
+  green; no behavior change.
+
+---
+
+## core 35: packages/core slice 5 (rest of the pure domain)
+- Moved context/ambient/mockSeeds/seedParser/traceGenerator/seedAiPrompt/reminders/
+  exportTraces into packages/core (36 importers rewritten; intra-batch relatives stay
+  valid as both move together). @core is now 21 modules — the whole framework-free
+  domain. lib/ now holds the genuine platform boundary (store/storage + browser/UI
+  helpers: feedback/webpush/sceneBackground/themes/keepsake/dayGrade/serialize/nudge/
+  bubblePhysics/aiParser). 272 tests; typecheck clean; all skins build green; no
+  behavior change. Next: package.json-ify @core.
+
+---
+
+## core 36: Finish packages/core — @luminous/core package
+- Moved the last pure modules (bubblePhysics, aiParser) into packages/core and gave it
+  a real package.json (@luminous/core). @core is now 23 framework-free modules — the
+  whole domain + physics + parsing. The web app keeps consuming via the @core/* path
+  alias (the package.json is inert for web, names the package for future RN). lib/ now
+  holds ONLY the platform boundary (store/storage/feedback/webpush/sceneBackground/
+  themes/keepsake/dayGrade/serialize/nudge). 272 tests; typecheck clean; all skins
+  build green; no behavior change. RN/iOS can now depend on @luminous/core directly.
+
+---
+
+## core 37: Guard the @core boundary (no back-edges)
+- After the extraction, added a boundary guard to corePurity: every packages/core file
+  must import only @core/external — no `@/` (app alias) or `../` escape. Verified @core
+  is already clean; the guard locks the invariant so a future edit can't silently
+  reintroduce an app dependency that would break RN/iOS portability. +24 tests (296);
+  typecheck clean; build green; no behavior change.
+
+---
+
+## core 38: Docs reflect @core + package exports
+- After the extraction, the auto-loaded guide still said domain logic lived in lib/.
+  Updated CLAUDE.md + README Layout: the framework-free domain is @luminous/core
+  (packages/core), lib/ is the platform boundary; fixed the lib/copy.ts → packages/
+  core/copy.ts reference. Added a subpath `exports` map ("./*": "./*.ts") to the
+  package so a future RN/iOS workspace can import @luminous/core/<module> (inert for
+  web, which uses the @core/* alias). 296 tests; typecheck clean; build green.
+
+---
+
+## core 39: Native handoff brief reflects the @core extraction
+- docs/ios-sensor-port.md predated packages/core — it told the Mac agent to mirror
+  lib/sensors etc. Updated all paths to @core/* and added the key post-extraction note:
+  React Native can add @luminous/core as a workspace dep and consume the recommender +
+  classifiers directly (only sampling is platform-specific) — zero reimplementation;
+  SwiftUI still mirrors. Also flagged dwell/weather/battery to port. Docs-only; 296
+  tests green.
+
+---
+
+## core 40: Backlog hygiene
+- next-steps.md (the loop's input) had drifted: packages/core "slice 3"/"finish"
+  listed open but shipped (core 33/34/36), plus a decided-against item (session-length)
+  and a moot one (Add/Garden cohesion — skins only affect Home). Pruned those, fixed
+  the stale iOS line (lib/* → @luminous/core; RN-consume note) and the RN-vs-SwiftUI
+  prerequisite (extraction done). 7 truly-open items remain (all native/user-gated).
+  [x] history kept. Docs-only; 296 tests green.
+
+---
+
+## core 41: Surface when 感受周围 can't open the mic
+- User reported "cannot click 感受周围". Root cause: getUserMedia needs a secure
+  context (localhost/https); over a plain-http LAN IP (phone testing) the browser
+  blocks it and the tap silently no-ops. useSensors now detects !isSecureContext /
+  missing API / denial → sets ambientBlocked; BubbleField + PaperHome show a gentle
+  note (copy.home.senseBlocked) instead of a dead button. Motion still samples
+  passively. 296 tests; typecheck clean; all skins build green; default view unchanged.
+
+---
+
+## core 42: dev:https for on-phone sensor testing
+- Followup to core 41: the senses need a secure context, which a plain-http LAN IP
+  isn't. Added an `npm run dev:https` script (next dev --experimental-https) + a README
+  "Testing the senses on a phone" note (open https://<LAN-IP>:3000, accept the
+  self-signed cert; or use a tunnel). Dev-ergonomics only; 296 tests green.
+
+---
+
+## core 43: Integration guide + stop the overnight cron
+- Wrote docs/INTEGRATION.md — the handoff for the next platform: the @luminous/core
+  contract (recommend/context/classifiers/domain), the pure-classifier + platform-sampler
+  pattern (with a per-signal web↔native sampler table), the state/persistence boundary,
+  step-by-step RN/Expo integration, and the privacy contract. Indexed in CONTEXT.md.
+  Overnight cron stopped at the user's request — the web app + @luminous/core are
+  complete/tested/guarded/documented; remaining work is native (needs a Mac) or the
+  RN-vs-SwiftUI product call. Docs-only; 296 tests green.
+
+---
+
+## native (Mac session): iOS + macOS + watchOS on `ios-glass` — 2026-06-29
+- Verified the SwiftUI app **compiles and runs** on the Mac (Xcode 26.6): `BUILD
+  SUCCEEDED` for iOS, macOS (native) and a new **watchOS** target; all launched in
+  simulators. Previously the reconciliation was "verified by reading only".
+- **Centered orb Home** (matches the web): tappable scene orb → 现在别消失, top wishes
+  ringed around it as boxless emoji + title, lesser wishes as dots, tap-a-wish sheet.
+- **Skins switchable + persisted** (`tdd.aesthetic`) with Settings → 外观风格; plus an
+  **Auto** mode that follows system appearance (Dark → glass, Light → paper).
+- **Backgrounds reworked** per user feedback (bubbles were distracting/off): replaced
+  the animated bubble fields with a **still environment scene graded by time-of-day
+  lighting** (sky + sun/moon + stars; ocean adds water catching the light).
+- **Synced** `origin/main` (web + `@luminous/core` + INTEGRATION.md/ios-sensor-port.md)
+  into the iOS trunk. Next: port the sensing fusion in Swift per `ios-sensor-port.md`
+  (motion/location/weather → `sensorBonus` + scene; HealthKit arousal needs a device).

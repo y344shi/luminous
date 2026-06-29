@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { guessLocation, ambientLabel, buildAmbientContext, isWorkday, orbScene } from "@/lib/ambient";
+import { guessLocation, ambientLabel, buildAmbientContext, isWorkday, orbScene } from "@core/ambient";
 
 // 2026-06-24 is a Wednesday; 2026-06-27 is a Saturday.
 const wedAfternoon = new Date(2026, 5, 24, 15, 0, 0);
@@ -29,6 +29,10 @@ describe("ambient — human label", () => {
   });
   it("omits an empty/unknown place", () => {
     expect(ambientLabel(wedAfternoon, "anywhere")).toBe("周三 · 下午");
+  });
+  it("appends the weather beside the place when known", () => {
+    expect(ambientLabel(wedAfternoon, "computer", undefined, "clear")).toBe("周三 · 下午 · 在电脑前 · 晴");
+    expect(ambientLabel(wedAfternoon, "home", undefined, "rain")).toBe("周三 · 下午 · 在家 · 雨");
   });
 });
 

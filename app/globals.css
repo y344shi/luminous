@@ -381,6 +381,15 @@ body {
   will-change: transform;
 }
 
+/* Desktop perf: the animated SVG turbulence (per bubble + orb, every frame) and
+   the full-screen goo filter are costly over large viewports — where the user
+   reported lag. On fine-pointer devices (desktop / laptop) swap them for a cheap
+   CSS blur; the glass still reads well. Touch devices keep the full richness. */
+@media (pointer: fine) {
+  .glass-refract { filter: none; }
+  .goo-layer { filter: blur(7px); }
+}
+
 /* Dreamier ambience: a gentle vignette + faint drifting motes of light. */
 .dream-vignette {
   position: absolute;
@@ -426,12 +435,111 @@ body {
     0 14px 40px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
+/* A soft warm bloom of light cradling the orb — depth without clutter. */
+.orb-bloom {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 360px;
+  height: 360px;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  pointer-events: none;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent-soft) 70%, white) 0%,
+    color-mix(in srgb, var(--accent-soft) 30%, transparent) 38%,
+    transparent 68%
+  );
+  filter: blur(22px);
+  animation: tdd-breathe 9s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .orb-bloom { animation: none; }
+}
+
 /* A finished wish doesn't pop — it dissolves into light. */
 @keyframes tdd-dissolve {
   to { opacity: 0; transform: scale(1.6); filter: blur(7px); }
 }
 .tdd-dissolve {
   animation: tdd-dissolve 750ms ease forwards;
+}
+
+/* Page-load: each bubble condenses out of light into place (staggered). Uses the
+   independent `scale` property so it composes with the rAF position transform. */
+@keyframes tdd-condense {
+  from { opacity: 0; scale: 0.4; }
+  to { opacity: 1; scale: 1; }
+}
+.tdd-condense {
+  animation: tdd-condense 720ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tdd-condense { animation: none; }
+}
+
+/* ── Ocean skin ambience: a caustic surface, light shafts, rising streams ──── */
+.ocean-ambience {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+/* the water surface at the top — a soft caustic shimmer band */
+.ocean-surface {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background:
+    repeating-linear-gradient(104deg, color-mix(in srgb, white 28%, transparent) 0 2px, transparent 2px 22px),
+    linear-gradient(to bottom, color-mix(in srgb, white 40%, transparent), transparent);
+  filter: blur(2px);
+  opacity: 0.5;
+  animation: tdd-caustic 9s ease-in-out infinite alternate;
+}
+@keyframes tdd-caustic {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 42px 0, 0 0; }
+}
+/* god-rays slanting down from the surface */
+.ocean-shaft {
+  position: absolute;
+  top: -8%;
+  width: 48px;
+  height: 116%;
+  background: linear-gradient(to bottom, color-mix(in srgb, white 22%, transparent), transparent 72%);
+  filter: blur(9px);
+  transform: rotate(7deg);
+  animation: tdd-shaft 15s ease-in-out infinite alternate;
+}
+@keyframes tdd-shaft {
+  from { opacity: 0.28; transform: rotate(7deg) translateX(-12px); }
+  to { opacity: 0.55; transform: rotate(7deg) translateX(12px); }
+}
+/* faint streams of tiny bubbles rising from the floor */
+.ocean-stream {
+  position: absolute;
+  bottom: -16px;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, white 70%, transparent);
+  animation: tdd-stream var(--st-dur, 9s) linear var(--st-delay, 0s) infinite;
+}
+@keyframes tdd-stream {
+  0% { transform: translateY(0) scale(0.7); opacity: 0; }
+  14% { opacity: 0.5; }
+  88% { opacity: 0.35; }
+  100% { transform: translateY(-78dvh) scale(1); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ocean-surface, .ocean-shaft { animation: none; }
+  .ocean-stream { animation: none; opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -467,3 +575,78 @@ body {
 :focus:not(:focus-visible) {
   outline: none;
 }
+
+/* ── Calm Ritual: warm paper / field notebook ──────────────── */
+:root {
+  --font-hand: "Kaiti SC", "STKaiti", "KaiTi", "Xingkai SC", cursive,
+    var(--font-serif);
+}
+.hand {
+  font-family: var(--font-hand);
+}
+
+/* A warm ruled-paper sheet with a soft margin line. */
+.paper {
+  background-color: var(--surface);
+  background-image:
+    linear-gradient(
+      90deg,
+      transparent 37px,
+      color-mix(in srgb, #c98a8a 42%, transparent) 37px,
+      color-mix(in srgb, #c98a8a 42%, transparent) 38.5px,
+      transparent 38.5px
+    ),
+    repeating-linear-gradient(
+      transparent,
+      transparent 31px,
+      color-mix(in srgb, var(--accent) 14%, transparent) 31px,
+      color-mix(in srgb, var(--accent) 14%, transparent) 32px
+    );
+  box-shadow: inset 0 0 60px color-mix(in srgb, var(--text) 7%, transparent);
+}
+
+/* A hand-laid paper note, slightly tilted, with a strip of washi tape. */
+.paper-note {
+  position: relative;
+  background: color-mix(in srgb, var(--surface) 95%, var(--accent) 5%);
+  border: 1px solid color-mix(in srgb, var(--text) 9%, transparent);
+  box-shadow: 0 7px 18px color-mix(in srgb, var(--text) 12%, transparent);
+}
+.paper-note::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -9px;
+  width: 54px;
+  height: 16px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 2px;
+  opacity: 0.7;
+}
+
+
+/* ── Living World: the orb as a tiny animated window ────────── */
+.scene-window {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  opacity: 0.32;
+  -webkit-mask: radial-gradient(circle at 50% 50%, #000 52%, transparent 76%);
+  mask: radial-gradient(circle at 50% 50%, #000 52%, transparent 76%);
+}
+@keyframes sw-twinkle { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+@keyframes sw-steam { 0% { transform: translateY(2px); opacity: 0; } 40% { opacity: 0.7; } 100% { transform: translateY(-10px); opacity: 0; } }
+@keyframes sw-sway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+@keyframes sw-dash { from { transform: translateY(-14px); } to { transform: translateY(14px); } }
+@keyframes sw-glow { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+.sw-twinkle { animation: sw-twinkle 3.2s ease-in-out infinite; }
+.sw-steam { animation: sw-steam 3.4s ease-in-out infinite; transform-origin: center; }
+.sw-sway { animation: sw-sway 3.6s ease-in-out infinite; transform-origin: bottom center; }
+.sw-dash { animation: sw-dash 1.1s linear infinite; }
+.sw-glow { animation: sw-glow 3s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .sw-twinkle, .sw-steam, .sw-sway, .sw-dash, .sw-glow { animation: none; }
+}
+

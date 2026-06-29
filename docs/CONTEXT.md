@@ -5,6 +5,14 @@ on **any machine** — MacBook *and* Windows WSL. Claude's conversation history 
 **not** sync across machines; **this file and the committed docs it indexes are how
 context travels.** Pull before you start, commit what matters before you stop.
 
+
+> **Restructure DONE:** one trunk per platform, shared core + swappable skins
+> (glass / ocean / paper) via `lib/aesthetic.ts` (runtime-switchable in Settings →
+> 外观风格, or `NEXT_PUBLIC_AESTHETIC` default). Web → `luminous-trunk` → `main`;
+> iOS mirrors it with an `Aesthetic` enum on `ios-glass`. The old per-aesthetic
+> branches (web glass/sense/craft/ocean, iOS ios-sense/ios-craft) were folded in
+> and deleted — preserved as `archive/*` tags. See `docs/architecture-skins.md`.
+
 ## What luminous is
 An AI **life-anchor** app (NOT a todo/productivity app): it catches a soft wish (a
 *Seed*) and hands it back at the right moment so today didn't completely disappear.
@@ -25,29 +33,79 @@ Core loop (must never break): **Add Seed → Now Opportunity → Complete/Partia
 So a file at `dreams/seize_the_day/docs/X` on WSL appears at `docs/X` on the Mac.
 Put shared docs **inside the app dir** on WSL or they won't reach the Mac.
 
-## Branches — what each holds
+## Branches — what each holds (post-consolidation)
 | branch | contents |
 | --- | --- |
-| `main` | baseline + shared meta (this file) |
-| `glass` | web Direction A · Liquid Glass (bubble field) |
-| `sense` | web Direction B · Living World (scene/sensing) |
-| `craft` | web Direction C · Calm Ritual (paper notebook) |
-| `ios-glass` | **native SwiftUI port** (`ios/Luminous/`) + the glass direction |
+| `main` | the web trunk — shared core + all 3 skins (`luminous-trunk` pushes here) |
+| `ios-glass` | the iOS trunk — `ios/Luminous/` core + `Aesthetic` enum + all 3 skins |
+| `archive/*` | retired direction branches (glass/sense/craft/ocean, ios-sense/ios-craft) — reference only |
 
-## Web directions — status (see `docs/overnight-plan.md` for the full 20-item plan)
-- **glass**: A1 refraction · A2 caustic rim · A3 depth · A4 gooey · A5 dreamier — *(A6, A7 pending)*
-- **sense**: B1 wallpapers · B2 parallax · B3 café-nav (Overpass) · B4 weather (open-meteo) · B5 day-grade — *(B6, B7 pending)*
-- **craft**: C1 timeline · C2 paper-home · C3 haptics+chime · C4 keepsake card · C5 perf+a11y — *(C6, C7 pending)*
+## Skins — status (one core, three looks; backlog in `docs/next-steps.md`)
+- **glass** — bubble field round a glowing orb: the 3 top wishes float as **boxless
+  illustrations + titles** (custom physics, gyro lean, condense-from-light entrance);
+  lesser wishes are small glass dots; a soft warm bloom holds the orb. ✅
+- **ocean** — the same field with `buoyancy`: wishes rise from the floor and scatter
+  in the upper band (surface); weather can tint the field. ✅
+- **paper** — warm field-notebook: hand-laid notes + pressed-flower marks · haptics ·
+  keepsake card. (Keeps its own emblems; no illustration packs / no weather tint.) ✅
+- **shared core** (every skin inherits): SceneBackground (mesh/parallax/day-grade),
+  the central **orb** (sensed scene + label), **floating illustrated wishes** (the
+  illustration packs, below), the **sensing fusion** (below), the wish **tap-sheet**,
+  feedback, keepsake, webpush. Runtime skin picker in Settings → 外观风格.
+  *(The old Overpass "café nav" NavLayer was a misread of the design and is deleted.)*
 
-A 5-minute overnight loop rotates glass→sense→craft, one green committed step per
-tick (`docs/tick-playbook.md`).
+A 5-minute overnight loop works **skins + core on `luminous-trunk` → main**, one
+green committed step per tick (`docs/tick-playbook.md`).
 
-## iOS port — status
-`ios/Luminous/` is a full SwiftUI app mirroring the web domain layer
-(`Domain`/`Store`/`Scoring`/`SeedParser`/`SemanticTime`/`Theme`/`Copy`/`DesignKit`)
-with `HomeView`/`NowView`/`GardenView`/`TracesView`/`SettingsView`/`AddSeedView`.
-`GlassField.swift` ports web **glass 1–5** (TimelineView + Canvas, honors Reduce
-Motion). Build on the **Mac** with Xcode. Plan: `docs/ios-roadmap.md`.
+## Sensing fusion (on-device — the keen part)
+The recommender fuses coarse, on-device senses to pick *which tiny wish fits now*.
+**Nothing raw leaves the device**; each signal is soft + capped and degrades to
+nothing when unavailable. One hook — `components/home/shared/useSensedSignals.ts` —
+bundles them, read by both home skins **and** the Now flow (`/now`), so the
+deliberate ask is as keen as the casual home. Pure classifiers live in `lib/`
+(`sensors`, `dwell`, `weather`, `battery`); each has a capped `*Bonus` in
+`lib/scoring.ts` folded into `scoreSeed`.
+
+| signal | source | bonus | status |
+| --- | --- | --- | --- |
+| time / weekday / late-night | clock | timeFit + late-night **safety gate** | live |
+| location | coarse geo (opt-in) | locationFit | live |
+| motion → still/walking/transit | accelerometer | sensorBonus | live |
+| loudness → quiet/lively | mic (opt-in) | sensorBonus | live |
+| dwell → desk-min today | localStorage | dwellBonus | live |
+| weather → kind | open-meteo (saved home) | weather_good + day-line + tint | live |
+| battery low | Battery API | batteryBonus | live (Chrome/Android) |
+| arousal → calm/elevated | **heart rate** | sensorBonus | **iOS seam** (HealthKit) |
+
+The day-line surfaces several (e.g. `周三 · 下午 · 在电脑前 · 晴 · 坐了一会`).
+End-to-end coverage: `tests/fusionIntegration.test.ts`.
+
+## Illustration packs (every wish is a small lifestyle drawing)
+8 library "looks" (Open Doodles / Storyset / Pixeltrue / Blush / Humaaans / Open
+Peeps / unDraw / DrawKit) in `components/home/shared/illustrationPacks.tsx`, each
+**category-aware** (a scene per wish category). Code-drawn for now; real downloaded
+assets can drop behind the same `IllustrationArt` interface. Picked in Settings →
+插画风格 (`settings.illustrationStyle`); `illustrationCategory` varies the look across
+a wish's categories. Shown on the home wishes, tap-sheet, Garden, Now, detail, add —
+everywhere except the keepsake `TraceCard` (kept warm by decision). See
+`docs/scene-library.md` for sources/licenses.
+
+## iOS — status (one trunk: `ios-glass`)
+`ios/Luminous/` is a full SwiftUI app mirroring the web core
+(`Domain`/`Store`/`Scoring`/`SeedParser`/`SemanticTime`/`Theme`/`Copy`/`DesignKit`/
+`Feedback`/`DayGrade`) with an `Aesthetic` enum + `AestheticField` switching
+`GlassField`/`OceanField`(=GlassField buoyancy)/`PaperField`. A time-of-day
+`SceneBackground` (MeshGradient) sits behind glass/ocean. **Build on the Mac with
+Xcode** (last reconciliation is verified by reading only — confirm it compiles).
+Plan: `docs/ios-roadmap.md`.
+
+**Not yet on iOS (the web pulled ahead):** the sensing fusion, the illustration
+packs, and the boxless floating wishes. Brief to port the sensors (CoreMotion /
+AVAudioSession / **HealthKit heart-rate → arousal** / CoreLocation / weather,
+mirroring `lib/sensors`+`scoring`): `docs/ios-sensor-port.md`. **Open strategic
+call (needs the human):** unify on **React Native + a shared `packages/core`**
+(extract the pure `lib/` first — kills the Swift logic duplication) vs. keep
+SwiftUI. The pure classifiers/scoring are already RN-portable.
 
 ## Cross-machine sync protocol
 **Start** of any session, on either machine:
@@ -65,9 +123,13 @@ Never count on chat history carrying over between machines — write it here.
 ## Doc index
 - `CLAUDE.md` / `AGENTS.md` — working rules (auto-loaded each session).
 - `docs/product-philosophy.md` — tone/voice (read before copy changes).
-- `docs/overnight-plan.md` — the 3-direction, 20-item plan + checkboxes.
+- `docs/architecture-skins.md` — the shared-core + swappable-skins design.
+- `docs/next-steps.md` — the live backlog (one item per tick).
+- `docs/overnight-plan.md` — the original 3-direction 20-item plan (historical).
 - `docs/TIMELINE.md` — Notion-loadable git history (auto-generated).
 - `docs/iteration-log.md` — per-cycle journal.
 - `docs/ios-roadmap.md` — native plan.
-- `docs/scene-library.md` — ~100 scenarios + transparent/3D asset sources.
-- `docs/GALLERY.md` — latest Home screenshot per direction.
+- `docs/ios-sensor-port.md` — brief to port the sensing fusion to iOS (Swift / RN).
+- `docs/INTEGRATION.md` — how the pieces fit + how to integrate RN/iOS on @luminous/core.
+- `docs/scene-library.md` — ~100 scenarios + illustration-library sources/licenses.
+- `docs/GALLERY.md` — latest Home screenshot per **skin** (glass/ocean/paper).

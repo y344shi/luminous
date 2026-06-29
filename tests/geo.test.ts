@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { roundCoarse, haversineMeters, isAtHome, isMovingSpeed } from "@/lib/geo";
+import { roundCoarse, haversineMeters, isAtHome, isMovingSpeed } from "@core/geo";
 
 const home = { lat: 45.5017, lng: -73.5673 }; // Montreal-ish
 

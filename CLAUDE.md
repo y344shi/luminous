@@ -32,12 +32,17 @@ Add Seed (`/add`) → Now Opportunity (`/now`) → Complete / Partial / Skipped 
 Code path: `AddSeedFlow` → `parseSeedMock`/`draftToSeed` → `store` → `NowFlow` → `buildContext` → `recommend` → `buildTrace`.
 
 ## Layout
-- `lib/` — pure, React-free domain logic (future `packages/core`). Scoring is `rng`-injectable & tested.
+- `packages/core/` — **`@luminous/core`**: the framework-free domain (recommender +
+  sensor fusion, ambient/context, seed parsing, traces, physics). Imported via the
+  `@core/*` alias; guarded React-free *and* app-free by `tests/corePurity.test.ts`.
+  The shared brain for a future React Native / iOS build. Scoring is `rng`-injectable & tested.
+- `lib/` — the **platform boundary** only: `store` (Zustand), `storage` (localStorage),
+  and browser/UI helpers (feedback, webpush, themes, sceneBackground, dayGrade, …).
 - `components/` — UI, grouped by feature. `AppProvider` hydrates store + sets `<html data-theme>`.
 - `app/` — 6 routes. `docs/` — living documentation. `tests/` — Vitest.
 
 ## Hard rules (product safety)
-- No shame, no tasks/deadlines/streaks/priorities/% (`lib/copy.ts` `forbiddenWords`).
+- No shame, no tasks/deadlines/streaks/priorities/% (`packages/core/copy.ts` `forbiddenWords`).
 - Partial always counts; skipped never "disappears".
 - Late-night (`isLateNight`) is a **hard safety gate** in `rankSeeds` — never recommend
   going out / high-energy / long actions; surface stop-loss/rescue only.

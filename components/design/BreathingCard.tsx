@@ -1,4 +1,4 @@
-import { cx } from "@/lib/utils";
+import { cx } from "@core/utils";
 
 type Props = React.HTMLAttributes<HTMLDivElement> & {
   soft?: boolean;

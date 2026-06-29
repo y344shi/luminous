@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cx } from "@/lib/utils";
+import { cx } from "@core/utils";
 
 const tabs = [
   { href: "/", label: "今天", match: (p: string) => p === "/" },

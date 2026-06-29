@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { useStore } from "@/lib/store";
-import { seedMockGarden } from "@/lib/mockSeeds";
+import { seedMockGarden } from "@core/mockSeeds";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -12,7 +12,7 @@ import NowFlow from "@/components/opportunity/NowFlow";
 import SettingsPanel from "@/components/settings/SettingsPanel";
 import AddSeedFlow from "@/components/seed/AddSeedFlow";
 import SeedDetail from "@/components/seed/SeedDetail";
-import { copy } from "@/lib/copy";
+import { copy } from "@core/copy";
 
 beforeEach(() => {
   window.localStorage.clear();

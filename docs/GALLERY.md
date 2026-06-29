@@ -1,16 +1,13 @@
-# Gallery — latest Home look per direction
+# Gallery — the skins on main
 
-Each overnight tick screenshots the (clean) Home for its direction so you can
-compare the three the next morning. Updated by `scripts/shoot-home.sh <dir>`.
+All three looks share one core; only the Home skin differs (config:
+`NEXT_PUBLIC_AESTHETIC`). Reshoot with `bash scripts/shoot-home.sh <skin>`.
 
-## A · Liquid Glass
+## glass — liquid-glass bubble field
 ![glass](shots/glass.png)
 
-## B · Living World
-![sense](shots/sense.png)
+## ocean — buoyancy (wishes float to the surface)
+![ocean](shots/ocean.png)
 
-## C · Calm Ritual
-![craft](shots/craft.png)
-
-_(All three start from the same baseline; they diverge as the loop explores each
-direction. See `docs/overnight-plan.md` and `docs/TIMELINE.md`.)_
+## paper — warm field-notebook
+![paper](shots/paper.png)

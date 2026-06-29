@@ -1,8 +1,10 @@
-import type { Opportunity, Seed } from "@/lib/types";
-import { categoryMeta, energyLabel } from "@/lib/categoryMeta";
-import { copy } from "@/lib/copy";
+import type { Opportunity, Seed } from "@core/types";
+import { energyLabel } from "@core/categoryMeta";
+import { copy } from "@core/copy";
 import BreathingCard from "@/components/design/BreathingCard";
 import SoftButton from "@/components/design/SoftButton";
+import { IllustrationArt } from "@/components/home/shared/illustrationPacks";
+import { illustrationCategory } from "@core/illustration";
 
 export default function OpportunityCard({
   opportunity,
@@ -11,6 +13,7 @@ export default function OpportunityCard({
   onSwap,
   onLater,
   canSwap,
+  illustrationStyle,
 }: {
   opportunity: Opportunity;
   seed: Seed;
@@ -18,16 +21,19 @@ export default function OpportunityCard({
   onSwap: () => void;
   onLater: () => void;
   canSwap: boolean;
+  illustrationStyle: string;
 }) {
-  const cat = seed.categories[0];
+  const cat = illustrationCategory(seed.categories, seed.id);
   return (
     <BreathingCard rise className="flex flex-col gap-4">
       <p className="text-[12px] tracking-wide text-[var(--text-muted)]">
         {energyLabel[seed.energyRequired]}的一个契机
       </p>
 
-      <div className="flex items-center gap-2">
-        <span className="text-xl">{categoryMeta[cat]?.emoji}</span>
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#f1ece2]">
+          <IllustrationArt style={illustrationStyle} category={cat} className="h-full w-full" />
+        </span>
         <h2 className="text-[19px] font-medium text-[var(--text)]">{seed.title}</h2>
       </div>
 
