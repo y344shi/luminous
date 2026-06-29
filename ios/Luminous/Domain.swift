@@ -54,6 +54,12 @@ enum Arousal: String, Codable, Hashable { case calm, elevated }
 /// Coarse weather kind from open-meteo (only a coarsened home coord leaves device).
 enum WeatherKind: String, Codable, Hashable { case clear, clouds, rain, snow, fog, unknown }
 
+/// A coarse kind of nearby place — used to do a wish *somewhere that fits*
+/// (learn French at a library/cafe; walk in a park; an errand at a store).
+enum PlaceKind: String, Codable, Hashable, CaseIterable {
+    case cafe, library, park, market, store, restaurant, gym, museum
+}
+
 enum ThemeName: String, Codable, CaseIterable, Hashable {
     case warmPaper = "warm_paper"
     case duskGarden = "dusk_garden"
@@ -110,6 +116,9 @@ struct ContextSnapshot: Codable, Hashable {
     var ambient: Ambient?
     var arousal: Arousal?
     var weatherKind: WeatherKind?
+
+    /// Kinds of places within a short walk right now (cafe / library / park …).
+    var nearbyKinds: [PlaceKind]?
 }
 
 struct Opportunity: Codable, Identifiable, Hashable {

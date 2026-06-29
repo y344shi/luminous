@@ -167,6 +167,28 @@ enum Scoring {
         return DomainUtil.clamp(b, -0.25, 0.25)
     }
 
+    /// Which nearby place kinds suit each wish category (do it *somewhere that fits*).
+    static let placeAffinity: [SeedCategory: Set<PlaceKind>] = [
+        .learning:    [.library, .cafe, .museum],
+        .creation:    [.library, .cafe],
+        .connection:  [.cafe, .restaurant],
+        .exploration: [.store, .market, .museum],
+        .aesthetic:   [.park, .museum, .cafe],
+        .body:        [.park, .gym],
+        .recovery:    [.cafe, .park],
+    ]
+
+    /// Bonus when a fitting place is within a short walk (learn French → a nearby
+    /// cafe/library). Gated by the late-night safety rule (never push going out).
+    static func placeBonus(_ seed: Seed, _ ctx: ContextSnapshot) -> Double {
+        guard !ctx.isLateNight, let kinds = ctx.nearbyKinds, !kinds.isEmpty else { return 0 }
+        let near = Set(kinds)
+        for cat in seed.categories {
+            if let aff = placeAffinity[cat], !aff.isDisjoint(with: near) { return 0.12 }
+        }
+        return 0
+    }
+
     /// True if this seed is UNSAFE to recommend late at night.
     static func isUnsafeLateNight(_ seed: Seed) -> Bool {
         if seed.triggerConditions.contains("late_night") || seed.triggerConditions.contains("rescue_mode") {
@@ -229,6 +251,7 @@ enum Scoring {
         var total = tf * 0.2 + df * 0.2 + ef * 0.2 + lf * 0.2 + mf * 0.1 + fr * 0.05 + ser * 0.05
         total += triggerBonus(seed, ctx)
         total += sensorBonus(seed, ctx)
+        total += placeBonus(seed, ctx)
         if ctx.isLateNight && isRescueSeed(seed) { total += 0.5 }
 
         return ScoreBreakdown(

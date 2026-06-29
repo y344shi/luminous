@@ -50,6 +50,7 @@ struct ContextInput {
     var ambient: Ambient?
     var arousal: Arousal?
     var weatherKind: WeatherKind?
+    var nearbyKinds: [PlaceKind] = []
 }
 
 enum ContextBuilder {
@@ -73,7 +74,8 @@ enum ContextBuilder {
             activity: input.activity,
             ambient: input.ambient,
             arousal: input.arousal,
-            weatherKind: input.weatherKind
+            weatherKind: input.weatherKind,
+            nearbyKinds: input.nearbyKinds.isEmpty ? nil : input.nearbyKinds
         )
     }
 }

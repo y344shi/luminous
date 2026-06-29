@@ -345,6 +345,14 @@ struct HomeView: View {
         }
     }
 
+    /// The nearest place that suits this wish's nature (learn → library/cafe …).
+    private func matchedPlace(for seed: Seed) -> NearbyPlace? {
+        guard nearbyAppropriate else { return nil }
+        var kinds = Set<PlaceKind>()
+        for c in seed.categories { if let a = Scoring.placeAffinity[c] { kinds.formUnion(a) } }
+        return sensed.nearby.first { p in p.kind.map { kinds.contains($0) } ?? false }
+    }
+
     private func catchSuggestion(_ s: Suggestion) {
         Feedback.completion(.partial)   // a soft "caught" tap
         store.addSeed(s.toSeed())
@@ -443,6 +451,18 @@ struct HomeView: View {
                         .background(theme.surfaceSoft)
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
+                if let place = matchedPlace(for: seed) {
+                    Button { place.mapItem.openInMaps() } label: {
+                        HStack(spacing: 6) {
+                            Text(place.emoji)
+                            Text("可以在附近的\(place.name)做 · \(place.distanceLabel)")
+                                .font(.system(size: 13))
+                                .foregroundStyle(theme.accentText)
+                            Spacer()
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
                 VStack(spacing: Spacing.sm) {
                     SoftButton(title: Copy.Completion.done) { complete(wish, .completed) }
                     SoftButton(title: Copy.Completion.partial, variant: .soft) { complete(wish, .partial) }
@@ -464,7 +484,8 @@ struct HomeView: View {
             isOutdoorWeatherGood: sensed.isOutdoorWeatherGood,
             isMobile: true,
             activity: sensed.activity,
-            weatherKind: sensed.weatherKind
+            weatherKind: sensed.weatherKind,
+            nearbyKinds: nearbyAppropriate ? sensed.nearbyKinds : []
         ))
         let opps = Scoring.recommend(store.seeds, ctx, limit: 3)
         let primaryIds = Set(opps.map { $0.seedId })

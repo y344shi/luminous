@@ -33,6 +33,9 @@ struct NearbyPlace: Identifiable {
             ? "\(Int((distanceM / 50).rounded()) * 50)m"
             : String(format: "%.1fkm", distanceM / 1000)
     }
+
+    /// The coarse kind, for matching a wish to a fitting place.
+    var kind: PlaceKind? { SensedSignals.placeKind(mapItem.pointOfInterestCategory) }
 }
 
 // MARK: - Pure classifiers (verbatim from @core/sensors)
@@ -90,6 +93,11 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
             $0.distanceM < 400 &&
             [.foodMarket, .store, .bakery, .restaurant].contains($0.mapItem.pointOfInterestCategory)
         }
+    }
+
+    /// Kinds of places within a short walk (≤600m) — feeds `placeBonus`.
+    var nearbyKinds: [PlaceKind] {
+        Array(Set(nearby.filter { $0.distanceM < 600 }.compactMap { $0.kind }))
     }
 
     private let manager = CLLocationManager()
@@ -176,7 +184,8 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
     private func fetchNearby(center: CLLocationCoordinate2D) async {
         let req = MKLocalPointsOfInterestRequest(center: center, radius: 2000)
         req.pointOfInterestFilter = MKPointOfInterestFilter(including:
-            [.cafe, .restaurant, .bakery, .foodMarket, .store, .pharmacy])
+            [.cafe, .restaurant, .bakery, .foodMarket, .store, .pharmacy,
+             .library, .park, .museum, .fitnessCenter])
         do {
             let resp = try await MKLocalSearch(request: req).start()
             let here = CLLocation(latitude: center.latitude, longitude: center.longitude)
@@ -197,13 +206,32 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
 
     static func emoji(for cat: MKPointOfInterestCategory?) -> String {
         switch cat {
-        case .some(.cafe):       return "☕"
-        case .some(.restaurant): return "🍴"
-        case .some(.bakery):     return "🥐"
-        case .some(.foodMarket): return "🛒"
-        case .some(.store):      return "🛍️"
-        case .some(.pharmacy):   return "💊"
-        default:                 return "📍"
+        case .some(.cafe):         return "☕"
+        case .some(.restaurant):   return "🍴"
+        case .some(.bakery):       return "🥐"
+        case .some(.foodMarket):   return "🛒"
+        case .some(.store):        return "🛍️"
+        case .some(.pharmacy):     return "💊"
+        case .some(.library):      return "📚"
+        case .some(.park):         return "🌳"
+        case .some(.museum):       return "🖼️"
+        case .some(.fitnessCenter): return "🏋️"
+        default:                   return "📍"
+        }
+    }
+
+    /// Map a MapKit POI category to our coarse `PlaceKind`.
+    static func placeKind(_ cat: MKPointOfInterestCategory?) -> PlaceKind? {
+        switch cat {
+        case .some(.cafe), .some(.bakery): return .cafe
+        case .some(.restaurant):           return .restaurant
+        case .some(.foodMarket):           return .market
+        case .some(.store), .some(.pharmacy): return .store
+        case .some(.library):              return .library
+        case .some(.park):                 return .park
+        case .some(.museum):               return .museum
+        case .some(.fitnessCenter):        return .gym
+        default:                           return nil
         }
     }
 
