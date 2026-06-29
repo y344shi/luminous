@@ -12,6 +12,7 @@ export function useSensors() {
   const [activity, setActivity] = useState<Activity | undefined>(undefined);
   const [ambient, setAmbient] = useState<Ambient | undefined>(undefined);
   const [ambientOn, setAmbientOn] = useState(false);
+  const [ambientBlocked, setAmbientBlocked] = useState(false); // mic unavailable/denied → tell the user
   const samplesRef = useRef<number[]>([]);
   const audioRef = useRef<{ ctx: AudioContext; stream: MediaStream; id: number } | null>(null);
 
@@ -39,20 +40,29 @@ export function useSensors() {
 
   // Opt-in ambient loudness via the mic (also requests iOS motion permission).
   const enableAmbient = useCallback(async () => {
+    if (audioRef.current || typeof navigator === "undefined" || typeof window === "undefined") return;
+    // The mic needs a secure context (https or localhost) + the API present. Over a
+    // plain-http LAN IP (e.g. testing from a phone) the browser blocks it silently —
+    // surface that instead of looking like a dead button.
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+      setAmbientBlocked(true);
+      return;
+    }
     try {
-      if (audioRef.current || typeof navigator === "undefined") return;
       // iOS: unlock motion events too, so activity sensing works on the phone.
       const DM = (window as unknown as { DeviceMotionEvent?: { requestPermission?: () => Promise<string> } })
         .DeviceMotionEvent;
       if (DM && typeof DM.requestPermission === "function") {
         await DM.requestPermission().catch(() => {});
       }
-      if (!navigator.mediaDevices?.getUserMedia) return;
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const AC =
         window.AudioContext ??
         (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!AC) return;
+      if (!AC) {
+        setAmbientBlocked(true);
+        return;
+      }
       const ctx = new AC();
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 512;
@@ -69,8 +79,9 @@ export function useSensors() {
       }, 1500);
       audioRef.current = { ctx, stream, id };
       setAmbientOn(true);
+      setAmbientBlocked(false);
     } catch {
-      /* denied / unsupported — stay graceful */
+      setAmbientBlocked(true); // denied / unsupported — show a gentle note
     }
   }, []);
 
@@ -86,5 +97,5 @@ export function useSensors() {
     };
   }, []);
 
-  return { activity, ambient, ambientOn, enableAmbient };
+  return { activity, ambient, ambientOn, ambientBlocked, enableAmbient };
 }

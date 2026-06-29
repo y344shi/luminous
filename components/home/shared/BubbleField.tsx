@@ -55,7 +55,7 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
   const setSeedStatus = useStore((s) => s.setSeedStatus);
   const homeLocation = useStore((s) => s.homeLocation);
   const setHomeLocation = useStore((s) => s.setHomeLocation);
-  const { activity, ambient, ambientOn, enableAmbient, deskMinutesToday, weatherKind, isOutdoorWeatherGood, batteryLow } = useSensedSignals();
+  const { activity, ambient, ambientOn, ambientBlocked, enableAmbient, deskMinutesToday, weatherKind, isOutdoorWeatherGood, batteryLow } = useSensedSignals();
   const senseAround = useStore((s) => s.settings.senseAround);
   const updateSettings = useStore((s) => s.updateSettings);
   const illustrationStyle = useStore((s) => s.settings.illustrationStyle);
@@ -441,13 +441,18 @@ export default function BubbleField({ buoyancy = false }: { buoyancy?: boolean }
               {buoyancy ? copy.home.feelCurrent : copy.home.feelGravity}
             </button>
           )}
-          {!ambientOn && (
+          {!ambientOn && !ambientBlocked && (
             <button
               onClick={() => { updateSettings({ senseAround: true }); enableAmbient(); }}
               className="glass rounded-full px-4 py-2 text-[12px] text-[var(--text-secondary)]"
             >
               {copy.home.senseAround}
             </button>
+          )}
+          {ambientBlocked && (
+            <span className="glass rounded-full px-4 py-2 text-[12px] text-[var(--text-muted)]">
+              {copy.home.senseBlocked}
+            </span>
           )}
           <Link
             href="/add"

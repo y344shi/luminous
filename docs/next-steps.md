@@ -20,6 +20,7 @@ shipped. Keep core skin-agnostic; keep skins thin.
 - [x] Paper polish: notes are laid hand-by-hand (staggered `tdd-rise`), and each carries a faint **pressed-flower** mark — a botanical line-art stamp that varies by category. _(paper 3)_
 
 ## Fresh (self-review — needs a green tick each)
+- [x] **感受周围 failure is now visible** (user: "cannot click it"): the mic needs a secure context (localhost/https) — over a plain-http LAN IP the browser blocks it silently. `useSensors` now sets `ambientBlocked`; both homes show a gentle note (打不开麦克风 · 在本机或 https 才行) instead of a dead button. _(core 41)_
 - [x] Updated the native handoff brief (`docs/ios-sensor-port.md`): points at `@luminous/core` (not the moved `lib/` paths), and spells out the **RN path — consume `@core` directly, zero reimplementation** vs SwiftUI mirroring. _(core 39)_
 - [x] Docs accuracy + package surface: CLAUDE.md/README Layout now say the domain lives in `@luminous/core` (not lib/); added a subpath `exports` map so RN can import `@luminous/core/<module>` (inert for web). _(core 38)_
 - [x] **@core boundary guard**: corePurity now also fails if any packages/core file imports the app (`@/…` or `../`) — locks the extraction's invariant so @core stays RN/iOS-portable. _(core 37)_

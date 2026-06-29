@@ -10,6 +10,7 @@ export type SensedSignals = {
   activity: Activity | undefined;
   ambient: Ambient | undefined;
   ambientOn: boolean;
+  ambientBlocked: boolean;
   enableAmbient: () => Promise<void>;
   deskMinutesToday: number | undefined;
   weatherKind: WeatherKind | undefined;
@@ -25,7 +26,7 @@ export type SensedSignals = {
  */
 export function useSensedSignals(): SensedSignals {
   const homeLocation = useStore((s) => s.homeLocation);
-  const { activity, ambient, ambientOn, enableAmbient } = useSensors();
+  const { activity, ambient, ambientOn, ambientBlocked, enableAmbient } = useSensors();
   const deskMinutesToday = useDwell();
   const weatherKind = useWeather(homeLocation);
   const batteryLow = useBattery();
@@ -33,6 +34,7 @@ export function useSensedSignals(): SensedSignals {
     activity,
     ambient,
     ambientOn,
+    ambientBlocked,
     enableAmbient,
     deskMinutesToday,
     weatherKind,

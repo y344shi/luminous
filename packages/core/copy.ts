@@ -30,6 +30,7 @@ export const copy = {
     feelGravity: "感受重力",
     feelCurrent: "感受水流",
     senseAround: "感受周围",
+    senseBlocked: "打不开麦克风 · 在本机或 https 才行",
     traceHeading: "今日痕迹",
     traceEmpty: "还没有，但可以很小。",
     seedsHeading: "最近的小愿望",

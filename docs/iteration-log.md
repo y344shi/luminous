@@ -1442,3 +1442,13 @@ What still feels wrong / not done yet:
   the stale iOS line (lib/* → @luminous/core; RN-consume note) and the RN-vs-SwiftUI
   prerequisite (extraction done). 7 truly-open items remain (all native/user-gated).
   [x] history kept. Docs-only; 296 tests green.
+
+---
+
+## core 41: Surface when 感受周围 can't open the mic
+- User reported "cannot click 感受周围". Root cause: getUserMedia needs a secure
+  context (localhost/https); over a plain-http LAN IP (phone testing) the browser
+  blocks it and the tap silently no-ops. useSensors now detects !isSecureContext /
+  missing API / denial → sets ambientBlocked; BubbleField + PaperHome show a gentle
+  note (copy.home.senseBlocked) instead of a dead button. Motion still samples
+  passively. 296 tests; typecheck clean; all skins build green; default view unchanged.

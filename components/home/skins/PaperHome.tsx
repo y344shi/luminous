@@ -36,7 +36,7 @@ export default function PaperHome() {
   const addTrace = useStore((s) => s.addTrace);
   const setSeedStatus = useStore((s) => s.setSeedStatus);
   const soundEnabled = useStore((s) => s.settings.soundEnabled);
-  const { activity, ambient, ambientOn, enableAmbient, deskMinutesToday, weatherKind, isOutdoorWeatherGood, batteryLow } = useSensedSignals();
+  const { activity, ambient, ambientOn, ambientBlocked, enableAmbient, deskMinutesToday, weatherKind, isOutdoorWeatherGood, batteryLow } = useSensedSignals();
   const senseAround = useStore((s) => s.settings.senseAround);
   const updateSettings = useStore((s) => s.updateSettings);
 
@@ -133,13 +133,18 @@ export default function PaperHome() {
           {copy.home.primary}
         </Link>
         <Link href="/add" aria-label="接住一个新愿望" className="hand text-[22px] text-[var(--text-secondary)]">＋</Link>
-        {!ambientOn && (
+        {!ambientOn && !ambientBlocked && (
           <button
             onClick={() => { updateSettings({ senseAround: true }); enableAmbient(); }}
             className="hand rounded-[4px] border border-[var(--text)]/15 bg-[var(--surface)] px-3.5 py-2 text-[13px] text-[var(--text-secondary)]"
           >
             {copy.home.senseAround}
           </button>
+        )}
+        {ambientBlocked && (
+          <span className="hand rounded-[4px] px-3.5 py-2 text-[13px] text-[var(--text-muted)]">
+            {copy.home.senseBlocked}
+          </span>
         )}
       </div>
 
