@@ -130,5 +130,6 @@ Never count on chat history carrying over between machines — write it here.
 - `docs/iteration-log.md` — per-cycle journal.
 - `docs/ios-roadmap.md` — native plan.
 - `docs/ios-sensor-port.md` — brief to port the sensing fusion to iOS (Swift / RN).
+- `docs/INTEGRATION.md` — how the pieces fit + how to integrate RN/iOS on @luminous/core.
 - `docs/scene-library.md` — ~100 scenarios + illustration-library sources/licenses.
 - `docs/GALLERY.md` — latest Home screenshot per **skin** (glass/ocean/paper).

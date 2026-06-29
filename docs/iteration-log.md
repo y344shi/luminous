@@ -1460,3 +1460,14 @@ What still feels wrong / not done yet:
   isn't. Added an `npm run dev:https` script (next dev --experimental-https) + a README
   "Testing the senses on a phone" note (open https://<LAN-IP>:3000, accept the
   self-signed cert; or use a tunnel). Dev-ergonomics only; 296 tests green.
+
+---
+
+## core 43: Integration guide + stop the overnight cron
+- Wrote docs/INTEGRATION.md — the handoff for the next platform: the @luminous/core
+  contract (recommend/context/classifiers/domain), the pure-classifier + platform-sampler
+  pattern (with a per-signal web↔native sampler table), the state/persistence boundary,
+  step-by-step RN/Expo integration, and the privacy contract. Indexed in CONTEXT.md.
+  Overnight cron stopped at the user's request — the web app + @luminous/core are
+  complete/tested/guarded/documented; remaining work is native (needs a Mac) or the
+  RN-vs-SwiftUI product call. Docs-only; 296 tests green.
