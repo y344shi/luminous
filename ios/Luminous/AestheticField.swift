@@ -13,11 +13,12 @@ import SwiftUI
 /// the store, so switching the skin in Settings re-skins Home immediately.
 struct AestheticField: View {
     @Environment(AppStore.self) private var store
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        switch store.aesthetic {
-        case .glass: ZStack { SceneBackground(); GlassField() }
-        case .ocean: ZStack { SceneBackground(); OceanField() }
+        switch store.effectiveAesthetic(dark: colorScheme == .dark) {
+        case .glass: SceneBackground(mode: .sky)   // open sky, lit by the hour
+        case .ocean: SceneBackground(mode: .sea)   // sky + water catching the light
         case .paper: PaperField()
         }
     }

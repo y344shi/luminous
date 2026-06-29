@@ -11,6 +11,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppStore.self) private var store
     @Environment(\.theme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
     @State private var confirmingReset = false
 
     var body: some View {
@@ -55,6 +56,28 @@ struct SettingsView: View {
             Text("外观风格")
                 .font(.system(size: 14))
                 .foregroundStyle(theme.textMuted)
+
+            // Follow system appearance: Dark → glass, Light → paper.
+            Toggle(isOn: Binding(
+                get: { store.aestheticAuto },
+                set: { store.setAestheticAuto($0) }
+            )) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("自动")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(theme.textPrimary)
+                    Text("跟随系统明暗 · 深色用玻璃，浅色用纸页")
+                        .font(.system(size: 13))
+                        .foregroundStyle(theme.textSecondary)
+                }
+            }
+            .tint(theme.accent)
+            .padding(Spacing.md)
+            .background(theme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(store.aestheticAuto ? theme.accent : theme.border, lineWidth: 1))
+
             ForEach(Aesthetic.allCases) { skin in
                 skinRow(skin)
             }
@@ -62,7 +85,8 @@ struct SettingsView: View {
     }
 
     private func skinRow(_ skin: Aesthetic) -> some View {
-        let selected = store.aesthetic == skin
+        let autoActive = store.aestheticAuto && store.effectiveAesthetic(dark: colorScheme == .dark) == skin
+        let selected = !store.aestheticAuto && store.aesthetic == skin
         return Button { store.setAesthetic(skin) } label: {
             HStack(spacing: Spacing.md) {
                 Image(systemName: skin.symbol)
@@ -80,7 +104,11 @@ struct SettingsView: View {
                         .foregroundStyle(theme.textSecondary)
                 }
                 Spacer()
-                if selected {
+                if autoActive {
+                    Text("自动")
+                        .font(.system(size: 11))
+                        .foregroundStyle(theme.accent)
+                } else if selected {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundStyle(theme.accent)
                 }
@@ -90,6 +118,7 @@ struct SettingsView: View {
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .strokeBorder(selected ? theme.accent : theme.border, lineWidth: 1))
+            .opacity(store.aestheticAuto && !autoActive ? 0.5 : 1)
         }
         .buttonStyle(.plain)
     }

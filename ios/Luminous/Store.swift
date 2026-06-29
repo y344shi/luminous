@@ -27,7 +27,8 @@ final class AppStore {
         static let lastPick = "tdd.lastPick"
         static let introSeen = "tdd.introSeen"
         static let aesthetic = "tdd.aesthetic"
-        static let all = [seeds, traces, settings, samplesPlanted, lastPick, introSeen, aesthetic]
+        static let aestheticAuto = "tdd.aestheticAuto"
+        static let all = [seeds, traces, settings, samplesPlanted, lastPick, introSeen, aesthetic, aestheticAuto]
     }
 
     // MARK: Persisted state
@@ -41,6 +42,10 @@ final class AppStore {
     /// The active visual skin (glass / ocean / paper). Persisted; drives
     /// `AestheticField` so switching it in Settings re-skins the app live.
     var aesthetic: Aesthetic = .fallback
+
+    /// When true the skin follows the system appearance instead of `aesthetic`:
+    /// Dark Mode → glass, Light Mode → paper. Persisted.
+    var aestheticAuto: Bool = false
 
     // MARK: Transient state (not persisted)
     var opportunities: [Opportunity] = []
@@ -68,6 +73,7 @@ final class AppStore {
         introSeen = defaults.bool(forKey: Key.introSeen)
         aesthetic = defaults.string(forKey: Key.aesthetic)
             .flatMap(Aesthetic.init(rawValue:)) ?? .fallback
+        aestheticAuto = defaults.bool(forKey: Key.aestheticAuto)
 
         // First run: plant a small mock garden so the app never feels empty.
         if seeds.isEmpty && traces.isEmpty {
@@ -158,10 +164,25 @@ final class AppStore {
         save(settings, Key.settings)
     }
 
-    /// Switch the visual skin and persist it. Re-skins the app immediately.
+    /// Switch the visual skin and persist it. Picking a skin by hand turns off
+    /// auto (follow-system) mode. Re-skins the app immediately.
     func setAesthetic(_ a: Aesthetic) {
         aesthetic = a
+        aestheticAuto = false
         defaults.set(a.rawValue, forKey: Key.aesthetic)
+        defaults.set(false, forKey: Key.aestheticAuto)
+    }
+
+    /// Turn follow-system (Dark → glass / Light → paper) on or off. Persisted.
+    func setAestheticAuto(_ on: Bool) {
+        aestheticAuto = on
+        defaults.set(on, forKey: Key.aestheticAuto)
+    }
+
+    /// The skin to actually render. In auto mode it follows the system
+    /// appearance; otherwise it's the user's chosen `aesthetic`.
+    func effectiveAesthetic(dark: Bool) -> Aesthetic {
+        aestheticAuto ? (dark ? .glass : .paper) : aesthetic
     }
 
     func dismissSamplesNote() {
@@ -185,6 +206,7 @@ final class AppStore {
         lastPick = LastPick()
         introSeen = false
         aesthetic = .fallback
+        aestheticAuto = false
         opportunities = []
         lastContext = nil
     }

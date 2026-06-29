@@ -34,7 +34,9 @@ struct RootView: View {
         .environment(store)
         .environment(router)
         .environment(\.theme, tokens)
-        .preferredColorScheme(store.theme == .softRitual ? .dark : .light)
+        // In auto-skin mode we follow the system appearance (so the skin can
+        // track Dark/Light); otherwise the theme drives the color scheme.
+        .preferredColorScheme(store.aestheticAuto ? nil : (store.theme == .softRitual ? .dark : .light))
     }
 }
 

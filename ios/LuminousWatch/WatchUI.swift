@@ -26,50 +26,83 @@ func watchSkinGradient(_ aesthetic: Aesthetic) -> LinearGradient {
 
 struct WatchRootView: View {
     @Environment(AppStore.self) private var store
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var topTitle: String?
+
+    private var hour: Int { Calendar.current.component(.hour, from: Date()) }
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    NavigationLink {
-                        WatchNowView()
-                    } label: {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(Copy.Home.primary)
-                                .font(.system(size: 17, weight: .semibold))
-                            Text(Copy.Home.subtitle)
-                                .font(.system(size: 12))
-                                .foregroundStyle(.secondary)
-                        }
-                        .padding(.vertical, 2)
-                    }
-                } header: {
-                    Text(Copy.appTitle).font(.system(size: 12))
-                }
+            ScrollView {
+                VStack(spacing: 12) {
+                    Text(Copy.appTitle)
+                        .font(.system(size: 11)).tracking(3)
+                        .foregroundStyle(.secondary)
 
-                Section {
-                    NavigationLink {
-                        WatchTracesView()
-                    } label: {
-                        Label(traceLabel, systemImage: "book")
-                            .font(.system(size: 15))
+                    // The centered orb — the primary action.
+                    NavigationLink { WatchNowView() } label: {
+                        ZStack {
+                            Circle().fill(.ultraThinMaterial)
+                            Circle().strokeBorder(.white.opacity(0.3), lineWidth: 1)
+                            VStack(spacing: 3) {
+                                Image(systemName: sceneIcon)
+                                    .font(.system(size: 24, weight: .light))
+                                Text(Copy.Home.primary)
+                                    .font(.system(size: 13, weight: .semibold))
+                            }
+                        }
+                        .frame(width: 120, height: 120)
                     }
-                    NavigationLink {
-                        WatchSettingsView()
-                    } label: {
-                        Label("外观风格", systemImage: "paintpalette")
-                            .font(.system(size: 15))
+                    .buttonStyle(.plain)
+
+                    if let topTitle {
+                        Text(topTitle)
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
                     }
+
+                    HStack(spacing: 10) {
+                        NavigationLink { WatchTracesView() } label: {
+                            Label("\(store.tracesForToday().count)", systemImage: "book")
+                                .font(.system(size: 13))
+                        }
+                        NavigationLink { WatchSettingsView() } label: {
+                            Image(systemName: "paintpalette").font(.system(size: 15))
+                        }
+                    }
+                    .padding(.top, 2)
                 }
+                .padding(.horizontal, 6)
+                .frame(maxWidth: .infinity)
             }
             .navigationTitle("今天")
-            .containerBackground(watchSkinGradient(store.aesthetic), for: .navigation)
+            .containerBackground(watchSkinGradient(store.effectiveAesthetic(dark: colorScheme == .dark)), for: .navigation)
+            .onAppear(perform: loadTop)
         }
     }
 
-    private var traceLabel: String {
-        let n = store.tracesForToday().count
-        return n == 0 ? "今天的痕迹" : "今天的痕迹 · \(n)"
+    private func loadTop() {
+        let ctx = ContextBuilder.build(ContextInput(
+            mood: store.lastPick.mood ?? .okay,
+            energy: store.lastPick.energy ?? .medium,
+            isMobile: true
+        ))
+        if let first = Scoring.recommend(store.seeds, ctx, limit: 1).first,
+           let seed = store.findSeed(first.seedId) {
+            topTitle = seed.title
+        }
+    }
+
+    private var sceneIcon: String {
+        switch DayGrade.phase(hour: hour) {
+        case .dawn:      return "sunrise"
+        case .morning:   return "sun.max"
+        case .noon:      return "sun.max.fill"
+        case .afternoon: return "sun.min"
+        case .dusk:      return "sunset"
+        case .night:     return "moon.stars"
+        }
     }
 }
 
@@ -77,6 +110,7 @@ struct WatchRootView: View {
 
 struct WatchNowView: View {
     @Environment(AppStore.self) private var store
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
 
     @State private var opps: [Opportunity] = []
@@ -101,7 +135,7 @@ struct WatchNowView: View {
             .padding(.horizontal, 4)
         }
         .navigationTitle("现在")
-        .containerBackground(watchSkinGradient(store.aesthetic), for: .navigation)
+        .containerBackground(watchSkinGradient(store.effectiveAesthetic(dark: colorScheme == .dark)), for: .navigation)
         .onAppear(perform: load)
     }
 
@@ -187,6 +221,7 @@ struct WatchNowView: View {
 
 struct WatchTracesView: View {
     @Environment(AppStore.self) private var store
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         List {
@@ -205,7 +240,7 @@ struct WatchTracesView: View {
             }
         }
         .navigationTitle("痕迹")
-        .containerBackground(watchSkinGradient(store.aesthetic), for: .navigation)
+        .containerBackground(watchSkinGradient(store.effectiveAesthetic(dark: colorScheme == .dark)), for: .navigation)
     }
 }
 
@@ -213,10 +248,22 @@ struct WatchTracesView: View {
 
 struct WatchSettingsView: View {
     @Environment(AppStore.self) private var store
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var dark: Bool { colorScheme == .dark }
 
     var body: some View {
         List {
             Section {
+                Toggle(isOn: Binding(
+                    get: { store.aestheticAuto },
+                    set: { store.setAestheticAuto($0) }
+                )) {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("自动").font(.system(size: 15, weight: .medium))
+                        Text("跟随系统明暗").font(.system(size: 11)).foregroundStyle(.secondary)
+                    }
+                }
                 ForEach(Aesthetic.allCases) { skin in
                     Button { store.setAesthetic(skin) } label: {
                         HStack {
@@ -227,18 +274,21 @@ struct WatchSettingsView: View {
                                 Text(skin.feeling).font(.system(size: 11)).foregroundStyle(.secondary)
                             }
                             Spacer()
-                            if store.aesthetic == skin {
+                            if store.aestheticAuto && store.effectiveAesthetic(dark: dark) == skin {
+                                Text("自动").font(.system(size: 11)).foregroundStyle(.green)
+                            } else if !store.aestheticAuto && store.aesthetic == skin {
                                 Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
                             }
                         }
                     }
                     .buttonStyle(.plain)
+                    .opacity(store.aestheticAuto && store.effectiveAesthetic(dark: dark) != skin ? 0.5 : 1)
                 }
             } header: {
                 Text("外观风格").font(.system(size: 12))
             }
         }
         .navigationTitle("外观")
-        .containerBackground(watchSkinGradient(store.aesthetic), for: .navigation)
+        .containerBackground(watchSkinGradient(store.effectiveAesthetic(dark: colorScheme == .dark)), for: .navigation)
     }
 }

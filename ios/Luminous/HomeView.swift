@@ -2,8 +2,10 @@
 //  HomeView.swift
 //  Luminous
 //
-//  The "今天" tab — the warm entry point. One primary action: 现在别消失.
-//  Ported from app/page.tsx + the home components.
+//  The "今天" tab — the centered, minimal Home: a glowing orb (the AI's read of
+//  the moment) with the most-fitting wishes floating around it as boxless
+//  illustration + title, and lesser wishes as small glass dots. Tap the orb to
+//  step into 现在别消失; tap a wish to do it. Mirrors the web BubbleField home.
 //
 
 import SwiftUI
@@ -43,40 +45,57 @@ struct SeedMetaRow: View {
     }
 }
 
+// MARK: - Home
+
 struct HomeView: View {
     @Environment(AppStore.self) private var store
     @Environment(\.theme) private var theme
     @State private var path = NavigationPath()
 
-    private var isLateNight: Bool {
-        TimeOfDay.isLateNight(hour: Calendar.current.component(.hour, from: Date()))
+    /// A floating wish — a primary (ringed, illustrated) or a lesser dot.
+    private struct Wish: Identifiable {
+        let id: String
+        let seed: Seed
+        let opp: Opportunity?
+        let primary: Bool
     }
+
+    @State private var wishes: [Wish] = []
+    @State private var picked: Wish?
+    @State private var doneIds: Set<String> = []
+    @State private var justTrace = ""
+    @State private var breathe = false
+
+    private let orbR: CGFloat = 66
+
+    private var hour: Int { Calendar.current.component(.hour, from: Date()) }
+    private var isLateNight: Bool { TimeOfDay.isLateNight(hour: hour) }
 
     var body: some View {
         NavigationStack(path: $path) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.lg) {
-                    header
+            GeometryReader { geo in
+                let size = geo.size
+                let center = CGPoint(x: size.width / 2, y: size.height * 0.46)
 
-                    if isLateNight { lateNightCard }
+                ZStack {
+                    AestheticField().ignoresSafeArea()
 
-                    SoftButton(title: Copy.Home.primary) { path.append(Route.now) }
+                    bloom.position(center)
+                    orb.position(center)
 
-                    Button { path.append(Route.add) } label: {
-                        Text(Copy.Home.addSeed)
-                            .font(.system(size: 14))
-                            .foregroundStyle(theme.accentText)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 4)
+                    ForEach(Array(shown.enumerated()), id: \.element.id) { idx, wish in
+                        let p = position(for: wish, index: idx, center: center, size: size)
+                        bubble(wish)
+                            .position(p)
                     }
-                    .buttonStyle(.plain)
 
-                    traceSection
-                    seedsSection
+                    topOverlay
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    bottomOverlay
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 }
-                .padding(Spacing.lg)
+                .frame(width: size.width, height: size.height)
             }
-            .background(AestheticField().ignoresSafeArea())
             .hiddenNavBar()
             .navigationDestination(for: Route.self) { route in
                 switch route {
@@ -85,90 +104,265 @@ struct HomeView: View {
                 case .seedDetail(let id): SeedDetailView(seedId: id)
                 }
             }
+            .sheet(item: $picked) { wish in
+                #if os(iOS)
+                wishSheet(wish)
+                    .presentationDetents([.medium, .large])
+                    .presentationBackground(.regularMaterial)
+                #else
+                wishSheet(wish).frame(minWidth: 380, minHeight: 440)
+                #endif
+            }
+            .onAppear {
+                rebuild()
+                withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
+                    breathe = true
+                }
+            }
+            .onChange(of: store.seeds) { _, _ in rebuild() }
         }
     }
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text(Copy.appTitle)
-                .font(.system(size: 15))
-                .foregroundStyle(theme.textMuted)
-            Text(Copy.Home.question)
-                .font(.system(size: 28, weight: .semibold))
-                .foregroundStyle(theme.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
-            Text(Copy.Home.subtitle)
-                .font(.system(size: 15))
-                .foregroundStyle(theme.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-            Text(DayGrade.line(hour: Calendar.current.component(.hour, from: Date())))
-                .font(.system(size: 14))
-                .italic()
-                .foregroundStyle(theme.textMuted)
-                .padding(.top, Spacing.xs)
-        }
-        .padding(.top, Spacing.sm)
+    private var shown: [Wish] { wishes.filter { !doneIds.contains($0.id) } }
+
+    // MARK: Orb
+
+    private var bloom: some View {
+        Circle()
+            .fill(RadialGradient(
+                colors: [theme.accent.opacity(0.28), .clear],
+                center: .center, startRadius: 0, endRadius: orbR * 2.6))
+            .frame(width: orbR * 5, height: orbR * 5)
+            .blur(radius: 24)
+            .allowsHitTesting(false)
     }
 
-    private var lateNightCard: some View {
-        BreathingCard(soft: true) {
-            Text(Copy.LateNight.body)
-                .font(.system(size: 14))
-                .lineSpacing(4)
-                .foregroundStyle(theme.textSecondary)
-        }
-    }
-
-    private var traceSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text(Copy.Home.traceHeading)
-                .font(.system(size: 13))
-                .foregroundStyle(theme.textMuted)
-            let today = store.tracesForToday()
-            if today.isEmpty {
-                BreathingCard {
-                    Text(Copy.Home.traceEmpty)
-                        .font(.system(size: 15))
+    private var orb: some View {
+        Button { path.append(Route.now) } label: {
+            ZStack {
+                Circle().fill(.ultraThinMaterial)
+                Circle().fill(LinearGradient(
+                    colors: [.white.opacity(0.30), .clear],
+                    startPoint: .topLeading, endPoint: .bottomTrailing))
+                Circle().strokeBorder(.white.opacity(0.35), lineWidth: 1)
+                VStack(spacing: 4) {
+                    Image(systemName: sceneIcon)
+                        .font(.system(size: 34, weight: .light))
+                        .foregroundStyle(theme.textPrimary)
+                    Text(sceneLabel)
+                        .font(.system(size: 11))
+                        .tracking(2)
                         .foregroundStyle(theme.textSecondary)
                 }
-            } else {
-                ForEach(today.prefix(2)) { trace in
-                    BreathingCard {
-                        Text(trace.text)
-                            .font(.system(size: 16))
-                            .lineSpacing(4)
-                            .foregroundStyle(theme.textPrimary)
-                    }
+            }
+            .frame(width: orbR * 2, height: orbR * 2)
+            .shadow(color: theme.accent.opacity(0.25), radius: 18)
+            .scaleEffect(breathe ? 1.03 : 0.99)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Copy.Home.primary)
+    }
+
+    // MARK: Wishes
+
+    @ViewBuilder private func bubble(_ wish: Wish) -> some View {
+        let emoji = Meta.category[wish.seed.categories.first ?? .recovery]?.emoji ?? "🫧"
+        if wish.primary {
+            Button { picked = wish } label: {
+                VStack(spacing: 5) {
+                    Text(emoji).font(.system(size: 38))
+                        .shadow(color: .black.opacity(0.12), radius: 2, y: 1)
+                    Text(wish.seed.title)
+                        .font(.system(size: 12, weight: .medium))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .foregroundStyle(theme.textPrimary)
+                        .frame(width: 96)
                 }
             }
+            .buttonStyle(.plain)
+        } else {
+            Button { picked = wish } label: {
+                ZStack {
+                    Circle().fill(.ultraThinMaterial)
+                    Circle().strokeBorder(.white.opacity(0.25), lineWidth: 1)
+                    Text(emoji).font(.system(size: 18))
+                }
+                .frame(width: 42, height: 42)
+                .opacity(0.85)
+            }
+            .buttonStyle(.plain)
         }
     }
 
-    private var seedsSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text(Copy.Home.seedsHeading)
+    /// Primaries settle in a ring round the orb; lesser wishes rest in stable
+    /// pseudo-random spots across the field (derived from the seed id, not random
+    /// each render). Everything is clamped to stay on screen.
+    private func position(for wish: Wish, index: Int, center: CGPoint, size: CGSize) -> CGPoint {
+        if wish.primary {
+            let primaries = shown.filter { $0.primary }
+            let n = max(primaries.count, 1)
+            let i = primaries.firstIndex { $0.id == wish.id } ?? 0
+            let radius = min(size.width, size.height) * 0.30 + orbR * 0.2
+            let ang = (-90.0 + 360.0 / Double(n) * Double(i)) * .pi / 180
+            let x = center.x + CGFloat(cos(ang)) * radius
+            let y = center.y + CGFloat(sin(ang)) * radius
+            return CGPoint(x: clamp(x, 60, size.width - 60), y: clamp(y, 90, size.height - 120))
+        } else {
+            let h = abs(wish.seed.id.hashValue)
+            let fx = 0.10 + Double(h % 1000) / 1000 * 0.80
+            let fy = 0.14 + Double((h / 1000) % 1000) / 1000 * 0.72
+            return CGPoint(x: clamp(CGFloat(fx) * size.width, 40, size.width - 40),
+                           y: clamp(CGFloat(fy) * size.height, 70, size.height - 110))
+        }
+    }
+
+    private func clamp(_ v: CGFloat, _ lo: CGFloat, _ hi: CGFloat) -> CGFloat {
+        min(max(v, lo), max(lo, hi))
+    }
+
+    // MARK: Overlays
+
+    private var topOverlay: some View {
+        VStack(spacing: 6) {
+            Text(Copy.appTitle)
                 .font(.system(size: 13))
+                .tracking(6)
                 .foregroundStyle(theme.textMuted)
-            let recent = store.recentSeeds.prefix(3)
-            if recent.isEmpty {
-                Text(Copy.Home.seedsEmpty)
-                    .font(.system(size: 15))
-                    .foregroundStyle(theme.textSecondary)
-            } else {
-                ForEach(Array(recent)) { seed in
-                    Button { path.append(Route.seedDetail(seed.id)) } label: {
-                        BreathingCard {
-                            VStack(alignment: .leading, spacing: Spacing.sm) {
-                                Text(seed.title)
-                                    .font(.system(size: 17, weight: .medium))
-                                    .foregroundStyle(theme.textPrimary)
-                                SeedMetaRow(seed: seed)
-                            }
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
+            Text(DayGrade.line(hour: hour))
+                .font(.system(size: 12))
+                .italic()
+                .foregroundStyle(theme.textSecondary)
+            if isLateNight {
+                Text(Copy.LateNight.title)
+                    .font(.system(size: 12))
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(theme.textMuted)
+                    .padding(.top, 2)
             }
+        }
+        .padding(.top, 8)
+    }
+
+    private var bottomOverlay: some View {
+        VStack(spacing: 12) {
+            if !justTrace.isEmpty {
+                Text(justTrace)
+                    .font(.system(size: 14))
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(theme.textSecondary)
+                    .frame(maxWidth: 270)
+                    .transition(.opacity)
+            }
+            Button { path.append(Route.add) } label: {
+                ZStack {
+                    Circle().fill(.ultraThinMaterial)
+                    Circle().strokeBorder(.white.opacity(0.3), lineWidth: 1)
+                    Image(systemName: "plus")
+                        .font(.system(size: 20, weight: .light))
+                        .foregroundStyle(theme.textSecondary)
+                }
+                .frame(width: 46, height: 46)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Copy.Home.addSeed)
+        }
+        .padding(.bottom, 14)
+    }
+
+    // MARK: Tap-a-wish sheet
+
+    private func wishSheet(_ wish: Wish) -> some View {
+        let seed = wish.seed
+        let emoji = Meta.category[seed.categories.first ?? .recovery]?.emoji ?? "🫧"
+        return ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                Text(emoji).font(.system(size: 54))
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, Spacing.sm)
+                Text(seed.title)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(theme.textPrimary)
+                Text(wish.opp?.suggestedAction ?? seed.minimumAction)
+                    .font(.system(size: 15)).lineSpacing(4)
+                    .foregroundStyle(theme.textSecondary)
+                if let reason = wish.opp?.reason, !reason.isEmpty {
+                    Text(reason)
+                        .font(.system(size: 13)).lineSpacing(4)
+                        .foregroundStyle(theme.textSecondary)
+                        .padding(Spacing.md)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(theme.surfaceSoft)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                }
+                VStack(spacing: Spacing.sm) {
+                    SoftButton(title: Copy.Completion.done) { complete(wish, .completed) }
+                    SoftButton(title: Copy.Completion.partial, variant: .soft) { complete(wish, .partial) }
+                    SoftButton(title: Copy.Now.later, variant: .ghost) { picked = nil }
+                }
+                .padding(.top, Spacing.xs)
+            }
+            .padding(Spacing.lg)
+        }
+    }
+
+    // MARK: Build + complete
+
+    private func rebuild() {
+        let ctx = ContextBuilder.build(ContextInput(
+            mood: store.lastPick.mood ?? .okay,
+            energy: store.lastPick.energy ?? .medium,
+            isMobile: true
+        ))
+        let opps = Scoring.recommend(store.seeds, ctx, limit: 3)
+        let primaryIds = Set(opps.map { $0.seedId })
+        var next: [Wish] = []
+        for o in opps {
+            if let seed = store.findSeed(o.seedId) {
+                next.append(Wish(id: o.id, seed: seed, opp: o, primary: true))
+            }
+        }
+        let ambient = store.seeds
+            .filter { ($0.status == .active || $0.status == .sleeping) && !primaryIds.contains($0.id) }
+            .prefix(3)
+        for seed in ambient {
+            next.append(Wish(id: "amb_\(seed.id)", seed: seed, opp: nil, primary: false))
+        }
+        wishes = next
+    }
+
+    private func complete(_ wish: Wish, _ kind: CompletionKind) {
+        Feedback.completion(kind)
+        let seed = wish.seed
+        let trace = TraceGenerator.buildTrace(seed, kind, opportunityId: wish.opp?.id)
+        store.addTrace(trace)
+        if kind == .completed { store.setSeedStatus(seed.id, .sleeping) }
+        withAnimation { justTrace = trace.text }
+        doneIds.insert(wish.id)
+        picked = nil
+    }
+
+    // MARK: Scene glyph (orb)
+
+    private var sceneIcon: String {
+        switch DayGrade.phase(hour: hour) {
+        case .dawn:      return "sunrise"
+        case .morning:   return "sun.max"
+        case .noon:      return "sun.max.fill"
+        case .afternoon: return "sun.min"
+        case .dusk:      return "sunset"
+        case .night:     return "moon.stars"
+        }
+    }
+
+    private var sceneLabel: String {
+        switch DayGrade.phase(hour: hour) {
+        case .dawn:      return "清晨"
+        case .morning:   return "上午"
+        case .noon:      return "正午"
+        case .afternoon: return "午后"
+        case .dusk:      return "黄昏"
+        case .night:     return "夜里"
         }
     }
 }
