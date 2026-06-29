@@ -12,6 +12,7 @@ struct SettingsView: View {
     @Environment(AppStore.self) private var store
     @Environment(\.theme) private var theme
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(SensedSignals.self) private var sensed
     @State private var confirmingReset = false
 
     var body: some View {
@@ -202,6 +203,59 @@ struct SettingsView: View {
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .strokeBorder(store.senseAround ? theme.accent : theme.border, lineWidth: 1))
+
+            sensingStatus
+        }
+    }
+
+    /// A live read of which senses are feeding the recommendation right now.
+    private var sensingStatus: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            sourceRow("时间 · 光线", detail: "驱动此刻的天空与光", active: true)
+            sourceRow("动作", detail: activityDetail, active: sensed.activity != nil)
+            sourceRow("位置 → 天气", detail: weatherDetail, active: store.senseAround && sensed.weatherKind != nil)
+            sourceRow("心率 → 状态", detail: "未接入（需要 HealthKit）", active: false)
+            sourceRow("声音 → 安静/热闹", detail: "未接入（需要麦克风）", active: false)
+        }
+        .padding(Spacing.md)
+        .background(theme.surfaceSoft)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private func sourceRow(_ name: String, detail: String, active: Bool) -> some View {
+        HStack(spacing: Spacing.sm) {
+            Circle()
+                .fill(active ? Color.green : theme.textMuted.opacity(0.4))
+                .frame(width: 8, height: 8)
+            Text(name)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(theme.textPrimary)
+            Spacer()
+            Text(detail)
+                .font(.system(size: 12))
+                .foregroundStyle(theme.textSecondary)
+                .multilineTextAlignment(.trailing)
+        }
+    }
+
+    private var activityDetail: String {
+        switch sensed.activity {
+        case .still:   return "现在：坐着 / 静止"
+        case .walking: return "现在：走着"
+        case .transit: return "现在：在路上"
+        case .none:    return "待机（动一下就会感受到）"
+        }
+    }
+
+    private var weatherDetail: String {
+        guard store.senseAround else { return "未开启" }
+        switch sensed.weatherKind {
+        case .clear:   return "现在：晴"
+        case .clouds:  return "现在：多云"
+        case .rain:    return "现在：有雨"
+        case .snow:    return "现在：下雪"
+        case .fog:     return "现在：有雾"
+        case .unknown, .none: return "正在获取…"
         }
     }
 

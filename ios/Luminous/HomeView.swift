@@ -9,6 +9,7 @@
 //
 
 import SwiftUI
+import MapKit
 
 /// Navigation routes used across the Home stack.
 enum Route: Hashable {
@@ -66,6 +67,8 @@ struct HomeView: View {
     @State private var doneIds: Set<String> = []
     @State private var justTrace = ""
     @State private var breathe = false
+    @State private var dragOffsets: [String: CGSize] = [:]
+    @State private var caughtIds: Set<String> = []
 
     private let orbR: CGFloat = 66
 
@@ -86,8 +89,21 @@ struct HomeView: View {
 
                     ForEach(Array(shown.enumerated()), id: \.element.id) { idx, wish in
                         let p = position(for: wish, index: idx, center: center, size: size)
+                        let lean = leanOffset(primary: wish.primary)
+                        let drag = dragOffsets[wish.id] ?? .zero
                         bubble(wish)
-                            .position(p)
+                            .position(x: p.x + lean.width + drag.width,
+                                      y: p.y + lean.height + drag.height)
+                            .simultaneousGesture(
+                                DragGesture(minimumDistance: 8)
+                                    .onChanged { v in dragOffsets[wish.id] = v.translation }
+                                    .onEnded { _ in
+                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                                            dragOffsets[wish.id] = .zero
+                                        }
+                                    }
+                            )
+                            .animation(.easeOut(duration: 0.25), value: lean)
                     }
 
                     topOverlay
@@ -226,18 +242,36 @@ struct HomeView: View {
             let primaries = shown.filter { $0.primary }
             let n = max(primaries.count, 1)
             let i = primaries.firstIndex { $0.id == wish.id } ?? 0
-            let radius = min(size.width, size.height) * 0.30 + orbR * 0.2
+            // ring radius large enough that a wish never overlaps the central orb.
+            let radius = max(min(size.width, size.height) * 0.34, orbR + 96)
             let ang = (-90.0 + 360.0 / Double(n) * Double(i)) * .pi / 180
             let x = center.x + CGFloat(cos(ang)) * radius
             let y = center.y + CGFloat(sin(ang)) * radius
-            return CGPoint(x: clamp(x, 60, size.width - 60), y: clamp(y, 90, size.height - 120))
+            return CGPoint(x: clamp(x, 60, size.width - 60), y: clamp(y, 110, size.height - 130))
         } else {
             let h = abs(wish.seed.id.hashValue)
             let fx = 0.10 + Double(h % 1000) / 1000 * 0.80
             let fy = 0.14 + Double((h / 1000) % 1000) / 1000 * 0.72
-            return CGPoint(x: clamp(CGFloat(fx) * size.width, 40, size.width - 40),
-                           y: clamp(CGFloat(fy) * size.height, 70, size.height - 110))
+            var p = CGPoint(x: clamp(CGFloat(fx) * size.width, 40, size.width - 40),
+                            y: clamp(CGFloat(fy) * size.height, 70, size.height - 110))
+            // keep lesser dots clear of the central orb (push them outward).
+            let minD = orbR + 64
+            let dx = p.x - center.x, dy = p.y - center.y
+            let d = max(sqrt(dx * dx + dy * dy), 0.001)
+            if d < minD {
+                p = CGPoint(x: center.x + dx / d * minD, y: center.y + dy / d * minD)
+            }
+            return p
         }
+    }
+
+    /// A gentle device-tilt lean for the floating wishes (zero on simulator).
+    private func leanOffset(primary: Bool) -> CGSize {
+        let amp: CGFloat = primary ? 16 : 22
+        let g = sensed.gravity
+        let dx = g.width * amp
+        let dy = (g.height + 1.0) * amp * 0.6   // upright (g.y ≈ -1) → ~0
+        return CGSize(width: clamp(dx, -amp, amp), height: clamp(dy, -amp, amp))
     }
 
     private func clamp(_ v: CGFloat, _ lo: CGFloat, _ hi: CGFloat) -> CGFloat {
@@ -263,8 +297,60 @@ struct HomeView: View {
                     .foregroundStyle(theme.textMuted)
                     .padding(.top, 2)
             }
+            suggestionsView
         }
         .padding(.top, 8)
+    }
+
+    /// Context-born suggestions, shown as glowing icons. Tap to catch one into
+    /// the garden. Late night only ever offers calm stop-loss.
+    private var suggestions: [Suggestion] {
+        Suggester.suggest(
+            hour: hour,
+            isLateNight: isLateNight,
+            weather: sensed.weatherKind,
+            activity: sensed.activity,
+            nearbyCafe: sensed.nearbyCafe,
+            nearbyOuting: sensed.nearbyOuting
+        ).filter { !caughtIds.contains($0.id) }
+    }
+
+    @ViewBuilder private var suggestionsView: some View {
+        let items = suggestions
+        if !items.isEmpty {
+            HStack(spacing: 16) {
+                ForEach(items) { s in
+                    Button { catchSuggestion(s) } label: {
+                        VStack(spacing: 3) {
+                            ZStack {
+                                Circle().fill(theme.accent.opacity(0.55))
+                                    .frame(width: 48, height: 48)
+                                    .blur(radius: 11)
+                                    .scaleEffect(breathe ? 1.15 : 0.9)
+                                Circle().fill(.ultraThinMaterial).frame(width: 40, height: 40)
+                                Circle().strokeBorder(.white.opacity(0.4), lineWidth: 1)
+                                    .frame(width: 40, height: 40)
+                                Text(s.emoji).font(.system(size: 20))
+                            }
+                            Text(s.title)
+                                .font(.system(size: 10))
+                                .foregroundStyle(theme.textMuted)
+                                .lineLimit(1)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.top, 8)
+        }
+    }
+
+    private func catchSuggestion(_ s: Suggestion) {
+        Feedback.completion(.partial)   // a soft "caught" tap
+        store.addSeed(s.toSeed())
+        caughtIds.insert(s.id)
+        withAnimation { justTrace = "接住了一个新念头：\(s.title)" }
+        rebuild()
     }
 
     private var bottomOverlay: some View {
@@ -277,6 +363,7 @@ struct HomeView: View {
                     .frame(maxWidth: 270)
                     .transition(.opacity)
             }
+            nearbyRow
             Button { path.append(Route.add) } label: {
                 ZStack {
                     Circle().fill(.ultraThinMaterial)
@@ -291,6 +378,37 @@ struct HomeView: View {
             .accessibilityLabel(Copy.Home.addSeed)
         }
         .padding(.bottom, 14)
+    }
+
+    /// A gentle horizontal row of nearby places (cafe / store / market).
+    @ViewBuilder private var nearbyRow: some View {
+        if !sensed.nearby.isEmpty {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(sensed.nearby) { place in
+                        Button {
+                            place.mapItem.openInMaps()
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(place.emoji).font(.system(size: 13))
+                                Text(place.name).font(.system(size: 12)).lineLimit(1)
+                                Text(place.distanceLabel)
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(theme.textMuted)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(.ultraThinMaterial)
+                            .clipShape(Capsule())
+                            .foregroundStyle(theme.textSecondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+            .frame(maxWidth: .infinity)
+        }
     }
 
     // MARK: Tap-a-wish sheet

@@ -90,3 +90,33 @@ word and I'll wire it.
 - No app icon set for the watch target yet (builds fine; just no custom glyph).
 - I left your recovered `GlassField.swift` etc. untouched; this branch is a clean
   superset of `ios-glass`.
+
+---
+
+## Live backlog — on-device session (2026-06-29)
+
+**Shipped to the device this session**
+- Sensor-fusion port (motion + location → weather), `sensorBonus` verbatim, day-line.
+- Motion now uses `CMMotionActivityManager` (stationary/walking/automotive) — reliable
+  on device (the raw-accelerometer version was weak; "gravity not working").
+- Settings → 感受周围 shows a **live sensing-status list** (which senses are active now).
+- Wishes are **draggable** + **lean with device tilt (gravity)** + no longer overlap the orb.
+
+**Decision needed**
+- **HealthKit (heart-rate → arousal).** The classifiers + wiring are ready, but the
+  **HealthKit entitlement requires the PAID Apple Developer Program ($99/yr)** — a free
+  Personal Team cannot sign it, so it can't run on the phone as-is. Options: (a) upgrade
+  to paid → I enable it for the device; (b) I demo it in the Simulator (free); (c) skip.
+
+**Requested, not yet built (proposed order)**
+1. **Auto place type — home / work / mall / outdoor.** Reverse-geocode the coarse
+   location (`CLGeocoder`) + nearby POI / building category (`MKLocalPointsOfInterestRequest`)
+   → map to `LocationType`. Learn "home" (most-frequent night location) and "work"
+   (most-frequent weekday-day location) over time, on-device. Feeds `locationFit`.
+2. **Duration + time-histogram analytics per sensed metric.** Log each sensed state with
+   timestamps on-device (still/walking/transit, quiet/lively, weather, place), accumulate
+   **dwell durations** (e.g. desk-minutes today → `dwellBonus`, mirroring @core/dwell), and
+   show a simple histogram (today / this week) per metric. All local, nothing transmitted.
+
+Both are multi-file features; will tackle after the HealthKit decision + confirming the
+current on-device build feels right.

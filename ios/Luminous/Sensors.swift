@@ -13,10 +13,27 @@
 //
 
 import Foundation
+import CoreGraphics
 import CoreLocation
+import MapKit
 #if os(iOS)
 import CoreMotion
 #endif
+
+/// A nearby place from MapKit (cafe / store / market …), for the Home "附近" row.
+struct NearbyPlace: Identifiable {
+    let id = UUID()
+    let name: String
+    let emoji: String
+    let distanceM: Double
+    let mapItem: MKMapItem
+
+    var distanceLabel: String {
+        distanceM < 1000
+            ? "\(Int((distanceM / 50).rounded()) * 50)m"
+            : String(format: "%.1fkm", distanceM / 1000)
+    }
+}
 
 // MARK: - Pure classifiers (verbatim from @core/sensors)
 
@@ -54,12 +71,34 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
     var weatherKind: WeatherKind?
     var isOutdoorWeatherGood: Bool?
 
+    /// Device tilt as a unit vector (x: left/right, y: forward/back), for the
+    /// gentle "gravity" lean of the floating wishes. Zero on the simulator.
+    var gravity: CGSize = .zero
+
+    /// Last coarse coordinate (for weather + nearby search).
+    var coordinate: CLLocationCoordinate2D?
+    /// Nearby cafes / stores / markets for the Home "附近" row.
+    var nearby: [NearbyPlace] = []
+
+    /// Coarse "a cafe is right here" — gently lifts a coffee/connection wish.
+    var nearbyCafe: Bool {
+        nearby.contains { $0.distanceM < 300 && $0.mapItem.pointOfInterestCategory == .cafe }
+    }
+    /// Coarse "shops/market within a short walk" — lifts an errand/outing wish.
+    var nearbyOuting: Bool {
+        nearby.contains {
+            $0.distanceM < 400 &&
+            [.foodMarket, .store, .bakery, .restaurant].contains($0.mapItem.pointOfInterestCategory)
+        }
+    }
+
     private let manager = CLLocationManager()
     private var enabled = false
     private var weatherFetchedAt: Date?
 
     #if os(iOS)
     private let motion = CMMotionManager()
+    private let activityManager = CMMotionActivityManager()
     private var magnitudes: [Double] = []
     #endif
 
@@ -82,15 +121,35 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
 
     private func startMotion() {
         #if os(iOS)
-        guard motion.isAccelerometerAvailable, !motion.isAccelerometerActive else { return }
-        motion.accelerometerUpdateInterval = 0.2
-        motion.startAccelerometerUpdates(to: .main) { [weak self] data, _ in
-            guard let self, let a = data?.acceleration else { return }
-            // magnitude of the motion (g → m/s²), gravity-inclusive like web DeviceMotion
-            let m = sqrt(a.x * a.x + a.y * a.y + a.z * a.z) * 9.81
-            self.magnitudes.append(m)
-            if self.magnitudes.count > 20 { self.magnitudes.removeFirst() }
-            if let act = Sensors.classifyActivity(self.magnitudes) { self.activity = act }
+        // Primary: CoreMotion's high-level activity classifier (stationary /
+        // walking / automotive) — reliable on device. Needs Motion permission.
+        if CMMotionActivityManager.isActivityAvailable() {
+            activityManager.startActivityUpdates(to: .main) { [weak self] act in
+                guard let self, let act, act.confidence != .low else { return }
+                if act.stationary { self.activity = .still }
+                else if act.automotive { self.activity = .transit }
+                else if act.walking || act.running || act.cycling { self.activity = .walking }
+            }
+        }
+        // Device tilt → a gentle "gravity" vector for the floating wishes.
+        if motion.isDeviceMotionAvailable, !motion.isDeviceMotionActive {
+            motion.deviceMotionUpdateInterval = 0.08
+            motion.startDeviceMotionUpdates(to: .main) { [weak self] dm, _ in
+                guard let self, let g = dm?.gravity else { return }
+                self.gravity = CGSize(width: g.x, height: g.y)
+            }
+        }
+        // Fallback: raw accelerometer → classifyActivity (matches @core), used when
+        // the activity classifier is unavailable (e.g. simulator).
+        if motion.isAccelerometerAvailable, !motion.isAccelerometerActive {
+            motion.accelerometerUpdateInterval = 0.2
+            motion.startAccelerometerUpdates(to: .main) { [weak self] data, _ in
+                guard let self, self.activity == nil, let a = data?.acceleration else { return }
+                let m = sqrt(a.x * a.x + a.y * a.y + a.z * a.z) * 9.81
+                self.magnitudes.append(m)
+                if self.magnitudes.count > 20 { self.magnitudes.removeFirst() }
+                if let act = Sensors.classifyActivity(self.magnitudes) { self.activity = act }
+            }
         }
         #endif
     }
@@ -101,13 +160,51 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
         guard let loc = locs.last else { return }
         let coord = loc.coordinate
         Task { @MainActor in
+            self.coordinate = coord
             self.locationHint = .outdoor  // coarse default; refined by saved-home later
             await self.fetchWeather(lat: coord.latitude, lon: coord.longitude)
+            await self.fetchNearby(center: coord)
         }
     }
 
     nonisolated func locationManager(_ m: CLLocationManager, didFailWithError error: Error) {
         // Silent: sensing degrades to nil, never nags.
+    }
+
+    // MARK: Nearby places (MapKit local search)
+
+    private func fetchNearby(center: CLLocationCoordinate2D) async {
+        let req = MKLocalPointsOfInterestRequest(center: center, radius: 2000)
+        req.pointOfInterestFilter = MKPointOfInterestFilter(including:
+            [.cafe, .restaurant, .bakery, .foodMarket, .store, .pharmacy])
+        do {
+            let resp = try await MKLocalSearch(request: req).start()
+            let here = CLLocation(latitude: center.latitude, longitude: center.longitude)
+            let places = resp.mapItems.compactMap { item -> NearbyPlace? in
+                guard let loc = item.placemark.location, let name = item.name else { return nil }
+                return NearbyPlace(
+                    name: name,
+                    emoji: Self.emoji(for: item.pointOfInterestCategory),
+                    distanceM: loc.distance(from: here),
+                    mapItem: item)
+            }
+            .sorted { $0.distanceM < $1.distanceM }
+            self.nearby = Array(places.prefix(6))
+        } catch {
+            // leave nearby as-is on failure
+        }
+    }
+
+    static func emoji(for cat: MKPointOfInterestCategory?) -> String {
+        switch cat {
+        case .some(.cafe):       return "☕"
+        case .some(.restaurant): return "🍴"
+        case .some(.bakery):     return "🥐"
+        case .some(.foodMarket): return "🛒"
+        case .some(.store):      return "🛍️"
+        case .some(.pharmacy):   return "💊"
+        default:                 return "📍"
+        }
     }
 
     // MARK: Weather (open-meteo, key-free; only a coarse coord leaves the device)
