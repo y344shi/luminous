@@ -113,6 +113,8 @@ struct HomeView: View {
                         }
                     }
 
+                    shootingStars(size: size)
+
                     topOverlay
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     bottomOverlay
@@ -183,43 +185,76 @@ struct HomeView: View {
             .allowsHitTesting(false)
     }
 
-    /// The center: a total-eclipse / black-hole — a dark disc ringed by a brilliant
-    /// corona, the gravity well the wishes orbit. Tap to step into 现在别消失.
+    private let hot = Color(red: 1.0, green: 0.62, blue: 0.26)
+
+    /// The center: a black hole, rendered from the physics — event-horizon shadow,
+    /// a hot accretion disk whose far side is gravitationally lensed up and over the
+    /// top, a photon ring, and Doppler beaming (the approaching side brighter).
     private var orb: some View {
         Button { path.append(Route.now) } label: {
+            let rs = orbR * 0.70   // shadow radius
             ZStack {
-                // corona bloom — light spilling past the disc
+                // soft glow of the surrounding light
                 Circle()
-                    .fill(RadialGradient(
-                        colors: [theme.accent.opacity(0.55), theme.accent.opacity(0.12), .clear],
-                        center: .center, startRadius: orbR * 0.78, endRadius: orbR * 1.9))
-                    .blur(radius: 8)
-                    .scaleEffect(breathe ? 1.06 : 0.97)
-                // the ring of fire (the eclipse rim)
+                    .fill(RadialGradient(colors: [hot.opacity(0.30), .clear],
+                                         center: .center, startRadius: rs, endRadius: orbR * 1.9))
+                    .blur(radius: 12)
+                    .scaleEffect(breathe ? 1.05 : 0.98)
+
+                // the far side of the disk, lensed up and over the top of the hole
+                lensedArc(rs).blur(radius: 2)
+
+                // the edge-on accretion disk (its wings extend past the shadow)
+                accretionDisk(rs).blur(radius: 3)
+
+                // the event-horizon shadow
+                Circle().fill(.black).frame(width: rs * 2, height: rs * 2)
+
+                // the near side of the disk passes in front of the shadow's lower half
+                accretionDisk(rs)
+                    .mask(Rectangle().frame(width: orbR * 2, height: rs).offset(y: rs * 0.5))
+                    .blur(radius: 2)
+
+                // photon ring hugging the shadow (brightest at top)
                 Circle()
-                    .stroke(
-                        AngularGradient(colors: [.white, theme.accent, .white.opacity(0.7), theme.accent, .white],
-                                        center: .center),
-                        lineWidth: 3)
-                    .frame(width: orbR * 2 - 2, height: orbR * 2 - 2)
-                    .blur(radius: 0.6)
-                Circle().strokeBorder(.white.opacity(0.95), lineWidth: 1.5)
-                    .frame(width: orbR * 2 - 2, height: orbR * 2 - 2)
-                // the dark disc (event horizon)
-                Circle()
-                    .fill(RadialGradient(
-                        colors: [Color(white: 0.10), .black],
-                        center: UnitPoint(x: 0.42, y: 0.40), startRadius: 0, endRadius: orbR))
-                    .frame(width: orbR * 2 - 6, height: orbR * 2 - 6)
-                Text(sceneLabel)
-                    .font(.system(size: 11)).tracking(3)
-                    .foregroundStyle(.white.opacity(0.65))
+                    .stroke(AngularGradient(
+                        colors: [hot, .white, hot, hot.opacity(0.5), hot],
+                        center: .center, angle: .degrees(-90)), lineWidth: 2)
+                    .frame(width: rs * 2 + 3, height: rs * 2 + 3)
+                    .blur(radius: 0.4)
+
+                // Doppler beaming — the approaching (left) side is brighter
+                Ellipse()
+                    .fill(RadialGradient(colors: [.white.opacity(0.6), .clear],
+                                         center: .center, startRadius: 0, endRadius: rs))
+                    .frame(width: rs * 1.5, height: rs * 0.55)
+                    .offset(x: -rs * 0.85)
+                    .blendMode(.plusLighter)
             }
             .frame(width: orbR * 2, height: orbR * 2)
-            .scaleEffect(breathe ? 1.02 : 0.99)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Copy.Home.primary)
+    }
+
+    /// The edge-on accretion disk: a wide, thin hot ellipse; its left/right wings
+    /// extend beyond the shadow.
+    private func accretionDisk(_ rs: CGFloat) -> some View {
+        Ellipse()
+            .fill(LinearGradient(
+                colors: [hot.opacity(0.15), .white, hot, hot.opacity(0.2)],
+                startPoint: .leading, endPoint: .trailing))
+            .frame(width: rs * 2.9, height: rs * 0.62)
+    }
+
+    /// The lensed far side, bent up and over the top of the hole — a bright arc.
+    private func lensedArc(_ rs: CGFloat) -> some View {
+        Circle()
+            .trim(from: 0.56, to: 0.94)
+            .stroke(LinearGradient(colors: [hot.opacity(0.4), .white, hot.opacity(0.4)],
+                                   startPoint: .leading, endPoint: .trailing),
+                    style: StrokeStyle(lineWidth: rs * 0.34, lineCap: .round))
+            .frame(width: rs * 2.1, height: rs * 2.1)
     }
 
     // MARK: Wishes
@@ -386,7 +421,6 @@ struct HomeView: View {
                     .foregroundStyle(theme.textMuted)
                     .padding(.top, 2)
             }
-            suggestionsView
         }
         .padding(.top, 8)
     }
@@ -404,34 +438,51 @@ struct HomeView: View {
         ).filter { !caughtIds.contains($0.id) }
     }
 
-    @ViewBuilder private var suggestionsView: some View {
+    /// Suggestions streak across the sky as shooting stars; tap one to catch it.
+    @ViewBuilder private func shootingStars(size: CGSize) -> some View {
         let items = suggestions
         if !items.isEmpty {
-            HStack(spacing: 16) {
-                ForEach(items) { s in
-                    Button { catchSuggestion(s) } label: {
-                        VStack(spacing: 3) {
-                            ZStack {
-                                Circle().fill(theme.accent.opacity(0.55))
-                                    .frame(width: 48, height: 48)
-                                    .blur(radius: 11)
-                                    .scaleEffect(breathe ? 1.15 : 0.9)
-                                Circle().fill(.ultraThinMaterial).frame(width: 40, height: 40)
-                                Circle().strokeBorder(.white.opacity(0.4), lineWidth: 1)
-                                    .frame(width: 40, height: 40)
-                                Text(s.emoji).font(.system(size: 20))
-                            }
-                            Text(s.title)
-                                .font(.system(size: 10))
-                                .foregroundStyle(theme.textMuted)
-                                .lineLimit(1)
-                        }
+            TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion)) { tl in
+                let t = reduceMotion ? 0 : tl.date.timeIntervalSinceReferenceDate
+                ForEach(Array(items.enumerated()), id: \.element.id) { i, s in
+                    let prog = reduceMotion
+                        ? 0.4
+                        : (t / 16.0 + Double(i) * 0.33).truncatingRemainder(dividingBy: 1)
+                    if prog < 0.85 {
+                        let f = CGFloat(prog / 0.85)
+                        let start = CGPoint(x: size.width * 1.08, y: size.height * (0.10 + Double(i) * 0.06))
+                        let end = CGPoint(x: size.width * 0.10, y: size.height * (0.26 + Double(i) * 0.07))
+                        shootingStar(s)
+                            .position(x: start.x + (end.x - start.x) * f,
+                                      y: start.y + (end.y - start.y) * f)
+                            .opacity(Double(min(1, min(f * 5, (1 - f) * 5))))
                     }
-                    .buttonStyle(.plain)
                 }
             }
-            .padding(.top, 8)
         }
+    }
+
+    private func shootingStar(_ s: Suggestion) -> some View {
+        Button { catchSuggestion(s) } label: {
+            VStack(spacing: 2) {
+                ZStack {
+                    // streak tail, trailing behind the leftward motion
+                    Capsule()
+                        .fill(LinearGradient(colors: [.white.opacity(0), .white.opacity(0.7)],
+                                             startPoint: .leading, endPoint: .trailing))
+                        .frame(width: 56, height: 2.5)
+                        .offset(x: 32)
+                        .blur(radius: 0.6)
+                    Circle().fill(.white.opacity(0.5)).frame(width: 30, height: 30)
+                        .blur(radius: 7).scaleEffect(breathe ? 1.2 : 0.9)
+                    Text(s.emoji).font(.system(size: 17))
+                }
+                Text(s.title).font(.system(size: 9))
+                    .foregroundStyle(theme.textSecondary).lineLimit(1)
+            }
+        }
+        .buttonStyle(.plain)
+        .rotationEffect(.degrees(10))
     }
 
     /// The nearest place that suits this wish's nature (learn → library/cafe …).
