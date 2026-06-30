@@ -104,6 +104,10 @@ struct SettingsView: View {
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .strokeBorder(store.musicOn ? theme.accent : theme.border, lineWidth: 1))
+
+            Text("音乐 © Kevin MacLeod · incompetech.com · CC BY 4.0")
+                .font(.system(size: 11))
+                .foregroundStyle(theme.textMuted)
         }
     }
 

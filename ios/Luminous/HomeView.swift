@@ -74,6 +74,10 @@ struct HomeView: View {
     @State private var aiVocab: [VocabItem] = []
     @State private var aiError: String?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorScheme) private var colorScheme
+
+    /// The active skin — the black hole is glass-only; ocean & paper get their own centers.
+    private var skin: Aesthetic { store.effectiveAesthetic(dark: colorScheme == .dark) }
 
     private let orbR: CGFloat = 66
 
@@ -196,51 +200,83 @@ struct HomeView: View {
     /// The center: a black hole, rendered from the physics — event-horizon shadow,
     /// a hot accretion disk whose far side is gravitationally lensed up and over the
     /// top, a photon ring, and Doppler beaming (the approaching side brighter).
-    private var orb: some View {
+    @ViewBuilder private var orb: some View {
         Button { path.append(Route.now) } label: {
-            let rs = orbR * 0.70   // shadow radius
-            ZStack {
-                // soft glow of the surrounding light
-                Circle()
-                    .fill(RadialGradient(colors: [hot.opacity(0.30), .clear],
-                                         center: .center, startRadius: rs, endRadius: orbR * 1.9))
-                    .blur(radius: 12)
-                    .scaleEffect(breathe ? 1.05 : 0.98)
-
-                // the far side of the disk, lensed up and over the top of the hole
-                lensedArc(rs).blur(radius: 2)
-
-                // the edge-on accretion disk (its wings extend past the shadow)
-                accretionDisk(rs).blur(radius: 3)
-
-                // the event-horizon shadow
-                Circle().fill(.black).frame(width: rs * 2, height: rs * 2)
-
-                // the near side of the disk passes in front of the shadow's lower half
-                accretionDisk(rs)
-                    .mask(Rectangle().frame(width: orbR * 2, height: rs).offset(y: rs * 0.5))
-                    .blur(radius: 2)
-
-                // photon ring hugging the shadow (brightest at top)
-                Circle()
-                    .stroke(AngularGradient(
-                        colors: [hot, .white, hot, hot.opacity(0.5), hot],
-                        center: .center, angle: .degrees(-90)), lineWidth: 2)
-                    .frame(width: rs * 2 + 3, height: rs * 2 + 3)
-                    .blur(radius: 0.4)
-
-                // Doppler beaming — the approaching (left) side is brighter
-                Ellipse()
-                    .fill(RadialGradient(colors: [.white.opacity(0.6), .clear],
-                                         center: .center, startRadius: 0, endRadius: rs))
-                    .frame(width: rs * 1.5, height: rs * 0.55)
-                    .offset(x: -rs * 0.85)
-                    .blendMode(.plusLighter)
+            Group {
+                switch skin {
+                case .glass: blackHoleVisual
+                case .ocean: oceanVisual
+                case .paper: paperVisual
+                }
             }
             .frame(width: orbR * 2, height: orbR * 2)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Copy.Home.primary)
+    }
+
+    /// Glass: a black hole (event-horizon shadow, lensed disk, photon ring, Doppler).
+    private var blackHoleVisual: some View {
+        let rs = orbR * 0.70
+        return ZStack {
+            Circle()
+                .fill(RadialGradient(colors: [hot.opacity(0.30), .clear],
+                                     center: .center, startRadius: rs, endRadius: orbR * 1.9))
+                .blur(radius: 12)
+                .scaleEffect(breathe ? 1.05 : 0.98)
+            lensedArc(rs).blur(radius: 2)
+            accretionDisk(rs).blur(radius: 3)
+            Circle().fill(.black).frame(width: rs * 2, height: rs * 2)
+            accretionDisk(rs)
+                .mask(Rectangle().frame(width: orbR * 2, height: rs).offset(y: rs * 0.5))
+                .blur(radius: 2)
+            Circle()
+                .stroke(AngularGradient(colors: [hot, .white, hot, hot.opacity(0.5), hot],
+                                        center: .center, angle: .degrees(-90)), lineWidth: 2)
+                .frame(width: rs * 2 + 3, height: rs * 2 + 3)
+                .blur(radius: 0.4)
+            Ellipse()
+                .fill(RadialGradient(colors: [.white.opacity(0.6), .clear],
+                                     center: .center, startRadius: 0, endRadius: rs))
+                .frame(width: rs * 1.5, height: rs * 0.55)
+                .offset(x: -rs * 0.85)
+                .blendMode(.plusLighter)
+        }
+    }
+
+    /// Ocean: a luminous moon over the water — soft glow + scene glyph.
+    private var oceanVisual: some View {
+        ZStack {
+            Circle()
+                .fill(RadialGradient(colors: [.white.opacity(0.9), theme.accentSoft.opacity(0.5), .clear],
+                                     center: .center, startRadius: 0, endRadius: orbR * 1.5))
+                .blur(radius: 8)
+                .scaleEffect(breathe ? 1.05 : 0.98)
+            Circle().fill(.ultraThinMaterial).frame(width: orbR * 2 - 6, height: orbR * 2 - 6)
+            Circle().strokeBorder(.white.opacity(0.45), lineWidth: 1).frame(width: orbR * 2 - 6, height: orbR * 2 - 6)
+            VStack(spacing: 4) {
+                Image(systemName: sceneIcon).font(.system(size: 30, weight: .light))
+                Text(sceneLabel).font(.system(size: 11)).tracking(2)
+            }
+            .foregroundStyle(theme.textPrimary)
+        }
+    }
+
+    /// Paper: a hand-drawn ink circle — a little sketched sun.
+    private var paperVisual: some View {
+        ZStack {
+            Circle().fill(theme.surface.opacity(0.35)).frame(width: orbR * 2 - 8, height: orbR * 2 - 8)
+            Circle().strokeBorder(theme.textSecondary.opacity(0.5),
+                                  style: StrokeStyle(lineWidth: 1.8, lineCap: .round, dash: [0.5, 3]))
+                .frame(width: orbR * 2 - 8, height: orbR * 2 - 8)
+            Circle().strokeBorder(theme.textSecondary.opacity(0.35), lineWidth: 1)
+                .frame(width: orbR * 2, height: orbR * 2)
+            VStack(spacing: 4) {
+                Image(systemName: sceneIcon).font(.system(size: 28, weight: .light))
+                    .foregroundStyle(theme.textSecondary)
+                Text(sceneLabel).font(.system(size: 11)).foregroundStyle(theme.textMuted)
+            }
+        }
     }
 
     /// The edge-on accretion disk: a wide, thin hot ellipse; its left/right wings
