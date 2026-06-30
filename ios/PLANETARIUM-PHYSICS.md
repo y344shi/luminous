@@ -90,7 +90,26 @@ Real physics:
 - **Convention:** disk rotates so its **left** side approaches the viewer ⇒ left is the
   bright (Doppler) side ⇒ orbits run the matching sense.
 
+## Real integrator (shipped — `OrbitSim.swift`)
+The orbits are no longer kinematic. Each wish is a body integrated with
+**velocity-Verlet** every frame from `TimelineView`:
+- **Central field** `a = −μ·r̂ / r²`, softened (`+soft²` in the denominator) so a
+  perturbed orbit can't blow up diving at the hole. μ is solved from a reference
+  ring/period (r₀ = 136 pt, T₀ = 70 s), so circular orbits reproduce the old feel
+  **and** Kepler's 3rd law (`T ∝ r^{3/2}`) falls out for free — inner orbits faster.
+- **Tilt** is a *uniform* acceleration field = device-lean × `tiltScale`, capped at
+  ~40 % of the central pull at r₀. A uniform field on a bound orbit shifts the focus
+  and makes the ellipse **precess** rather than just displacing it — so leaning the
+  phone slowly rotates the whole orbit, it doesn't snap.
+- The upright baseline (`g.height ≈ −1` held vertically) is removed by the caller, so
+  only a genuine lean perturbs anything.
+- 4 sub-steps/frame for stability; gaps > 0.5 s (app resume) are skipped, not integrated.
+- The sim is a plain (non-`@Observable`) object in `@State`: stepped and read each
+  frame, so it never invalidates the view graph (no feedback loop).
+- **Note:** the Simulator has no motion sensors → tilt = 0 there, so you see clean
+  Keplerian circles. Precession is only visible on a physical device.
+
 ## Open / next
-- Replace kinematic orbits with a real **2-body integrator** (central + tilt accel,
-  velocity Verlet) so §2 and §3 are literally simulated, not approximated.
+- Drag-to-throw: let a dragged planet hand its release velocity to the sim (currently
+  drag is a spring-back visual offset on top of the simulated position).
 - Per-skin: the black hole suits **glass**; ocean/paper should keep their own centers.

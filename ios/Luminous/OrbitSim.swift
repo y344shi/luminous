@@ -1,0 +1,120 @@
+//
+//  OrbitSim.swift
+//  Luminous
+//
+//  A real gravity simulation for the planetarium home. Each wish is a body in a
+//  Newtonian central field around the black hole; device-tilt is a uniform
+//  perturbing field. Integrated with velocity-Verlet, so the orbits genuinely
+//  precess and drift when you lean the phone — not a canned animation.
+//
+//  Physics notes (see ios/PLANETARIUM-PHYSICS.md):
+//  • Central force  a = −μ · r̂ / r²  (softened near the hole so nothing blows up).
+//    A circular orbit then has period T = 2π·r^{3/2} / √μ  → Kepler's 3rd law,
+//    inner orbits faster, for free. μ is solved from a reference ring/period.
+//  • Tilt is a small uniform acceleration (a fraction of the central pull at the
+//    reference radius) so a lean shifts the orbit's focus and makes it precess
+//    without ejecting the body.
+//  • A plain (non-Observable) reference type held in @State: we mutate it every
+//    frame from TimelineView and read it back the same frame. Because it isn't
+//    observed, stepping it doesn't invalidate the view graph (no feedback loop).
+//
+
+import CoreGraphics
+import Foundation
+
+final class OrbitSim {
+    struct Body {
+        var x: Double, y: Double      // disk-plane position, relative to centre (points)
+        var vx: Double, vy: Double    // disk-plane velocity (points/s)
+        var ring: Int
+    }
+
+    private(set) var bodies: [String: Body] = [:]
+    private var lastT: TimeInterval = 0
+
+    // Central pull strength, solved so the reference ring keeps the old feel.
+    let mu: Double
+    /// Softening length: keeps a/r² finite if a perturbed orbit dives at the hole.
+    let soft: Double = 30
+    /// Disk inclination — the orbit plane is seen at ~35°, so y is compressed.
+    let ellipse: CGFloat = 0.66
+
+    /// Tilt acceleration, applied as a uniform field. Kept to ~40% of the central
+    /// pull at the reference radius so it precesses rather than flings.
+    private let tiltScale: Double
+
+    /// Reference ring 0 radius and period — must match `radius(for:)` / the
+    /// previous kinematic look so the switch is seamless.
+    static let refRadius: Double = 136     // orbR(66) + 70
+    static let refPeriod: Double = 70
+
+    init() {
+        let s = 2 * Double.pi * pow(Self.refRadius, 1.5) / Self.refPeriod
+        mu = s * s
+        // central accel at the reference radius = μ / r²
+        let aRef = mu / (Self.refRadius * Self.refRadius)
+        tiltScale = aRef * 0.4
+    }
+
+    func radius(for ring: Int) -> Double { Self.refRadius + Double(ring) * 50 }
+
+    private func circularSpeed(_ r: Double) -> Double { (mu / r).squareRoot() }
+
+    /// One body per placement. New ones launch on a circular orbit at their ring;
+    /// vanished ones are dropped. Existing bodies keep their evolved state.
+    func sync(_ places: [(id: String, ring: Int, idx: Int, count: Int)]) {
+        let ids = Set(places.map { $0.id })
+        bodies = bodies.filter { ids.contains($0.key) }
+        for pl in places where bodies[pl.id] == nil {
+            let r = radius(for: pl.ring)
+            let a = Double.pi / 2
+                  + 2 * Double.pi / Double(max(pl.count, 1)) * Double(pl.idx)
+                  + Double(pl.ring) * 0.6
+            let v = circularSpeed(r)
+            bodies[pl.id] = Body(
+                x: cos(a) * r, y: sin(a) * r,
+                vx: -sin(a) * v, vy: cos(a) * v,   // counter-clockwise tangent
+                ring: pl.ring)
+        }
+    }
+
+    private func accel(x: Double, y: Double, tx: Double, ty: Double) -> (Double, Double) {
+        let r2 = x * x + y * y + soft * soft
+        let invR3 = mu / (r2 * r2.squareRoot())
+        return (-x * invR3 + tx, -y * invR3 + ty)
+    }
+
+    /// Advance every body to time `t`. `tilt` is the device lean (CMDeviceMotion
+    /// gravity, with the upright baseline removed by the caller).
+    func step(to t: TimeInterval, tilt: CGSize, paused: Bool) {
+        defer { lastT = t }
+        if paused { return }
+        guard lastT > 0 else { return }          // first frame: just seed lastT
+        let dt = t - lastT
+        if dt <= 0 || dt > 0.5 { return }        // ignore backsteps / resume gaps
+
+        let tx = Double(tilt.width) * tiltScale
+        let ty = Double(tilt.height) * tiltScale
+        let sub = 4
+        let h = dt / Double(sub)
+        for _ in 0..<sub {
+            for k in bodies.keys {
+                var b = bodies[k]!
+                let (ax0, ay0) = accel(x: b.x, y: b.y, tx: tx, ty: ty)
+                b.x += b.vx * h + 0.5 * ax0 * h * h
+                b.y += b.vy * h + 0.5 * ay0 * h * h
+                let (ax1, ay1) = accel(x: b.x, y: b.y, tx: tx, ty: ty)
+                b.vx += 0.5 * (ax0 + ax1) * h
+                b.vy += 0.5 * (ay0 + ay1) * h
+                bodies[k] = b
+            }
+        }
+    }
+
+    /// Project a body to screen space (disk inclination applied to y).
+    func screenPos(_ id: String, center: CGPoint) -> CGPoint? {
+        guard let b = bodies[id] else { return nil }
+        return CGPoint(x: center.x + CGFloat(b.x),
+                       y: center.y + CGFloat(b.y) * ellipse)
+    }
+}

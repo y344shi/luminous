@@ -70,6 +70,7 @@ struct HomeView: View {
     @State private var dragOffsets: [String: CGSize] = [:]
     @State private var caughtIds: Set<String> = []
     @State private var revealExtra = 0
+    @State private var sim = OrbitSim()
     @State private var aiLoading = false
     @State private var aiVocab: [VocabItem] = []
     @State private var aiError: String?
@@ -100,11 +101,15 @@ struct HomeView: View {
 
                     // Planetarium: wishes orbit the orb; tilt pulls them like a
                     // star; drag a planet (springs back); pull to reveal more.
-                    TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion)) { tl in
-                        let t = reduceMotion ? 0 : tl.date.timeIntervalSinceReferenceDate
+                    TimelineView(.animation(minimumInterval: 1.0 / 60.0, paused: reduceMotion)) { tl in
+                        let t = tl.date.timeIntervalSinceReferenceDate
                         let places = placements()
+                        // Step the real gravity sim this frame, then read positions
+                        // back. The sim is a plain object (not observed), so this
+                        // doesn't invalidate the view graph — no feedback loop.
+                        let _ = stepSim(places, t: t)
                         ForEach(places, id: \.wish.id) { pl in
-                            let p = orbitPosition(pl, t: t, center: center, size: size)
+                            let p = simPosition(pl, center: center, size: size)
                             let drag = dragOffsets[pl.wish.id] ?? .zero
                             bubble(pl.wish)
                                 .position(x: p.x + drag.width, y: p.y + drag.height)
@@ -405,25 +410,23 @@ struct HomeView: View {
         return out
     }
 
-    /// A planet's position: a slow elliptical orbit (outer = slower), plus a
-    /// device-tilt "gravity" pull toward the lean (stronger on outer orbits).
-    private func orbitPosition(_ pl: Placement, t: TimeInterval, center: CGPoint, size: CGSize) -> CGPoint {
-        let R0 = orbR + 70
-        let R = R0 + CGFloat(pl.ring) * 50
-        // Kepler's 3rd law: period ∝ a^(3/2) → inner orbits faster.
-        let period = 70.0 * pow(Double(R / R0), 1.5)
-        let omega = 2 * Double.pi / period
-        let base = Double.pi / 2 + 2 * Double.pi / Double(max(pl.count, 1)) * Double(pl.idx)
-        let angle = base + Double(pl.ring) * 0.6 + (reduceMotion ? 0 : t * omega)
-        let ellipse: CGFloat = 0.66   // shared disk/orbit inclination (~35°)
-        var x = center.x + CGFloat(cos(angle)) * R
-        var y = center.y + CGFloat(sin(angle)) * R * ellipse
-        // tilt = an extra pull star
-        let amp: CGFloat = 14 * (1 + CGFloat(pl.ring) * 0.25)
+    /// Step the gravity sim one frame: make sure a body exists per placement, then
+    /// integrate to `t` under the central pull + the device-tilt field. The tilt
+    /// removes the upright baseline (g.height ≈ −1 when held vertically) so only a
+    /// real lean perturbs the orbits.
+    private func stepSim(_ places: [Placement], t: TimeInterval) {
+        sim.sync(places.map { ($0.wish.id, $0.ring, $0.idx, $0.count) })
         let g = sensed.gravity
-        x += g.width * amp
-        y += (g.height + 1.0) * amp * 0.7
-        return CGPoint(x: clamp(x, 44, size.width - 44), y: clamp(y, 100, size.height - 120))
+        let tilt = CGSize(width: g.width, height: g.height + 1.0)
+        sim.step(to: t, tilt: tilt, paused: reduceMotion)
+    }
+
+    /// Read a body's simulated screen position (clamped on-screen). Falls back to
+    /// the orb centre if the body isn't seeded yet.
+    private func simPosition(_ pl: Placement, center: CGPoint, size: CGSize) -> CGPoint {
+        let p = sim.screenPos(pl.wish.id, center: center) ?? center
+        return CGPoint(x: clamp(p.x, 44, size.width - 44),
+                       y: clamp(p.y, 100, size.height - 120))
     }
 
     /// Pull down on the field to reveal more (lower-ranked) wishes; pull up to fold.
