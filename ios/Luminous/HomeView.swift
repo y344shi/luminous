@@ -70,6 +70,9 @@ struct HomeView: View {
     @State private var dragOffsets: [String: CGSize] = [:]
     @State private var caughtIds: Set<String> = []
     @State private var revealExtra = 0
+    @State private var aiLoading = false
+    @State private var aiVocab: [VocabItem] = []
+    @State private var aiError: String?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let orbR: CGFloat = 66
@@ -138,6 +141,9 @@ struct HomeView: View {
                 #else
                 wishSheet(wish).frame(minWidth: 380, minHeight: 440)
                 #endif
+            }
+            .onChange(of: picked?.id) { _, _ in
+                aiVocab = []; aiError = nil; aiLoading = false
             }
             .onAppear {
                 rebuild()
@@ -500,6 +506,101 @@ struct HomeView: View {
         return sensed.nearby.first { p in p.kind.map { kinds.contains($0) } ?? false }
     }
 
+    // MARK: AI help — let the on-device model do the task it can
+
+    /// If a wish is a "learn <language>" task, which language.
+    private func helpLanguage(for seed: Seed) -> String? {
+        let raw = seed.title, t = seed.title.lowercased()
+        if raw.contains("法语") || t.contains("french") { return "法语" }
+        if raw.contains("英语") || t.contains("english") { return "英语" }
+        if raw.contains("日语") || t.contains("japanese") { return "日语" }
+        if raw.contains("西班牙") || t.contains("spanish") { return "西班牙语" }
+        if raw.contains("德语") || t.contains("german") { return "德语" }
+        return nil
+    }
+
+    private func kindName(_ k: PlaceKind) -> String {
+        switch k {
+        case .cafe: return "咖啡馆"; case .library: return "图书馆"; case .park: return "公园"
+        case .market: return "市场"; case .store: return "商店"; case .restaurant: return "餐馆"
+        case .gym: return "健身房"; case .museum: return "博物馆"
+        }
+    }
+
+    /// The sensed moment, as a short line the model can personalize from.
+    private func aiContext() -> String {
+        var bits = [DayGrade.line(hour: hour)]
+        switch sensed.weatherKind {
+        case .clear: bits.append("晴"); case .clouds: bits.append("多云")
+        case .rain: bits.append("有雨"); case .snow: bits.append("下雪"); case .fog: bits.append("有雾")
+        default: break
+        }
+        let kinds = nearbyAppropriate ? sensed.nearbyKinds : []
+        if !kinds.isEmpty { bits.append("附近有" + kinds.map(kindName).joined(separator: "、")) }
+        return bits.joined(separator: " · ")
+    }
+
+    @ViewBuilder private func aiSection(for wish: Wish) -> some View {
+        if let lang = helpLanguage(for: wish.seed) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                if !aiVocab.isEmpty {
+                    ForEach(aiVocab) { v in
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Text(v.word).font(.system(size: 18, weight: .semibold))
+                                    .foregroundStyle(theme.textPrimary)
+                                Text(v.meaning).font(.system(size: 13))
+                                    .foregroundStyle(theme.textSecondary)
+                            }
+                            Text(v.example).font(.system(size: 12))
+                                .foregroundStyle(theme.textMuted)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(Spacing.sm)
+                        .background(theme.surfaceSoft)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+                } else if AIHelper.isAvailable {
+                    Button { runAI(language: lang) } label: {
+                        HStack(spacing: 6) {
+                            if aiLoading { ProgressView().controlSize(.small) }
+                            else { Image(systemName: "sparkles") }
+                            Text(aiLoading ? "正在挑词…" : "让 AI 帮我挑三个\(lang)词")
+                                .font(.system(size: 14, weight: .medium))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(theme.accentSoft)
+                        .foregroundStyle(theme.accentText)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(aiLoading)
+                } else {
+                    Text(AIHelper.unavailableReason)
+                        .font(.system(size: 12)).foregroundStyle(theme.textMuted)
+                }
+                if let aiError {
+                    Text(aiError).font(.system(size: 12)).foregroundStyle(.red.opacity(0.85))
+                }
+            }
+        }
+    }
+
+    private func runAI(language: String) {
+        aiError = nil; aiLoading = true
+        let learned = store.learnedWords(language)
+        let context = aiContext()
+        Task {
+            do {
+                let words = try await AIHelper.vocab(language: language, learned: learned, context: context)
+                await MainActor.run { aiVocab = words; aiLoading = false }
+            } catch {
+                await MainActor.run { aiError = "没能挑出来，待会儿再试"; aiLoading = false }
+            }
+        }
+    }
+
     private func catchSuggestion(_ s: Suggestion) {
         Feedback.completion(.partial)   // a soft "caught" tap
         store.addSeed(s.toSeed())
@@ -578,8 +679,16 @@ struct HomeView: View {
                     }
                     .buttonStyle(.plain)
                 }
+
+                aiSection(for: wish)
+
                 VStack(spacing: Spacing.sm) {
-                    SoftButton(title: Copy.Completion.done) { complete(wish, .completed) }
+                    SoftButton(title: Copy.Completion.done) {
+                        if let lang = helpLanguage(for: seed), !aiVocab.isEmpty {
+                            store.addLearnedWords(aiVocab.map(\.word), language: lang)
+                        }
+                        complete(wish, .completed)
+                    }
                     SoftButton(title: Copy.Completion.partial, variant: .soft) { complete(wish, .partial) }
                     SoftButton(title: Copy.Now.later, variant: .ghost) { picked = nil }
                 }

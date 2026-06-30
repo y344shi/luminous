@@ -12,6 +12,12 @@ struct RootView: View {
     @State private var store = AppStore()
     @State private var router = AppRouter()
     @State private var sensed = SensedSignals()
+    @State private var music = SkinMusic()
+    @Environment(\.colorScheme) private var colorScheme
+
+    private func updateMusic() {
+        music.update(aesthetic: store.effectiveAesthetic(dark: colorScheme == .dark), on: store.musicOn)
+    }
 
     var body: some View {
         @Bindable var router = router
@@ -36,8 +42,12 @@ struct RootView: View {
         .environment(router)
         .environment(sensed)
         .environment(\.theme, tokens)
-        .task { sensed.start(enabled: store.senseAround) }
+        .task { sensed.start(enabled: store.senseAround); updateMusic() }
         .onChange(of: store.senseAround) { _, on in sensed.start(enabled: on) }
+        .onChange(of: store.musicOn) { _, _ in updateMusic() }
+        .onChange(of: store.aesthetic) { _, _ in updateMusic() }
+        .onChange(of: store.aestheticAuto) { _, _ in updateMusic() }
+        .onChange(of: colorScheme) { _, _ in updateMusic() }
         // In auto-skin mode we follow the system appearance (so the skin can
         // track Dark/Light); otherwise the theme drives the color scheme.
         .preferredColorScheme(store.aestheticAuto ? nil : (store.theme == .softRitual ? .dark : .light))

@@ -83,6 +83,27 @@ struct SettingsView: View {
             ForEach(Aesthetic.allCases) { skin in
                 skinRow(skin)
             }
+
+            // Theme music for the active skin.
+            Toggle(isOn: Binding(
+                get: { store.musicOn },
+                set: { store.setMusicOn($0) }
+            )) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("主题音乐")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(theme.textPrimary)
+                    Text("每个外观一段轻音乐，轻轻地放着")
+                        .font(.system(size: 13))
+                        .foregroundStyle(theme.textSecondary)
+                }
+            }
+            .tint(theme.accent)
+            .padding(Spacing.md)
+            .background(theme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(store.musicOn ? theme.accent : theme.border, lineWidth: 1))
         }
     }
 

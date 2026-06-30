@@ -29,7 +29,9 @@ final class AppStore {
         static let aesthetic = "tdd.aesthetic"
         static let aestheticAuto = "tdd.aestheticAuto"
         static let senseAround = "tdd.senseAround"
-        static let all = [seeds, traces, settings, samplesPlanted, lastPick, introSeen, aesthetic, aestheticAuto, senseAround]
+        static let learnedVocab = "tdd.learnedVocab"
+        static let musicOn = "tdd.musicOn"
+        static let all = [seeds, traces, settings, samplesPlanted, lastPick, introSeen, aesthetic, aestheticAuto, senseAround, learnedVocab, musicOn]
     }
 
     // MARK: Persisted state
@@ -51,6 +53,13 @@ final class AppStore {
     /// Opt-in to sensing the surroundings (location → weather; mic/HR later).
     /// Motion is permission-free and always on; this gates the rest. Persisted.
     var senseAround: Bool = false
+
+    /// Words the AI has already taught, per language — so long-term learning tasks
+    /// build forward instead of repeating. Persisted.
+    var learnedVocab: [String: [String]] = [:]
+
+    /// Play the skin's theme music on the dashboard. Off by default. Persisted.
+    var musicOn: Bool = false
 
     // MARK: Transient state (not persisted)
     var opportunities: [Opportunity] = []
@@ -80,6 +89,8 @@ final class AppStore {
             .flatMap(Aesthetic.init(rawValue:)) ?? .fallback
         aestheticAuto = defaults.bool(forKey: Key.aestheticAuto)
         senseAround = defaults.bool(forKey: Key.senseAround)
+        learnedVocab = load([String: [String]].self, Key.learnedVocab) ?? [:]
+        musicOn = defaults.bool(forKey: Key.musicOn)
 
         // First run: plant a small mock garden so the app never feels empty.
         if seeds.isEmpty && traces.isEmpty {
@@ -191,6 +202,21 @@ final class AppStore {
         defaults.set(on, forKey: Key.senseAround)
     }
 
+    func setMusicOn(_ on: Bool) {
+        musicOn = on
+        defaults.set(on, forKey: Key.musicOn)
+    }
+
+    func learnedWords(_ language: String) -> [String] { learnedVocab[language] ?? [] }
+
+    /// Remember words the AI just taught (deduped), so next time builds forward.
+    func addLearnedWords(_ words: [String], language: String) {
+        var list = learnedVocab[language] ?? []
+        for w in words where !list.contains(w) { list.append(w) }
+        learnedVocab[language] = Array(list.suffix(200))
+        save(learnedVocab, Key.learnedVocab)
+    }
+
     /// The skin to actually render. In auto mode it follows the system
     /// appearance; otherwise it's the user's chosen `aesthetic`.
     func effectiveAesthetic(dark: Bool) -> Aesthetic {
@@ -220,6 +246,7 @@ final class AppStore {
         aesthetic = .fallback
         aestheticAuto = false
         senseAround = false
+        learnedVocab = [:]
         opportunities = []
         lastContext = nil
     }
