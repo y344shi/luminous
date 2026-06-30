@@ -69,6 +69,8 @@ struct HomeView: View {
     @State private var breathe = false
     @State private var dragOffsets: [String: CGSize] = [:]
     @State private var caughtIds: Set<String> = []
+    @State private var revealExtra = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let orbR: CGFloat = 66
 
@@ -79,31 +81,36 @@ struct HomeView: View {
         NavigationStack(path: $path) {
             GeometryReader { geo in
                 let size = geo.size
-                let center = CGPoint(x: size.width / 2, y: size.height * 0.46)
+                let center = CGPoint(x: size.width / 2, y: size.height * 0.52)
 
                 ZStack {
-                    AestheticField(weather: sensed.weatherKind).ignoresSafeArea()
+                    AestheticField(weather: sensed.weatherKind)
+                        .ignoresSafeArea()
+                        .simultaneousGesture(revealGesture)
 
                     bloom.position(center)
                     orb.position(center)
 
-                    ForEach(Array(shown.enumerated()), id: \.element.id) { idx, wish in
-                        let p = position(for: wish, index: idx, center: center, size: size)
-                        let lean = leanOffset(primary: wish.primary)
-                        let drag = dragOffsets[wish.id] ?? .zero
-                        bubble(wish)
-                            .position(x: p.x + lean.width + drag.width,
-                                      y: p.y + lean.height + drag.height)
-                            .simultaneousGesture(
-                                DragGesture(minimumDistance: 8)
-                                    .onChanged { v in dragOffsets[wish.id] = v.translation }
-                                    .onEnded { _ in
-                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-                                            dragOffsets[wish.id] = .zero
+                    // Planetarium: wishes orbit the orb; tilt pulls them like a
+                    // star; drag a planet (springs back); pull to reveal more.
+                    TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion)) { tl in
+                        let t = reduceMotion ? 0 : tl.date.timeIntervalSinceReferenceDate
+                        let places = placements()
+                        ForEach(places, id: \.wish.id) { pl in
+                            let p = orbitPosition(pl, t: t, center: center, size: size)
+                            let drag = dragOffsets[pl.wish.id] ?? .zero
+                            bubble(pl.wish)
+                                .position(x: p.x + drag.width, y: p.y + drag.height)
+                                .simultaneousGesture(
+                                    DragGesture(minimumDistance: 8)
+                                        .onChanged { v in dragOffsets[pl.wish.id] = v.translation }
+                                        .onEnded { _ in
+                                            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                                                dragOffsets[pl.wish.id] = .zero
+                                            }
                                         }
-                                    }
-                            )
-                            .animation(.easeOut(duration: 0.25), value: lean)
+                                )
+                        }
                     }
 
                     topOverlay
@@ -242,41 +249,79 @@ struct HomeView: View {
     /// Primaries settle in a ring round the orb; lesser wishes rest in stable
     /// pseudo-random spots across the field (derived from the seed id, not random
     /// each render). Everything is clamped to stay on screen.
-    private func position(for wish: Wish, index: Int, center: CGPoint, size: CGSize) -> CGPoint {
-        if wish.primary {
-            let primaries = shown.filter { $0.primary }
-            let n = max(primaries.count, 1)
-            let i = primaries.firstIndex { $0.id == wish.id } ?? 0
-            // ring radius large enough that a wish never overlaps the central orb.
-            let radius = max(min(size.width, size.height) * 0.34, orbR + 96)
-            let ang = (-90.0 + 360.0 / Double(n) * Double(i)) * .pi / 180
-            let x = center.x + CGFloat(cos(ang)) * radius
-            let y = center.y + CGFloat(sin(ang)) * radius
-            return CGPoint(x: clamp(x, 60, size.width - 60), y: clamp(y, 110, size.height - 130))
-        } else {
-            let h = abs(wish.seed.id.hashValue)
-            let fx = 0.10 + Double(h % 1000) / 1000 * 0.80
-            let fy = 0.14 + Double((h / 1000) % 1000) / 1000 * 0.72
-            var p = CGPoint(x: clamp(CGFloat(fx) * size.width, 40, size.width - 40),
-                            y: clamp(CGFloat(fy) * size.height, 70, size.height - 110))
-            // keep lesser dots clear of the central orb (push them outward).
-            let minD = orbR + 64
-            let dx = p.x - center.x, dy = p.y - center.y
-            let d = max(sqrt(dx * dx + dy * dy), 0.001)
-            if d < minD {
-                p = CGPoint(x: center.x + dx / d * minD, y: center.y + dy / d * minD)
-            }
-            return p
-        }
+    // MARK: Planetarium orbits
+
+    private struct Placement: Identifiable {
+        let wish: Wish
+        let ring: Int
+        let idx: Int
+        let count: Int
+        var id: String { wish.id }
     }
 
-    /// A gentle device-tilt lean for the floating wishes (zero on simulator).
-    private func leanOffset(primary: Bool) -> CGSize {
-        let amp: CGFloat = primary ? 16 : 22
+    /// The wishes currently displayed: the top 3 (inner orbit) plus however many
+    /// lower-ranked wishes the user has pulled into view (outer orbits).
+    private var displayed: [Wish] {
+        let s = shown
+        let primaries = s.filter { $0.primary }
+        let ambient = s.filter { !$0.primary }
+        return primaries + Array(ambient.prefix(revealExtra))
+    }
+
+    /// Group displayed wishes into concentric orbits: primaries on the inner ring,
+    /// revealed wishes filling progressively larger outer rings.
+    private func placements() -> [Placement] {
+        let disp = displayed
+        let primaries = disp.filter { $0.primary }
+        let ambient = disp.filter { !$0.primary }
+        var out: [Placement] = []
+        for (i, w) in primaries.enumerated() {
+            out.append(Placement(wish: w, ring: 0, idx: i, count: max(primaries.count, 1)))
+        }
+        var ring = 1, cap = 4, rem = ambient
+        while !rem.isEmpty {
+            let take = Array(rem.prefix(cap))
+            for (i, w) in take.enumerated() {
+                out.append(Placement(wish: w, ring: ring, idx: i, count: take.count))
+            }
+            rem = Array(rem.dropFirst(cap)); ring += 1; cap += 1
+        }
+        return out
+    }
+
+    /// A planet's position: a slow elliptical orbit (outer = slower), plus a
+    /// device-tilt "gravity" pull toward the lean (stronger on outer orbits).
+    private func orbitPosition(_ pl: Placement, t: TimeInterval, center: CGPoint, size: CGSize) -> CGPoint {
+        let R = orbR + 70 + CGFloat(pl.ring) * 50
+        let omega = 2 * Double.pi / (90 + Double(pl.ring) * 30)   // seconds per turn
+        let base = Double.pi / 2 + 2 * Double.pi / Double(max(pl.count, 1)) * Double(pl.idx)
+        let angle = base + Double(pl.ring) * 0.6 + (reduceMotion ? 0 : t * omega)
+        let ellipse: CGFloat = 0.82
+        var x = center.x + CGFloat(cos(angle)) * R
+        var y = center.y + CGFloat(sin(angle)) * R * ellipse
+        // tilt = an extra pull star
+        let amp: CGFloat = 14 * (1 + CGFloat(pl.ring) * 0.25)
         let g = sensed.gravity
-        let dx = g.width * amp
-        let dy = (g.height + 1.0) * amp * 0.6   // upright (g.y ≈ -1) → ~0
-        return CGSize(width: clamp(dx, -amp, amp), height: clamp(dy, -amp, amp))
+        x += g.width * amp
+        y += (g.height + 1.0) * amp * 0.7
+        return CGPoint(x: clamp(x, 44, size.width - 44), y: clamp(y, 100, size.height - 120))
+    }
+
+    /// Pull down on the field to reveal more (lower-ranked) wishes; pull up to fold.
+    private var revealGesture: some Gesture {
+        DragGesture(minimumDistance: 24)
+            .onEnded { v in
+                let ambientCount = shown.filter { !$0.primary }.count
+                if v.translation.height > 50 {
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                        revealExtra = min(revealExtra + 3, ambientCount)
+                    }
+                } else if v.translation.height < -50 {
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                        revealExtra = max(revealExtra - 3, 0)
+                    }
+                }
+            }
     }
 
     private func clamp(_ v: CGFloat, _ lo: CGFloat, _ hi: CGFloat) -> CGFloat {
@@ -470,7 +515,7 @@ struct HomeView: View {
         }
         let ambient = store.seeds
             .filter { ($0.status == .active || $0.status == .sleeping) && !primaryIds.contains($0.id) }
-            .prefix(3)
+            .prefix(8)
         for seed in ambient {
             next.append(Wish(id: "amb_\(seed.id)", seed: seed, opp: nil, primary: false))
         }
