@@ -183,27 +183,40 @@ struct HomeView: View {
             .allowsHitTesting(false)
     }
 
+    /// The center: a total-eclipse / black-hole — a dark disc ringed by a brilliant
+    /// corona, the gravity well the wishes orbit. Tap to step into 现在别消失.
     private var orb: some View {
         Button { path.append(Route.now) } label: {
             ZStack {
-                Circle().fill(.ultraThinMaterial)
-                Circle().fill(LinearGradient(
-                    colors: [.white.opacity(0.30), .clear],
-                    startPoint: .topLeading, endPoint: .bottomTrailing))
-                Circle().strokeBorder(.white.opacity(0.35), lineWidth: 1)
-                VStack(spacing: 4) {
-                    Image(systemName: sceneIcon)
-                        .font(.system(size: 34, weight: .light))
-                        .foregroundStyle(theme.textPrimary)
-                    Text(sceneLabel)
-                        .font(.system(size: 11))
-                        .tracking(2)
-                        .foregroundStyle(theme.textSecondary)
-                }
+                // corona bloom — light spilling past the disc
+                Circle()
+                    .fill(RadialGradient(
+                        colors: [theme.accent.opacity(0.55), theme.accent.opacity(0.12), .clear],
+                        center: .center, startRadius: orbR * 0.78, endRadius: orbR * 1.9))
+                    .blur(radius: 8)
+                    .scaleEffect(breathe ? 1.06 : 0.97)
+                // the ring of fire (the eclipse rim)
+                Circle()
+                    .stroke(
+                        AngularGradient(colors: [.white, theme.accent, .white.opacity(0.7), theme.accent, .white],
+                                        center: .center),
+                        lineWidth: 3)
+                    .frame(width: orbR * 2 - 2, height: orbR * 2 - 2)
+                    .blur(radius: 0.6)
+                Circle().strokeBorder(.white.opacity(0.95), lineWidth: 1.5)
+                    .frame(width: orbR * 2 - 2, height: orbR * 2 - 2)
+                // the dark disc (event horizon)
+                Circle()
+                    .fill(RadialGradient(
+                        colors: [Color(white: 0.10), .black],
+                        center: UnitPoint(x: 0.42, y: 0.40), startRadius: 0, endRadius: orbR))
+                    .frame(width: orbR * 2 - 6, height: orbR * 2 - 6)
+                Text(sceneLabel)
+                    .font(.system(size: 11)).tracking(3)
+                    .foregroundStyle(.white.opacity(0.65))
             }
             .frame(width: orbR * 2, height: orbR * 2)
-            .shadow(color: theme.accent.opacity(0.25), radius: 18)
-            .scaleEffect(breathe ? 1.03 : 0.99)
+            .scaleEffect(breathe ? 1.02 : 0.99)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Copy.Home.primary)
@@ -212,12 +225,11 @@ struct HomeView: View {
     // MARK: Wishes
 
     @ViewBuilder private func bubble(_ wish: Wish) -> some View {
-        let emoji = Meta.category[wish.seed.categories.first ?? .recovery]?.emoji ?? "🫧"
+        let symbol = glyph(for: wish.seed)
         if wish.primary {
             Button { picked = wish } label: {
-                VStack(spacing: 4) {
-                    Text(emoji).font(.system(size: 38))
-                        .shadow(color: .black.opacity(0.12), radius: 2, y: 1)
+                VStack(spacing: 6) {
+                    planet(symbol, diameter: 54, iconSize: 22, glow: true)
                     Text(wish.seed.title)
                         .font(.system(size: 12, weight: .medium))
                         .multilineTextAlignment(.center)
@@ -234,17 +246,44 @@ struct HomeView: View {
             .buttonStyle(.plain)
         } else {
             Button { picked = wish } label: {
-                ZStack {
-                    Circle().fill(.ultraThinMaterial)
-                    Circle().strokeBorder(.white.opacity(0.25), lineWidth: 1)
-                    Text(emoji).font(.system(size: 18))
-                }
-                .frame(width: 42, height: 42)
-                .opacity(0.85)
+                planet(symbol, diameter: 38, iconSize: 15, glow: false).opacity(0.85)
             }
             .buttonStyle(.plain)
         }
     }
+
+    /// A little celestial body — a softly-lit disc with a line-art glyph.
+    private func planet(_ symbol: String, diameter: CGFloat, iconSize: CGFloat, glow: Bool) -> some View {
+        ZStack {
+            Circle().fill(RadialGradient(
+                colors: [theme.surface.opacity(0.95), theme.accentSoft.opacity(0.55), theme.surfaceSoft.opacity(0.3)],
+                center: UnitPoint(x: 0.34, y: 0.30), startRadius: 0, endRadius: diameter * 0.62))
+            Circle().strokeBorder(.white.opacity(0.45), lineWidth: 1)
+            Image(systemName: symbol)
+                .font(.system(size: iconSize, weight: .light))
+                .foregroundStyle(theme.textPrimary)
+        }
+        .frame(width: diameter, height: diameter)
+        .shadow(color: glow ? theme.accent.opacity(0.4) : .clear, radius: glow ? 8 : 0)
+    }
+
+    /// A cohesive line-art glyph per wish, varied within a category by seed id so
+    /// two similar wishes don't repeat the same icon.
+    private func glyph(for seed: Seed) -> String {
+        let cat = seed.categories.first ?? .recovery
+        let pool = Self.glyphPool[cat] ?? ["sparkle"]
+        return pool[abs(seed.id.hashValue) % pool.count]
+    }
+
+    private static let glyphPool: [SeedCategory: [String]] = [
+        .body:        ["leaf", "cup.and.saucer", "drop", "wind"],
+        .creation:    ["pencil.and.outline", "paintbrush.pointed", "scribble.variable", "music.note"],
+        .connection:  ["heart", "bubble.left.and.bubble.right", "hand.wave", "envelope"],
+        .exploration: ["figure.walk", "map", "binoculars", "mountain.2"],
+        .recovery:    ["moon.stars", "bed.double", "humidity", "sparkles"],
+        .learning:    ["book", "character.book.closed", "graduationcap", "lightbulb"],
+        .aesthetic:   ["camera", "leaf.circle", "sparkle", "photo.artframe"],
+    ]
 
     /// Primaries settle in a ring round the orb; lesser wishes rest in stable
     /// pseudo-random spots across the field (derived from the seed id, not random
