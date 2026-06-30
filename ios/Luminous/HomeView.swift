@@ -366,11 +366,14 @@ struct HomeView: View {
     /// A planet's position: a slow elliptical orbit (outer = slower), plus a
     /// device-tilt "gravity" pull toward the lean (stronger on outer orbits).
     private func orbitPosition(_ pl: Placement, t: TimeInterval, center: CGPoint, size: CGSize) -> CGPoint {
-        let R = orbR + 70 + CGFloat(pl.ring) * 50
-        let omega = 2 * Double.pi / (90 + Double(pl.ring) * 30)   // seconds per turn
+        let R0 = orbR + 70
+        let R = R0 + CGFloat(pl.ring) * 50
+        // Kepler's 3rd law: period ∝ a^(3/2) → inner orbits faster.
+        let period = 70.0 * pow(Double(R / R0), 1.5)
+        let omega = 2 * Double.pi / period
         let base = Double.pi / 2 + 2 * Double.pi / Double(max(pl.count, 1)) * Double(pl.idx)
         let angle = base + Double(pl.ring) * 0.6 + (reduceMotion ? 0 : t * omega)
-        let ellipse: CGFloat = 0.82
+        let ellipse: CGFloat = 0.66   // shared disk/orbit inclination (~35°)
         var x = center.x + CGFloat(cos(angle)) * R
         var y = center.y + CGFloat(sin(angle)) * R * ellipse
         // tilt = an extra pull star
@@ -452,7 +455,8 @@ struct HomeView: View {
                         let f = CGFloat(prog / 0.85)
                         let start = CGPoint(x: size.width * 1.08, y: size.height * (0.10 + Double(i) * 0.06))
                         let end = CGPoint(x: size.width * 0.10, y: size.height * (0.26 + Double(i) * 0.07))
-                        shootingStar(s)
+                        let travel = atan2(end.y - start.y, end.x - start.x)  // velocity direction
+                        shootingStar(s, travel: travel)
                             .position(x: start.x + (end.x - start.x) * f,
                                       y: start.y + (end.y - start.y) * f)
                             .opacity(Double(min(1, min(f * 5, (1 - f) * 5))))
@@ -462,27 +466,30 @@ struct HomeView: View {
         }
     }
 
-    private func shootingStar(_ s: Suggestion) -> some View {
-        Button { catchSuggestion(s) } label: {
-            VStack(spacing: 2) {
-                ZStack {
-                    // streak tail, trailing behind the leftward motion
-                    Capsule()
-                        .fill(LinearGradient(colors: [.white.opacity(0), .white.opacity(0.7)],
-                                             startPoint: .leading, endPoint: .trailing))
-                        .frame(width: 56, height: 2.5)
-                        .offset(x: 32)
-                        .blur(radius: 0.6)
-                    Circle().fill(.white.opacity(0.5)).frame(width: 30, height: 30)
-                        .blur(radius: 7).scaleEffect(breathe ? 1.2 : 0.9)
-                    Text(s.emoji).font(.system(size: 17))
-                }
+    /// A meteor: the head leads, the train trails exactly anti-parallel to the
+    /// velocity (`travel`), fading from bright at the head to nothing behind.
+    private func shootingStar(_ s: Suggestion, travel: Double) -> some View {
+        let L: CGFloat = 64
+        return Button { catchSuggestion(s) } label: {
+            ZStack {
+                // train — bright (trailing end) at the head, fading backward
+                Capsule()
+                    .fill(LinearGradient(colors: [.white.opacity(0), .white.opacity(0.85)],
+                                         startPoint: .leading, endPoint: .trailing))
+                    .frame(width: L, height: 2.5)
+                    .rotationEffect(.radians(travel))
+                    .offset(x: -CGFloat(cos(travel)) * L / 2, y: -CGFloat(sin(travel)) * L / 2)
+                    .blur(radius: 0.5)
+                // head — kept upright + readable
+                Circle().fill(.white.opacity(0.55)).frame(width: 30, height: 30)
+                    .blur(radius: 7).scaleEffect(breathe ? 1.2 : 0.9)
+                Text(s.emoji).font(.system(size: 17))
                 Text(s.title).font(.system(size: 9))
-                    .foregroundStyle(theme.textSecondary).lineLimit(1)
+                    .foregroundStyle(theme.textSecondary).lineLimit(1).fixedSize()
+                    .offset(y: 27)
             }
         }
         .buttonStyle(.plain)
-        .rotationEffect(.degrees(10))
     }
 
     /// The nearest place that suits this wish's nature (learn → library/cafe …).
