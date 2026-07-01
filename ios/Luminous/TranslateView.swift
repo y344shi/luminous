@@ -16,6 +16,7 @@ import UIKit
 struct TranslateView: View {
     @Environment(\.theme) private var theme
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppStore.self) private var store
 
     @State private var cgImage: CGImage?
     @State private var displayOrientation: Image.Orientation = .up
@@ -209,10 +210,21 @@ struct TranslateView: View {
             }
             await MainActor.run { phase = .translating }
             let t = try await Translator.translate(clean)
-            await MainActor.run { result = t; phase = .done }
+            await MainActor.run { result = t; phase = .done; logHistory(clean, t) }
         } catch {
             await MainActor.run { phase = .idle; errorText = "翻译遇到点问题，再试一次。" }
         }
+    }
+
+    /// Keep every translation in the learning history, filed under the detected
+    /// language so it enriches that pursuit's anchor.
+    private func logHistory(_ source: String, _ t: Translation) {
+        let lang = LearningTopic.label(forEnglishLanguage: t.sourceLanguage)
+        let src = source.replacingOccurrences(of: "\n", with: " ").prefix(24)
+        let zh = t.chinese.replacingOccurrences(of: "\n", with: " ").prefix(24)
+        store.logLearning(LearningEntry(kind: .translate, language: lang,
+                                        items: ["\(src) → \(zh)"],
+                                        note: "拍照翻译"))
     }
 
     private static func swiftUIOrientation(_ o: CGImagePropertyOrientation) -> Image.Orientation {

@@ -352,12 +352,12 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphoneos*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
+				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphonesimulator*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_NSLocationWhenInUseUsageDescription[sdk=iphoneos*]" = "感受此刻的天气，帮我挑现在合适的事；只在本机，不记录位置。";
 				"INFOPLIST_KEY_NSLocationWhenInUseUsageDescription[sdk=iphonesimulator*]" = "感受此刻的天气，帮我挑现在合适的事；只在本机，不记录位置。";
 				"INFOPLIST_KEY_NSMotionUsageDescription[sdk=iphoneos*]" = "感受你在走、在路上还是坐着，帮我挑现在合适的事；只在本机。";
 				"INFOPLIST_KEY_NSMotionUsageDescription[sdk=iphonesimulator*]" = "感受你在走、在路上还是坐着，帮我挑现在合适的事；只在本机。";
-				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphoneos*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
-				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphonesimulator*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -400,12 +400,12 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphoneos*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
+				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphonesimulator*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_NSLocationWhenInUseUsageDescription[sdk=iphoneos*]" = "感受此刻的天气，帮我挑现在合适的事；只在本机，不记录位置。";
 				"INFOPLIST_KEY_NSLocationWhenInUseUsageDescription[sdk=iphonesimulator*]" = "感受此刻的天气，帮我挑现在合适的事；只在本机，不记录位置。";
 				"INFOPLIST_KEY_NSMotionUsageDescription[sdk=iphoneos*]" = "感受你在走、在路上还是坐着，帮我挑现在合适的事；只在本机。";
 				"INFOPLIST_KEY_NSMotionUsageDescription[sdk=iphonesimulator*]" = "感受你在走、在路上还是坐着，帮我挑现在合适的事；只在本机。";
-				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphoneos*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
-				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphonesimulator*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -446,12 +446,12 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Luminous;
+				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphoneos*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
+				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphonesimulator*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_NSLocationWhenInUseUsageDescription[sdk=iphoneos*]" = "感受此刻的天气，帮我挑现在合适的事；只在本机，不记录位置。";
 				"INFOPLIST_KEY_NSLocationWhenInUseUsageDescription[sdk=iphonesimulator*]" = "感受此刻的天气，帮我挑现在合适的事；只在本机，不记录位置。";
 				"INFOPLIST_KEY_NSMotionUsageDescription[sdk=iphoneos*]" = "感受你在走、在路上还是坐着，帮我挑现在合适的事；只在本机。";
 				"INFOPLIST_KEY_NSMotionUsageDescription[sdk=iphonesimulator*]" = "感受你在走、在路上还是坐着，帮我挑现在合适的事；只在本机。";
-				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphoneos*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
-				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphonesimulator*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				INFOPLIST_KEY_WKApplication = YES;
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = rainymushroom.Luminous;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -482,12 +482,12 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Luminous;
+				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphoneos*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
+				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphonesimulator*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_NSLocationWhenInUseUsageDescription[sdk=iphoneos*]" = "感受此刻的天气，帮我挑现在合适的事；只在本机，不记录位置。";
 				"INFOPLIST_KEY_NSLocationWhenInUseUsageDescription[sdk=iphonesimulator*]" = "感受此刻的天气，帮我挑现在合适的事；只在本机，不记录位置。";
 				"INFOPLIST_KEY_NSMotionUsageDescription[sdk=iphoneos*]" = "感受你在走、在路上还是坐着，帮我挑现在合适的事；只在本机。";
 				"INFOPLIST_KEY_NSMotionUsageDescription[sdk=iphonesimulator*]" = "感受你在走、在路上还是坐着，帮我挑现在合适的事；只在本机。";
-				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphoneos*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
-				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphonesimulator*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				INFOPLIST_KEY_WKApplication = YES;
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = rainymushroom.Luminous;
 				LD_RUNPATH_SEARCH_PATHS = (

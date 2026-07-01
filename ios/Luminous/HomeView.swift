@@ -556,15 +556,10 @@ struct HomeView: View {
 
     // MARK: AI help — let the on-device model do the task it can
 
-    /// If a wish is a "learn <language>" task, which language.
+    /// If a wish is a "learn <language>" task, which language. Single source of
+    /// truth in `LearningTopic` so Store, the add flow and this card all agree.
     private func helpLanguage(for seed: Seed) -> String? {
-        let raw = seed.title, t = seed.title.lowercased()
-        if raw.contains("法语") || t.contains("french") { return "法语" }
-        if raw.contains("英语") || t.contains("english") { return "英语" }
-        if raw.contains("日语") || t.contains("japanese") { return "日语" }
-        if raw.contains("西班牙") || t.contains("spanish") { return "西班牙语" }
-        if raw.contains("德语") || t.contains("german") { return "德语" }
-        return nil
+        LearningTopic.language(ofTitle: seed.title)
     }
 
     private func kindName(_ k: PlaceKind) -> String {
@@ -631,8 +626,59 @@ struct HomeView: View {
                 if let aiError {
                     Text(aiError).font(.system(size: 12)).foregroundStyle(.red.opacity(0.85))
                 }
+
+                // Snap a real-world sign / menu in this language and read it both ways.
+                Button { showTranslate = true } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "text.viewfinder")
+                        Text("拍张\(lang)的照片，翻成中英文")
+                            .font(.system(size: 14, weight: .medium))
+                        Spacer()
+                    }
+                    .foregroundStyle(theme.textPrimary)
+                    .padding(.vertical, 10).padding(.horizontal, Spacing.md)
+                    .background(theme.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(theme.border, lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+
+                learningHistoryStrip(lang)
             }
         }
+    }
+
+    /// A quiet record that this pursuit has a past — kept even after it's "done".
+    @ViewBuilder private func learningHistoryStrip(_ lang: String) -> some View {
+        let entries = store.learningEntries(language: lang)
+        if !entries.isEmpty {
+            let learnedCount = store.learnedWords(lang).count
+            VStack(alignment: .leading, spacing: 4) {
+                Text(learnedCount > 0
+                     ? "一路上：学过 \(learnedCount) 个词 · \(entries.count) 次记录"
+                     : "一路上：\(entries.count) 次记录")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(theme.textMuted)
+                ForEach(entries.prefix(3)) { e in
+                    Text(historyLine(e))
+                        .font(.system(size: 12)).lineLimit(1)
+                        .foregroundStyle(theme.textSecondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 2)
+        }
+    }
+
+    private func historyLine(_ e: LearningEntry) -> String {
+        let when = DomainUtil.friendlyDate(e.dateKey)
+        let what: String
+        switch e.kind {
+        case .vocab:     what = e.items.isEmpty ? (e.note ?? "挑了新词") : e.items.prefix(3).joined(separator: "、")
+        case .translate: what = "📷 " + (e.items.first ?? e.note ?? "翻译了一张照片")
+        }
+        return "· \(when) \(what)"
     }
 
     private func runAI(language: String) {
@@ -642,7 +688,11 @@ struct HomeView: View {
         Task {
             do {
                 let words = try await AIHelper.vocab(language: language, learned: learned, context: context)
-                await MainActor.run { aiVocab = words; aiLoading = false }
+                await MainActor.run {
+                    aiVocab = words; aiLoading = false
+                    store.logLearning(LearningEntry(kind: .vocab, language: language,
+                                                    items: words.map(\.word)))
+                }
             } catch {
                 await MainActor.run { aiError = "没能挑出来，待会儿再试"; aiLoading = false }
             }

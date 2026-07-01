@@ -15,6 +15,7 @@ struct AddSeedView: View {
 
     @State private var text = ""
     @State private var draft: SeedDraft?
+    @State private var saving = false
 
     var body: some View {
         ScrollView {
@@ -96,15 +97,41 @@ struct AddSeedView: View {
                 }
             }
 
-            SoftButton(title: Copy.Add.save) {
-                store.addSeed(SeedParser.draftToSeed(draft))
-                path.removeLast(path.count)
+            SoftButton(title: saving ? "整理中…" : Copy.Add.save, enabled: !saving) {
+                save(draft)
             }
             HStack(spacing: Spacing.sm) {
                 SoftButton(title: Copy.Add.edit, variant: .soft) { self.draft = nil }
                 SoftButton(title: Copy.Add.again, variant: .ghost) {
                     text = ""; self.draft = nil
                 }
+            }
+        }
+    }
+
+    /// Save the caught wish. If it's a learning pursuit that continues one you're
+    /// already carrying, merge into that anchor (LLM-judged, keyword fallback)
+    /// instead of spawning a duplicate — so the history stays in one place.
+    private func save(_ draft: SeedDraft) {
+        let isLearning = LearningTopic.language(ofTitle: draft.title) != nil
+            || draft.categories.contains(.learning)
+        let candidates = store.learningSeeds.map { (id: $0.id, title: $0.title) }
+        guard isLearning, !candidates.isEmpty else {
+            store.addSeed(SeedParser.draftToSeed(draft))
+            path.removeLast(path.count)
+            return
+        }
+        saving = true
+        Task {
+            let target = await LearningMerge.mergeTarget(newTitle: draft.title, candidates: candidates)
+            await MainActor.run {
+                if let target, store.mergeLearningSeed(newRaw: text, into: target) != nil {
+                    // merged — no new seed
+                } else {
+                    store.addSeed(SeedParser.draftToSeed(draft))
+                }
+                saving = false
+                path.removeLast(path.count)
             }
         }
     }

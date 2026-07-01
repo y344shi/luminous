@@ -30,8 +30,9 @@ final class AppStore {
         static let aestheticAuto = "tdd.aestheticAuto"
         static let senseAround = "tdd.senseAround"
         static let learnedVocab = "tdd.learnedVocab"
+        static let learningHistory = "tdd.learningHistory"
         static let musicOn = "tdd.musicOn"
-        static let all = [seeds, traces, settings, samplesPlanted, lastPick, introSeen, aesthetic, aestheticAuto, senseAround, learnedVocab, musicOn]
+        static let all = [seeds, traces, settings, samplesPlanted, lastPick, introSeen, aesthetic, aestheticAuto, senseAround, learnedVocab, learningHistory, musicOn]
     }
 
     // MARK: Persisted state
@@ -57,6 +58,11 @@ final class AppStore {
     /// Words the AI has already taught, per language — so long-term learning tasks
     /// build forward instead of repeating. Persisted.
     var learnedVocab: [String: [String]] = [:]
+
+    /// The lasting record of learning moments (vocab picked, photos translated).
+    /// Survives seed completion — a learning pursuit's history is worth keeping.
+    /// Newest first. Persisted.
+    var learningHistory: [LearningEntry] = []
 
     /// Play the skin's theme music on the dashboard. Off by default. Persisted.
     var musicOn: Bool = false
@@ -90,6 +96,7 @@ final class AppStore {
         aestheticAuto = defaults.bool(forKey: Key.aestheticAuto)
         senseAround = defaults.bool(forKey: Key.senseAround)
         learnedVocab = load([String: [String]].self, Key.learnedVocab) ?? [:]
+        learningHistory = load([LearningEntry].self, Key.learningHistory) ?? []
         musicOn = defaults.bool(forKey: Key.musicOn)
 
         // First run: plant a small mock garden so the app never feels empty.
@@ -217,6 +224,45 @@ final class AppStore {
         save(learnedVocab, Key.learnedVocab)
     }
 
+    // MARK: - Learning history (kept across completion)
+
+    /// Record a learning moment. Capped so it never grows without bound.
+    func logLearning(_ entry: LearningEntry) {
+        learningHistory.insert(entry, at: 0)
+        if learningHistory.count > 300 { learningHistory = Array(learningHistory.prefix(300)) }
+        save(learningHistory, Key.learningHistory)
+    }
+
+    /// History for one language (or all when nil), newest first.
+    func learningEntries(language: String? = nil) -> [LearningEntry] {
+        guard let language else { return learningHistory }
+        return learningHistory.filter { $0.language == language }
+    }
+
+    /// Existing learning pursuits a new wish could merge into (any status), newest first.
+    var learningSeeds: [Seed] {
+        seeds.filter { LearningTopic.isLearning($0) }
+    }
+
+    /// Fold a new wish into an existing learning anchor: revive it, keep a light
+    /// note of what was added, and log the merge. Returns the anchor's title.
+    @discardableResult
+    func mergeLearningSeed(newRaw: String, into anchorId: String) -> String? {
+        guard let idx = seeds.firstIndex(where: { $0.id == anchorId }) else { return nil }
+        let trimmed = newRaw.trimmingCharacters(in: .whitespacesAndNewlines)
+        updateSeed(anchorId) { s in
+            s.status = .active                       // resurface the pursuit
+            if !trimmed.isEmpty, s.rawText != trimmed {
+                let existing = s.description ?? ""
+                s.description = existing.isEmpty ? trimmed : existing + "\n" + trimmed
+            }
+        }
+        let lang = LearningTopic.language(ofTitle: seeds[idx].title) ?? "未知"
+        logLearning(LearningEntry(kind: .vocab, language: lang, items: [],
+                                  note: trimmed.isEmpty ? "又想起了这件事" : "又添了一句：\(trimmed)"))
+        return seeds[idx].title
+    }
+
     /// The skin to actually render. In auto mode it follows the system
     /// appearance; otherwise it's the user's chosen `aesthetic`.
     func effectiveAesthetic(dark: Bool) -> Aesthetic {
@@ -247,6 +293,7 @@ final class AppStore {
         aestheticAuto = false
         senseAround = false
         learnedVocab = [:]
+        learningHistory = []
         opportunities = []
         lastContext = nil
     }
