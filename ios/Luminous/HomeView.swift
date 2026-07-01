@@ -70,6 +70,7 @@ struct HomeView: View {
     @State private var dragOffsets: [String: CGSize] = [:]
     @State private var caughtIds: Set<String> = []
     @State private var revealExtra = 0
+    @State private var showTranslate = false
     @State private var sim = OrbitSim()
     @State private var aiLoading = false
     @State private var aiVocab: [VocabItem] = []
@@ -153,6 +154,14 @@ struct HomeView: View {
             }
             .onChange(of: picked?.id) { _, _ in
                 aiVocab = []; aiError = nil; aiLoading = false
+            }
+            .sheet(isPresented: $showTranslate) {
+                TranslateView()
+                #if os(iOS)
+                    .presentationBackground(.regularMaterial)
+                #else
+                    .frame(minWidth: 420, minHeight: 560)
+                #endif
             }
             .onAppear {
                 rebuild()
@@ -658,18 +667,33 @@ struct HomeView: View {
                     .frame(maxWidth: 270)
                     .transition(.opacity)
             }
-            Button { path.append(Route.add) } label: {
-                ZStack {
-                    Circle().fill(.ultraThinMaterial)
-                    Circle().strokeBorder(.white.opacity(0.3), lineWidth: 1)
-                    Image(systemName: "plus")
-                        .font(.system(size: 20, weight: .light))
-                        .foregroundStyle(theme.textSecondary)
+            HStack(spacing: 18) {
+                Button { showTranslate = true } label: {
+                    ZStack {
+                        Circle().fill(.ultraThinMaterial)
+                        Circle().strokeBorder(.white.opacity(0.3), lineWidth: 1)
+                        Image(systemName: "text.viewfinder")
+                            .font(.system(size: 18, weight: .light))
+                            .foregroundStyle(theme.textSecondary)
+                    }
+                    .frame(width: 46, height: 46)
                 }
-                .frame(width: 46, height: 46)
+                .buttonStyle(.plain)
+                .accessibilityLabel("拍照翻译")
+
+                Button { path.append(Route.add) } label: {
+                    ZStack {
+                        Circle().fill(.ultraThinMaterial)
+                        Circle().strokeBorder(.white.opacity(0.3), lineWidth: 1)
+                        Image(systemName: "plus")
+                            .font(.system(size: 20, weight: .light))
+                            .foregroundStyle(theme.textSecondary)
+                    }
+                    .frame(width: 46, height: 46)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Copy.Home.addSeed)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Copy.Home.addSeed)
         }
         .padding(.bottom, 14)
     }
