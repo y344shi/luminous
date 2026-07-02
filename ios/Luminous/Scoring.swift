@@ -249,7 +249,8 @@ enum Scoring {
 
     static func scoreSeed(_ seed: Seed, _ ctx: ContextSnapshot,
                           rng: Rng? = nil,
-                          history: Recurrence.SeedStats? = nil) -> ScoreBreakdown {
+                          history: Recurrence.SeedStats? = nil,
+                          mentality: MentalityEstimate? = nil) -> ScoreBreakdown {
         let tf = timeFit(seed, ctx)
         let df = durationFit(seed, ctx)
         let ef = energyFit(seed, ctx)
@@ -263,6 +264,7 @@ enum Scoring {
         total += sensorBonus(seed, ctx)
         total += placeBonus(seed, ctx)
         total += Recurrence.historyBonus(seed, ctx, stats: history)
+        total += Mentality.bonus(seed, estimate: mentality)
         if ctx.isLateNight && isRescueSeed(seed) { total += 0.5 }
 
         return ScoreBreakdown(
@@ -276,6 +278,7 @@ enum Scoring {
     static func rankSeeds(_ seeds: [Seed], _ ctx: ContextSnapshot,
                           rng: Rng? = nil,
                           history: [String: Recurrence.SeedStats] = [:],
+                          mentality: MentalityEstimate? = nil,
                           limit: Int = 3) -> [ScoredSeed] {
         var candidates = seeds.filter { $0.status == .active || $0.status == .sleeping }
 
@@ -285,7 +288,8 @@ enum Scoring {
         }
 
         var scored = candidates.map { seed -> ScoredSeed in
-            let breakdown = scoreSeed(seed, ctx, rng: rng, history: history[seed.id])
+            let breakdown = scoreSeed(seed, ctx, rng: rng, history: history[seed.id],
+                                      mentality: mentality)
             return ScoredSeed(
                 seed: seed,
                 breakdown: breakdown,
@@ -302,8 +306,10 @@ enum Scoring {
     static func recommend(_ seeds: [Seed], _ ctx: ContextSnapshot,
                           rng: Rng? = nil,
                           history: [String: Recurrence.SeedStats] = [:],
+                          mentality: MentalityEstimate? = nil,
                           limit: Int = 3) -> [Opportunity] {
-        rankSeeds(seeds, ctx, rng: rng, history: history, limit: limit).map { s in
+        rankSeeds(seeds, ctx, rng: rng, history: history, mentality: mentality,
+                  limit: limit).map { s in
             Opportunity(
                 id: DomainUtil.uid("opp"),
                 seedId: s.seed.id,

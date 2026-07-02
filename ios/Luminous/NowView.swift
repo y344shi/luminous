@@ -126,7 +126,8 @@ struct NowView: View {
         input.weatherKind = sensed.weatherKind
         input.nearbyKinds = isLateNight ? [] : sensed.nearbyKinds
         let ctx = ContextBuilder.build(input)
-        let result = Scoring.recommend(store.seeds, ctx, history: store.seedHistory(), limit: 3)
+        let result = Scoring.recommend(store.seeds, ctx, history: store.seedHistory(),
+                                       mentality: store.mentality, limit: 3)
         opps = result
         activeIndex = 0
         store.setOpportunities(result, ctx)

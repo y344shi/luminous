@@ -21,6 +21,7 @@
 		FACE00000000000000000B20 /* WatchUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000B10 /* WatchUI.swift */; };
 		FACE00000000000000000C20 /* LearningLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000C10 /* LearningLog.swift */; };
 		FACE00000000000000000D20 /* Recurrence.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000D10 /* Recurrence.swift */; };
+		FACE00000000000000000E20 /* Mentality.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE00000000000000000E10 /* Mentality.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		FACE00000000000000000B10 /* WatchUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WatchUI.swift; path = LuminousWatch/WatchUI.swift; sourceTree = SOURCE_ROOT; };
 		FACE00000000000000000C10 /* LearningLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningLog.swift; path = Luminous/LearningLog.swift; sourceTree = SOURCE_ROOT; };
 		FACE00000000000000000D10 /* Recurrence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Recurrence.swift; path = Luminous/Recurrence.swift; sourceTree = SOURCE_ROOT; };
+		FACE00000000000000000E10 /* Mentality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Mentality.swift; path = Luminous/Mentality.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -103,6 +105,7 @@
 				FACE00000000000000000B10 /* WatchUI.swift */,
 				FACE00000000000000000C10 /* LearningLog.swift */,
 				FACE00000000000000000D10 /* Recurrence.swift */,
+				FACE00000000000000000E10 /* Mentality.swift */,
 			);
 			name = "Luminous Watch App";
 			sourceTree = "<group>";
@@ -229,6 +232,7 @@
 				FACE00000000000000000B20 /* WatchUI.swift in Sources */,
 				FACE00000000000000000C20 /* LearningLog.swift in Sources */,
 				FACE00000000000000000D20 /* Recurrence.swift in Sources */,
+				FACE00000000000000000E20 /* Mentality.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -845,8 +845,10 @@ struct HomeView: View {
             weatherKind: sensed.weatherKind,
             nearbyKinds: nearbyAppropriate ? sensed.nearbyKinds : []
         ))
-        let opps = Scoring.recommend(store.seeds, ctx, history: store.seedHistory(), limit: 3)
+        let opps = Scoring.recommend(store.seeds, ctx, history: store.seedHistory(),
+                                     mentality: store.mentality, limit: 3)
         store.setOpportunities(opps, ctx)   // keeps lastContext fresh for the event log
+        store.refreshMentalityIfStale()     // hourly, on-device, fire-and-forget
         let primaryIds = Set(opps.map { $0.seedId })
         var next: [Wish] = []
         for o in opps {

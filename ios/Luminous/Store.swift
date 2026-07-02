@@ -71,6 +71,10 @@ final class AppStore {
     var opportunities: [Opportunity] = []
     var lastContext: ContextSnapshot?
 
+    /// The soft, hourly mentality guess (never shown; one clamped scoring term).
+    var mentality: MentalityEstimate?
+    @ObservationIgnored var mentalityFetchedAt: Date?
+
     private let defaults: UserDefaults
     private let maxTraces = 500
 
