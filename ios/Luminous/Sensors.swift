@@ -91,6 +91,8 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
     private var weatherFetchedAt: Date?
     private var refreshTimer: Timer?
     private var lastFixAt: Date?
+    private var lastNearbyAt: Date?
+    private var lastNearbyLoc: CLLocation?
 
     #if os(iOS)
     private let motion = CMMotionManager()
@@ -178,7 +180,15 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
                                             home: self.homeCell, work: self.workCell,
                                             activity: self.activity)
             await self.fetchWeather(lat: coord.latitude, lon: coord.longitude)
-            await self.fetchNearby(center: coord)
+            // Re-search POIs only when we actually moved (>250m) or it's stale
+            // (>15 min) — kind to MapKit, fresh enough for the scout.
+            let moved = self.lastNearbyLoc.map { loc.distance(from: $0) > 250 } ?? true
+            let stale = self.lastNearbyAt.map { Date().timeIntervalSince($0) > 900 } ?? true
+            if moved || stale {
+                self.lastNearbyLoc = loc
+                self.lastNearbyAt = Date()
+                await self.fetchNearby(center: coord)
+            }
         }
     }
 
@@ -205,7 +215,7 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
                     mapItem: item)
             }
             .sorted { $0.distanceM < $1.distanceM }
-            self.nearby = Array(places.prefix(6))
+            self.nearby = Array(places.prefix(12))
         } catch {
             // leave nearby as-is on failure
         }

@@ -16,6 +16,11 @@ struct Suggestion: Identifiable, Hashable {
     let title: String
     let action: String
     let category: SeedCategory
+    /// When set, this suggestion carries an EXISTING wish to a fitting nearby
+    /// place (the scout) — tapping opens that wish instead of planting a new one.
+    var seedId: String? = nil
+    /// A soft place hint like "转角图书馆 · 200m".
+    var place: String? = nil
 
     /// Turn a caught suggestion into a real Seed.
     func toSeed() -> Seed {
@@ -77,5 +82,69 @@ enum Suggester {
         pool.append(.init(id: "s_reach", emoji: "🤍", title: "给一个人发句话", action: "给忽然想起的人发一句真话", category: .connection))
 
         return Array(pool.prefix(3))
+    }
+}
+
+// MARK: - The scout: an existing wish meets a fitting place, right here
+
+/// Watches what's within a short walk and — only when the moment suits —
+/// pairs an active wish with a place that fits it ("图书馆 200m · 记三个法语
+/// 单词"). Never late at night, never more than a couple, never a command.
+enum OpportunityScout {
+
+    /// A nearby place, framework-free so this stays pure and testable.
+    struct Spot: Hashable {
+        let name: String
+        let kind: PlaceKind
+        let distanceM: Double
+        init(name: String, kind: PlaceKind, distanceM: Double) {
+            self.name = name; self.kind = kind; self.distanceM = distanceM
+        }
+    }
+
+    static func scout(seeds: [Seed],
+                      spots: [Spot],
+                      hour: Int,
+                      isLateNight: Bool,
+                      limit: Int = 2) -> [Suggestion] {
+        // The same appropriateness gate as the rest of the app: daytime/early
+        // evening only, and the late-night rule is absolute.
+        guard !isLateNight, (8...20).contains(hour), !spots.isEmpty else { return [] }
+
+        let sorted = spots.sorted { $0.distanceM < $1.distanceM }
+        var out: [Suggestion] = []
+        var usedSeeds = Set<String>()
+        var usedSpots = Set<Spot>()
+
+        for seed in seeds where seed.status == .active && !usedSeeds.contains(seed.id) {
+            var kinds = Set<PlaceKind>()
+            for c in seed.categories { if let a = Scoring.placeAffinity[c] { kinds.formUnion(a) } }
+            guard let spot = sorted.first(where: { kinds.contains($0.kind) && !usedSpots.contains($0) && $0.distanceM <= 800 })
+            else { continue }
+            usedSeeds.insert(seed.id)
+            usedSpots.insert(spot)
+            let dist = spot.distanceM < 1000
+                ? "\(Int((spot.distanceM / 50).rounded()) * 50)m"
+                : String(format: "%.1fkm", spot.distanceM / 1000)
+            out.append(Suggestion(
+                id: "scout_\(seed.id)",
+                emoji: emoji(for: spot.kind),
+                title: seed.title,
+                action: seed.minimumAction,
+                category: seed.categories.first ?? .recovery,
+                seedId: seed.id,
+                place: "\(spot.name) · \(dist)"
+            ))
+            if out.count >= limit { break }
+        }
+        return out
+    }
+
+    private static func emoji(for kind: PlaceKind) -> String {
+        switch kind {
+        case .cafe: return "☕"; case .library: return "📚"; case .park: return "🌳"
+        case .market: return "🛒"; case .store: return "🛍️"; case .restaurant: return "🍴"
+        case .gym: return "🏋️"; case .museum: return "🖼️"
+        }
     }
 }

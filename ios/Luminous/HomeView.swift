@@ -482,17 +482,27 @@ struct HomeView: View {
         .padding(.top, 8)
     }
 
-    /// Context-born suggestions, shown as glowing icons. Tap to catch one into
-    /// the garden. Late night only ever offers calm stop-loss.
+    /// Context-born suggestions, shown as shooting stars. The scout's finds
+    /// (an existing wish × a fitting place right here) lead; generic moment
+    /// suggestions fill the rest. Late night only ever offers calm stop-loss.
     private var suggestions: [Suggestion] {
-        Suggester.suggest(
+        let scouted = OpportunityScout.scout(
+            seeds: store.seeds,
+            spots: sensed.nearby.compactMap { p in
+                p.kind.map { OpportunityScout.Spot(name: p.name, kind: $0, distanceM: p.distanceM) }
+            },
+            hour: hour,
+            isLateNight: isLateNight
+        )
+        let base = Suggester.suggest(
             hour: hour,
             isLateNight: isLateNight,
             weather: sensed.weatherKind,
             activity: sensed.activity,
             nearbyCafe: sensed.nearbyCafe,
             nearbyOuting: sensed.nearbyOuting
-        ).filter { !caughtIds.contains($0.id) }
+        )
+        return Array((scouted + base).filter { !caughtIds.contains($0.id) }.prefix(3))
     }
 
     /// Suggestions streak across the sky as shooting stars; tap one to catch it.
@@ -541,6 +551,11 @@ struct HomeView: View {
                 Text(s.title).font(.system(size: 9))
                     .foregroundStyle(theme.textSecondary).lineLimit(1).fixedSize()
                     .offset(y: 27)
+                if let place = s.place {
+                    Text(place).font(.system(size: 8))
+                        .foregroundStyle(theme.textMuted).lineLimit(1).fixedSize()
+                        .offset(y: 38)
+                }
             }
         }
         .buttonStyle(.plain)
@@ -701,6 +716,12 @@ struct HomeView: View {
 
     private func catchSuggestion(_ s: Suggestion) {
         Feedback.completion(.partial)   // a soft "caught" tap
+        // A scouted star carries an existing wish to a nearby place — open it.
+        if let seedId = s.seedId, let seed = store.findSeed(seedId) {
+            picked = wishes.first { $0.seed.id == seedId }
+                ?? Wish(id: "scout_\(seedId)", seed: seed, opp: nil, primary: false)
+            return
+        }
         store.addSeed(s.toSeed())
         caughtIds.insert(s.id)
         withAnimation { justTrace = "接住了一个新念头：\(s.title)" }

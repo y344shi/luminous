@@ -25,6 +25,7 @@ let package = Package(
                 "SeedParser.swift",
                 "SemanticTime.swift",
                 "SensorClassifiers.swift",
+                "Suggestion.swift",
             ],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
