@@ -72,6 +72,8 @@ struct HomeView: View {
     @State private var revealExtra = 0
     @State private var showTranslate = false
     @State private var sim = OrbitSim()
+    @State private var aiMoments: [Suggestion] = []
+    @State private var aiMomentsAt: Date?
     @State private var aiLoading = false
     @State private var aiVocab: [VocabItem] = []
     @State private var aiError: String?
@@ -502,7 +504,22 @@ struct HomeView: View {
             nearbyCafe: sensed.nearbyCafe,
             nearbyOuting: sensed.nearbyOuting
         )
-        return Array((scouted + base).filter { !caughtIds.contains($0.id) }.prefix(3))
+        // scout finds > model's moments > the static floor
+        let ai = isLateNight ? [] : aiMoments
+        return Array((scouted + ai + base).filter { !caughtIds.contains($0.id) }.prefix(3))
+    }
+
+    /// Ask the model for fresh moment suggestions at most every 30 minutes.
+    /// Late night never asks — the stop-loss pool is code-owned.
+    private func refreshAIMoments() {
+        guard !isLateNight, AIHelper.isAvailable else { return }
+        if let at = aiMomentsAt, Date().timeIntervalSince(at) < 1800 { return }
+        aiMomentsAt = Date()
+        let line = aiContext()
+        Task {
+            let fresh = await SuggestAI.moments(contextLine: line)
+            await MainActor.run { if !fresh.isEmpty { aiMoments = fresh } }
+        }
     }
 
     /// Suggestions streak across the sky as shooting stars; tap one to catch it.
@@ -850,6 +867,7 @@ struct HomeView: View {
                                      mentality: store.mentality, limit: 3)
         store.setOpportunities(opps, ctx)   // keeps lastContext fresh for the event log
         store.refreshMentalityIfStale()     // hourly, on-device, fire-and-forget
+        refreshAIMoments()                  // half-hourly, on-device, fire-and-forget
         let primaryIds = Set(opps.map { $0.seedId })
         var next: [Wish] = []
         for o in opps {

@@ -132,6 +132,27 @@ struct NowView: View {
         activeIndex = 0
         store.setOpportunities(result, ctx)
         step = .list
+
+        // The model may re-phrase the reasons (never the choice, never at
+        // late night — that copy is safety copy and stays code-owned).
+        if !ctx.isLateNight {
+            let hour = Calendar.current.component(.hour, from: Date())
+            let line = DayGrade.line(hour: hour)
+            Task {
+                for (i, o) in result.enumerated() {
+                    guard let seed = store.findSeed(o.seedId) else { continue }
+                    if let warm = await SuggestAI.rewriteReason(
+                        seedTitle: seed.title, action: o.suggestedAction,
+                        template: o.reason, contextLine: line) {
+                        await MainActor.run {
+                            if opps.indices.contains(i), opps[i].id == o.id {
+                                opps[i].reason = warm
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // MARK: Step 2 — list
