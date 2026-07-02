@@ -62,6 +62,13 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
     /// Nearby cafes / stores / markets for the Home "附近" row.
     var nearby: [NearbyPlace] = []
 
+    /// The coarse ~150m grid cell we're in right now (never a raw coordinate).
+    var currentCell: String?
+    /// Learned anchors (home = modal night cell, work = weekday-day cell),
+    /// computed from the event log and handed in by RootView.
+    var homeCell: String?
+    var workCell: String?
+
     /// Coarse "a cafe is right here" — gently lifts a coffee/connection wish.
     var nearbyCafe: Bool {
         nearby.contains { $0.distanceM < 300 && $0.mapItem.pointOfInterestCategory == .cafe }
@@ -166,7 +173,10 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
         let coord = loc.coordinate
         Task { @MainActor in
             self.coordinate = coord
-            self.locationHint = .outdoor  // coarse default; refined by saved-home later
+            self.currentCell = Places.cellKey(lat: coord.latitude, lon: coord.longitude)
+            self.locationHint = Places.hint(currentCell: self.currentCell,
+                                            home: self.homeCell, work: self.workCell,
+                                            activity: self.activity)
             await self.fetchWeather(lat: coord.latitude, lon: coord.longitude)
             await self.fetchNearby(center: coord)
         }

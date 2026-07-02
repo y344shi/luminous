@@ -63,6 +63,14 @@ struct RootView: View {
                                payload: entered.map(\.rawValue).sorted().joined(separator: ","))
             }
         }
+        // Each coarse cell fix teaches the app where home/work are (on-device).
+        .onChange(of: sensed.currentCell) { _, cell in
+            guard let cell else { return }
+            store.logEvent(kind: "sense.cell", payload: cell)
+            let learned = store.learnedPlaceCells()
+            sensed.homeCell = learned.home
+            sensed.workCell = learned.work
+        }
         .onChange(of: store.musicOn) { _, _ in updateMusic() }
         .onChange(of: store.aesthetic) { _, _ in updateMusic() }
         .onChange(of: store.aestheticAuto) { _, _ in updateMusic() }

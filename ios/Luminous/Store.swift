@@ -252,6 +252,15 @@ final class AppStore {
     #if !os(watchOS)
     var gardens: [ProfileInfo] { persistence?.profiles() ?? [] }
 
+    /// Home/work grid cells learned from the last 90 days of coarse fixes.
+    func learnedPlaceCells() -> (home: String?, work: String?) {
+        guard let p = persistence else { return (nil, nil) }
+        let obs = p.events(profile: activeProfileID, kindPrefix: "sense.cell")
+            .map { Places.Observation(time: $0.timestamp, cell: $0.payloadJSON) }
+        let home = Places.inferHome(obs)
+        return (home, Places.inferWork(obs, home: home))
+    }
+
     /// Today's sensed rhythm, phrased softly ("今天到现在：安坐 2 小时 · 走动 20 分钟").
     func todayDwellLine() -> String? {
         guard let p = persistence else { return nil }
