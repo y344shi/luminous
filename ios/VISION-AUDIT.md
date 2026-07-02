@@ -159,6 +159,11 @@ With that spine, the model can be trusted with much more:
 
 ## 6. Proposed build order
 
+> **Status (2026-06-30 overnight, branch `ios-aware`):** P0 and P1 shipped in
+> full; P2 shipped in full; P3 shipped except true place-transition nudges
+> (needs Always-location — a decision, not a build). See
+> `ios/OVERNIGHT-SESSION.md` for the cycle-by-cycle record.
+
 | phase | items | why first |
 | --- | --- | --- |
 | **P0** | Event log + dwell histograms (§3.1–3.2) | substrate for every other direction; already queued |
