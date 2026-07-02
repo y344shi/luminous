@@ -175,6 +175,26 @@ enum Meta {
     }
 }
 
+// MARK: - The vocabulary we refuse (port of packages/core copy.ts forbiddenWords)
+
+/// Words this app must never say — todo-app mechanics and shame. Every piece of
+/// model-generated copy is filtered through this before it reaches the user.
+enum ForbiddenWords {
+    static let all: [String] = [
+        // todo framing / mechanics
+        "待办", "任务列表", "完成任务", "todo", "to-do", "deadline", "overdue",
+        "高优先级", "优先级", "完成率", "streak", "打卡",
+        // shaming
+        "失败", "you must", "you failed",
+    ]
+
+    /// True when the text is clean enough to show.
+    static func passes(_ text: String) -> Bool {
+        let lower = text.lowercased()
+        return !all.contains { lower.contains($0.lowercased()) }
+    }
+}
+
 // MARK: - Picker options (port of components/context/Pickers.tsx)
 
 struct PickerOption<T> {

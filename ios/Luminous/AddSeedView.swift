@@ -16,6 +16,7 @@ struct AddSeedView: View {
     @State private var text = ""
     @State private var draft: SeedDraft?
     @State private var saving = false
+    @State private var parsing = false
 
     var body: some View {
         ScrollView {
@@ -57,8 +58,14 @@ struct AddSeedView: View {
             .overlay(RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
                 .strokeBorder(theme.border, lineWidth: 1))
 
-            SoftButton(title: Copy.Add.catchIt, enabled: !text.trimmed.isEmpty) {
-                draft = SeedParser.parse(text)
+            SoftButton(title: parsing ? "轻轻接住…" : Copy.Add.catchIt,
+                       enabled: !text.trimmed.isEmpty && !parsing) {
+                parsing = true
+                Task {
+                    // On-device model reads the wish; keyword net is the fallback.
+                    let parsed = await AISeedParser.parse(text)
+                    await MainActor.run { draft = parsed; parsing = false }
+                }
             }
         }
     }

@@ -21,6 +21,7 @@ enum AppTab: Hashable {
 struct NowView: View {
     @Environment(AppStore.self) private var store
     @Environment(AppRouter.self) private var router
+    @Environment(SensedSignals.self) private var sensed
     @Environment(\.theme) private var theme
     @Binding var path: NavigationPath
 
@@ -113,13 +114,18 @@ struct NowView: View {
     private func handleFind() {
         guard let mood = mood, let energy = energy else { return }
         store.rememberPick(mood, energy)
-        let ctx = ContextBuilder.build(ContextInput(
+        // Stated answers + everything the device can sense right now.
+        var input = ContextInput(
             mood: mood, energy: energy,
             freeMinutes: freeTouched ? freeMinutes : nil,
-            locationHint: locationHint,
-            isOutdoorWeatherGood: weatherGood ? true : nil,
+            locationHint: locationHint ?? sensed.locationHint,
+            isOutdoorWeatherGood: weatherGood ? true : sensed.isOutdoorWeatherGood,
             isAtComputer: locationHint == .computer
-        ))
+        )
+        input.activity = sensed.activity
+        input.weatherKind = sensed.weatherKind
+        input.nearbyKinds = isLateNight ? [] : sensed.nearbyKinds
+        let ctx = ContextBuilder.build(input)
         let result = Scoring.recommend(store.seeds, ctx, limit: 3)
         opps = result
         activeIndex = 0

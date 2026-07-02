@@ -187,3 +187,20 @@ final class TraceTests: XCTestCase {
         XCTAssertFalse(t.text.isEmpty, "skipping must never erase the day")
     }
 }
+
+// MARK: - Forbidden words (the vocabulary we refuse)
+
+final class ForbiddenWordsTests: XCTestCase {
+
+    func testTodoLanguageIsRefused() {
+        XCTAssertFalse(ForbiddenWords.passes("完成任务，打卡今天"))
+        XCTAssertFalse(ForbiddenWords.passes("This is OVERDUE"))
+        XCTAssertFalse(ForbiddenWords.passes("高优先级：学法语"))
+        XCTAssertFalse(ForbiddenWords.passes("你失败了"))
+    }
+
+    func testGentleLanguagePasses() {
+        XCTAssertTrue(ForbiddenWords.passes("现在好像刚好适合做一点点"))
+        XCTAssertTrue(ForbiddenWords.passes("倒一杯温水，慢慢喝完"))
+    }
+}
