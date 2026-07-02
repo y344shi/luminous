@@ -14,6 +14,8 @@ struct SettingsView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(SensedSignals.self) private var sensed
     @State private var confirmingReset = false
+    @State private var namingGarden = false
+    @State private var newGardenName = ""
 
     var body: some View {
         NavigationStack {
@@ -25,6 +27,7 @@ struct SettingsView: View {
                     senseSection
                     themeSection
                     nudgeSection
+                    gardenSection
                     resetSection
 
                     Text(Copy.SettingsCopy.privacy)
@@ -305,6 +308,55 @@ struct SettingsView: View {
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .strokeBorder(theme.border, lineWidth: 1))
+        }
+    }
+
+    // MARK: 花园 — several gardens on one device, each its own seeds & traces.
+
+    private var gardenSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("花园")
+                .font(.system(size: 14))
+                .foregroundStyle(theme.textMuted)
+            ForEach(store.gardens) { g in
+                Button { store.switchGarden(g.id) } label: {
+                    HStack(spacing: Spacing.md) {
+                        Image(systemName: "leaf")
+                            .font(.system(size: 18))
+                            .foregroundStyle(theme.accent)
+                            .frame(width: 36, height: 36)
+                            .background(theme.surfaceSoft)
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        Text(g.name)
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(theme.textPrimary)
+                        Spacer()
+                        if g.id == store.activeProfileID {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(theme.accent)
+                        }
+                    }
+                    .padding(Spacing.md)
+                    .background(theme.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(g.id == store.activeProfileID ? theme.accent : theme.border,
+                                      lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+            }
+            SoftButton(title: "新建一座花园", variant: .ghost) {
+                newGardenName = ""
+                namingGarden = true
+            }
+            Text("每座花园有自己的愿望和痕迹，适合家人共用一台设备。")
+                .font(.system(size: 12))
+                .foregroundStyle(theme.textMuted)
+        }
+        .alert("给新花园起个名字", isPresented: $namingGarden) {
+            TextField("比如：妈妈的花园", text: $newGardenName)
+            Button("种下") { store.createGarden(name: newGardenName) }
+            Button("先不了", role: .cancel) {}
         }
     }
 

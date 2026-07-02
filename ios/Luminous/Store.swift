@@ -235,11 +235,49 @@ final class AppStore {
         #endif
     }
 
+    // MARK: - Life-event log (no-op on the watch)
+
+    /// Append one moment to the on-device event log, stamped with the coarse
+    /// context of when it happened. The substrate for rhythm and recurrence.
+    func logEvent(kind: String, payload: String = "") {
+        #if !os(watchOS)
+        persistence?.appendEvent(kind: kind, payload: payload,
+                                 context: lastContext, profile: activeProfileID)
+        #endif
+    }
+
+    // MARK: - Gardens (multi-profile; iOS/macOS only)
+
+    #if !os(watchOS)
+    var gardens: [ProfileInfo] { persistence?.profiles() ?? [] }
+
+    func createGarden(name: String) {
+        guard let p = persistence else { return }
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let info = p.createProfile(name: trimmed.isEmpty ? "新的花园" : trimmed)
+        switchGarden(info.id)
+    }
+
+    /// Move to another garden: everything re-hydrates from its records. The
+    /// current garden's state is already persisted (write-through seams).
+    func switchGarden(_ id: String) {
+        guard let p = persistence, id != activeProfileID,
+              p.profiles().contains(where: { $0.id == id }) else { return }
+        activeProfileID = id
+        mirrorsToDefaults = (p.profiles().first?.id == id)
+        defaults.set(id, forKey: "tdd.activeProfile")
+        opportunities = []
+        lastContext = nil
+        hydrateActiveProfile(p)
+    }
+    #endif
+
     // MARK: - Seeds
 
     func addSeed(_ seed: Seed) {
         seeds.insert(seed, at: 0)
         persistSeeds()
+        logEvent(kind: "seed.planted", payload: seed.title)
         if samplesPlanted {
             samplesPlanted = false
             persistPrefs()
@@ -255,6 +293,7 @@ final class AppStore {
 
     func setSeedStatus(_ id: String, _ status: SeedStatus) {
         updateSeed(id) { $0.status = status }
+        logEvent(kind: "seed.status.\(status.rawValue)", payload: id)
     }
 
     func findSeed(_ id: String?) -> Seed? {
@@ -273,6 +312,8 @@ final class AppStore {
         traces.insert(trace, at: 0)
         if traces.count > maxTraces { traces = Array(traces.prefix(maxTraces)) }
         persistTraces()
+        let outcome = trace.partial == true ? "partial" : "full"
+        logEvent(kind: "trace.recorded.\(outcome)", payload: trace.seedId ?? "")
     }
 
     func updateTrace(_ id: String, text: String) {
