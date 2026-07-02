@@ -19,6 +19,7 @@ let package = Package(
             sources: [
                 "Copy.swift",
                 "Domain.swift",
+                "Rhythm.swift",
                 "Scoring.swift",
                 "SeedParser.swift",
                 "SemanticTime.swift",

@@ -138,6 +138,7 @@ final class AppStore {
     #if !os(watchOS)
     /// Load everything for the active profile from SwiftData.
     private func hydrateActiveProfile(_ p: Persistence) {
+        p.pruneEvents(profile: activeProfileID)   // raw events: 90-day retention
         seeds = p.loadSeeds(profile: activeProfileID)
         traces = p.loadTraces(profile: activeProfileID)
         learningHistory = p.loadLearning(profile: activeProfileID)
@@ -250,6 +251,16 @@ final class AppStore {
 
     #if !os(watchOS)
     var gardens: [ProfileInfo] { persistence?.profiles() ?? [] }
+
+    /// Today's sensed rhythm, phrased softly ("今天到现在：安坐 2 小时 · 走动 20 分钟").
+    func todayDwellLine() -> String? {
+        guard let p = persistence else { return nil }
+        let start = Calendar.current.startOfDay(for: Date())
+        let samples = p.events(profile: activeProfileID, since: start,
+                               kindPrefix: "sense.activity")
+            .map { SenseSample(time: $0.timestamp, state: $0.payloadJSON) }
+        return Rhythm.todayLine(samples, now: Date())
+    }
 
     func createGarden(name: String) {
         guard let p = persistence else { return }

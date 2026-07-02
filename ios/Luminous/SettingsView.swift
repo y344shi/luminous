@@ -244,6 +244,12 @@ struct SettingsView: View {
             sourceRow("位置 → 天气", detail: weatherDetail, active: store.senseAround && sensed.weatherKind != nil)
             sourceRow("心率 → 状态", detail: "未接入（需要 HealthKit）", active: false)
             sourceRow("声音 → 安静/热闹", detail: "未接入（需要麦克风）", active: false)
+            if let dwell = store.todayDwellLine() {
+                Text(dwell)
+                    .font(.system(size: 12))
+                    .foregroundStyle(theme.textMuted)
+                    .padding(.top, 2)
+            }
         }
         .padding(Spacing.md)
         .background(theme.surfaceSoft)

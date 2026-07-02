@@ -82,6 +82,8 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     private var enabled = false
     private var weatherFetchedAt: Date?
+    private var refreshTimer: Timer?
+    private var lastFixAt: Date?
 
     #if os(iOS)
     private let motion = CMMotionManager()
@@ -96,13 +98,29 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
     }
 
     /// Start sensing. Motion is permission-free; location asks when enabled.
+    /// While the app is in the foreground, a gentle timer re-senses every 5
+    /// minutes so the day's rhythm is real, not a single snapshot.
     func start(enabled: Bool) {
         self.enabled = enabled
         startMotion()
+        refreshTimer?.invalidate()
+        refreshTimer = nil
         guard enabled else { return }
         #if os(iOS) || os(watchOS)
         manager.requestWhenInUseAuthorization()
         #endif
+        manager.requestLocation()
+        lastFixAt = Date()
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.refresh() }
+        }
+    }
+
+    /// One coarse re-sense (foreground return, timer tick). Throttled to ≥60 s.
+    func refresh() {
+        guard enabled else { return }
+        if let last = lastFixAt, Date().timeIntervalSince(last) < 60 { return }
+        lastFixAt = Date()
         manager.requestLocation()
     }
 
