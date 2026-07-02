@@ -239,19 +239,30 @@ enum Scoring {
 
     // MARK: - Scoring
 
-    static func scoreSeed(_ seed: Seed, _ ctx: ContextSnapshot, rng: Rng = { Double.random(in: 0..<1) }) -> ScoreBreakdown {
+    /// Serendipity that holds still: a hash of (seed, part of day), so two opens
+    /// a minute apart agree with each other, but tomorrow evening differs.
+    static func stableSerendipity(_ seedId: String, _ slot: String) -> Double {
+        var h: UInt64 = 5381
+        for b in "\(seedId)|\(slot)".utf8 { h = h &* 33 &+ UInt64(b) }
+        return Double(h % 10_000) / 10_000
+    }
+
+    static func scoreSeed(_ seed: Seed, _ ctx: ContextSnapshot,
+                          rng: Rng? = nil,
+                          history: Recurrence.SeedStats? = nil) -> ScoreBreakdown {
         let tf = timeFit(seed, ctx)
         let df = durationFit(seed, ctx)
         let ef = energyFit(seed, ctx)
         let lf = locationFit(seed, ctx)
         let mf = moodFit(seed, ctx)
         let fr = freshness(seed)
-        let ser = rng()
+        let ser = rng?() ?? stableSerendipity(seed.id, ctx.semanticTime.rawValue)
 
         var total = tf * 0.2 + df * 0.2 + ef * 0.2 + lf * 0.2 + mf * 0.1 + fr * 0.05 + ser * 0.05
         total += triggerBonus(seed, ctx)
         total += sensorBonus(seed, ctx)
         total += placeBonus(seed, ctx)
+        total += Recurrence.historyBonus(seed, ctx, stats: history)
         if ctx.isLateNight && isRescueSeed(seed) { total += 0.5 }
 
         return ScoreBreakdown(
@@ -262,7 +273,10 @@ enum Scoring {
     }
 
     /// Rank active/sleeping seeds for the current context.
-    static func rankSeeds(_ seeds: [Seed], _ ctx: ContextSnapshot, rng: Rng = { Double.random(in: 0..<1) }, limit: Int = 3) -> [ScoredSeed] {
+    static func rankSeeds(_ seeds: [Seed], _ ctx: ContextSnapshot,
+                          rng: Rng? = nil,
+                          history: [String: Recurrence.SeedStats] = [:],
+                          limit: Int = 3) -> [ScoredSeed] {
         var candidates = seeds.filter { $0.status == .active || $0.status == .sleeping }
 
         if ctx.isLateNight {
@@ -271,7 +285,7 @@ enum Scoring {
         }
 
         var scored = candidates.map { seed -> ScoredSeed in
-            let breakdown = scoreSeed(seed, ctx, rng: rng)
+            let breakdown = scoreSeed(seed, ctx, rng: rng, history: history[seed.id])
             return ScoredSeed(
                 seed: seed,
                 breakdown: breakdown,
@@ -285,8 +299,11 @@ enum Scoring {
     }
 
     /// Convert scored seeds into Opportunity records ready for the UI.
-    static func recommend(_ seeds: [Seed], _ ctx: ContextSnapshot, rng: Rng = { Double.random(in: 0..<1) }, limit: Int = 3) -> [Opportunity] {
-        rankSeeds(seeds, ctx, rng: rng, limit: limit).map { s in
+    static func recommend(_ seeds: [Seed], _ ctx: ContextSnapshot,
+                          rng: Rng? = nil,
+                          history: [String: Recurrence.SeedStats] = [:],
+                          limit: Int = 3) -> [Opportunity] {
+        rankSeeds(seeds, ctx, rng: rng, history: history, limit: limit).map { s in
             Opportunity(
                 id: DomainUtil.uid("opp"),
                 seedId: s.seed.id,

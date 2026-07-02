@@ -20,6 +20,7 @@ let package = Package(
                 "Copy.swift",
                 "Domain.swift",
                 "Places.swift",
+                "Recurrence.swift",
                 "Rhythm.swift",
                 "Scoring.swift",
                 "SeedParser.swift",

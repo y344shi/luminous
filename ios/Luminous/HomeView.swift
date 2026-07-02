@@ -845,7 +845,8 @@ struct HomeView: View {
             weatherKind: sensed.weatherKind,
             nearbyKinds: nearbyAppropriate ? sensed.nearbyKinds : []
         ))
-        let opps = Scoring.recommend(store.seeds, ctx, limit: 3)
+        let opps = Scoring.recommend(store.seeds, ctx, history: store.seedHistory(), limit: 3)
+        store.setOpportunities(opps, ctx)   // keeps lastContext fresh for the event log
         let primaryIds = Set(opps.map { $0.seedId })
         var next: [Wish] = []
         for o in opps {
@@ -865,6 +866,7 @@ struct HomeView: View {
     private func complete(_ wish: Wish, _ kind: CompletionKind) {
         Feedback.completion(kind)
         let seed = wish.seed
+        store.logEvent(kind: "outcome.\(String(describing: kind))", payload: seed.id)
         let trace = TraceGenerator.buildTrace(seed, kind, opportunityId: wish.opp?.id)
         store.addTrace(trace)
         if kind == .completed { store.setSeedStatus(seed.id, .sleeping) }

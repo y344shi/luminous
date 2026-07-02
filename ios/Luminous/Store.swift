@@ -252,6 +252,22 @@ final class AppStore {
     #if !os(watchOS)
     var gardens: [ProfileInfo] { persistence?.profiles() ?? [] }
 
+    /// Per-seed recurrence stats from the outcome events (the rings, read back).
+    func seedHistory() -> [String: Recurrence.SeedStats] {
+        guard let p = persistence else { return [:] }
+        let outcomes = p.events(profile: activeProfileID, kindPrefix: "outcome.")
+            .compactMap { r -> Outcome? in
+                guard let kind = Outcome.Kind(rawValue: String(r.kind.dropFirst("outcome.".count)))
+                else { return nil }
+                let st = r.contextJSON.data(using: .utf8)
+                    .flatMap { try? JSONDecoder().decode(ContextSnapshot.self, from: $0) }?
+                    .semanticTime
+                return Outcome(time: r.timestamp, seedId: r.payloadJSON,
+                               kind: kind, semanticTime: st)
+            }
+        return Recurrence.stats(outcomes)
+    }
+
     /// Home/work grid cells learned from the last 90 days of coarse fixes.
     func learnedPlaceCells() -> (home: String?, work: String?) {
         guard let p = persistence else { return (nil, nil) }
