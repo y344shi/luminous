@@ -116,14 +116,18 @@ struct AddSeedView: View {
         }
     }
 
-    /// Save the caught wish. If it's a learning pursuit that continues one you're
-    /// already carrying, merge into that anchor (LLM-judged, keyword fallback)
-    /// instead of spawning a duplicate — so the history stays in one place.
+    /// Save the caught wish. If it continues a pursuit you're already carrying
+    /// (same language, or — per the on-device model — the same long-term thing),
+    /// merge into that anchor instead of spawning a duplicate, so the history
+    /// stays in one place. The LLM judges; keyword language-match is the
+    /// fallback; when unsure it always plants fresh.
     private func save(_ draft: SeedDraft) {
-        let isLearning = LearningTopic.language(ofTitle: draft.title) != nil
-            || draft.categories.contains(.learning)
-        let candidates = store.learningSeeds.map { (id: $0.id, title: $0.title) }
-        guard isLearning, !candidates.isEmpty else {
+        let draftCats = Set(draft.categories)
+        let candidates = store.seeds
+            .filter { ($0.status == .active || $0.status == .sleeping)
+                && !draftCats.isDisjoint(with: Set($0.categories)) }
+            .map { (id: $0.id, title: $0.title) }
+        guard !candidates.isEmpty else {
             store.addSeed(SeedParser.draftToSeed(draft))
             path.removeLast(path.count)
             return

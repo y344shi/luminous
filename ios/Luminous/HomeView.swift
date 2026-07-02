@@ -815,6 +815,7 @@ struct HomeView: View {
                 }
 
                 aiSection(for: wish)
+                ExecutorSection(seed: seed)
 
                 VStack(spacing: Spacing.sm) {
                     SoftButton(title: Copy.Completion.done) {
