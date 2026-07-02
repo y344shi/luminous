@@ -300,7 +300,11 @@ struct SettingsView: View {
                 .foregroundStyle(theme.textMuted)
             Toggle(isOn: Binding(
                 get: { store.settings.nudgesEnabled },
-                set: { v in store.updateSettings { $0.nudgesEnabled = v } }
+                set: { v in
+                    store.updateSettings { $0.nudgesEnabled = v }
+                    if v { Nudger.shared.requestPermissionIfNeeded() }
+                    else { Nudger.shared.cancelPending() }
+                }
             )) {
                 Text(store.settings.nudgesEnabled
                      ? "在合适的时候，轻轻提醒你一下"
@@ -314,6 +318,45 @@ struct SettingsView: View {
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .strokeBorder(theme.border, lineWidth: 1))
+
+            if store.settings.nudgesEnabled {
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    HStack {
+                        Text("安静时段").font(.system(size: 14))
+                            .foregroundStyle(theme.textPrimary)
+                        Spacer()
+                        Picker("", selection: Binding(
+                            get: { store.settings.quietHoursStart },
+                            set: { v in store.updateSettings { $0.quietHoursStart = v } }
+                        )) {
+                            ForEach(0..<24, id: \.self) { Text("\($0):00").tag($0) }
+                        }
+                        .labelsHidden()
+                        Text("到").font(.system(size: 13)).foregroundStyle(theme.textMuted)
+                        Picker("", selection: Binding(
+                            get: { store.settings.quietHoursEnd },
+                            set: { v in store.updateSettings { $0.quietHoursEnd = v } }
+                        )) {
+                            ForEach(0..<24, id: \.self) { Text("\($0):00").tag($0) }
+                        }
+                        .labelsHidden()
+                    }
+                    Stepper(value: Binding(
+                        get: { store.settings.maxRemindersPerDay },
+                        set: { v in store.updateSettings { $0.maxRemindersPerDay = v } }
+                    ), in: 1...3) {
+                        Text("一天最多 \(store.settings.maxRemindersPerDay) 次")
+                            .font(.system(size: 14))
+                            .foregroundStyle(theme.textPrimary)
+                    }
+                    Text("深夜永远不会打扰，这条规则改不了。")
+                        .font(.system(size: 12))
+                        .foregroundStyle(theme.textMuted)
+                }
+                .padding(Spacing.md)
+                .background(theme.surfaceSoft)
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            }
         }
     }
 
