@@ -74,8 +74,21 @@ final class AppStore {
     private let defaults: UserDefaults
     private let maxTraces = 500
 
+    #if !os(watchOS)
+    /// SwiftData backing store (nil → pure UserDefaults, as on the watch).
+    @ObservationIgnored let persistence: Persistence?
+    /// The active garden. Only the *default* (migrated) profile keeps the old
+    /// tdd.* UserDefaults mirror fresh (dual-write rollback path); other
+    /// profiles are SwiftData-native.
+    private(set) var activeProfileID: String = ""
+    @ObservationIgnored private var mirrorsToDefaults = true
+    #endif
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        #if !os(watchOS)
+        self.persistence = Persistence.shared
+        #endif
         hydrate()
     }
 
@@ -85,6 +98,20 @@ final class AppStore {
     // MARK: - Hydration
 
     private func hydrate() {
+        #if !os(watchOS)
+        if let p = persistence {
+            activeProfileID = p.migrateFromUserDefaultsIfNeeded(defaults: defaults)
+            mirrorsToDefaults = (p.profiles().first?.id == activeProfileID)
+            hydrateActiveProfile(p)
+            return
+        }
+        #endif
+        hydrateFromDefaults()
+    }
+
+    /// The pre-SwiftData path — still the whole story on watchOS, and the
+    /// fallback if the database can't open.
+    private func hydrateFromDefaults() {
         seeds = load([Seed].self, Key.seeds) ?? []
         traces = load([DailyTrace].self, Key.traces) ?? []
         settings = load(Settings.self, Key.settings) ?? .default
@@ -102,20 +129,120 @@ final class AppStore {
         // First run: plant a small mock garden so the app never feels empty.
         if seeds.isEmpty && traces.isEmpty {
             seeds = MockGarden.seed()
-            save(seeds, Key.seeds)
+            persistSeeds()
             samplesPlanted = true
             defaults.set(true, forKey: Key.samplesPlanted)
         }
+    }
+
+    #if !os(watchOS)
+    /// Load everything for the active profile from SwiftData.
+    private func hydrateActiveProfile(_ p: Persistence) {
+        seeds = p.loadSeeds(profile: activeProfileID)
+        traces = p.loadTraces(profile: activeProfileID)
+        learningHistory = p.loadLearning(profile: activeProfileID)
+        applyPrefs(p.loadPrefs(profile: activeProfileID))
+
+        if seeds.isEmpty && traces.isEmpty {
+            seeds = MockGarden.seed()
+            persistSeeds()
+            samplesPlanted = true
+            persistPrefs()
+        }
+    }
+
+    private func applyPrefs(_ prefs: ProfilePrefs) {
+        settings = prefs.settings
+        lastPick = prefs.lastPick
+        samplesPlanted = prefs.samplesPlanted
+        introSeen = prefs.introSeen
+        aesthetic = prefs.aesthetic
+        aestheticAuto = prefs.aestheticAuto
+        senseAround = prefs.senseAround
+        learnedVocab = prefs.learnedVocab
+        musicOn = prefs.musicOn
+    }
+
+    private func currentPrefs() -> ProfilePrefs {
+        var p = ProfilePrefs()
+        p.settings = settings
+        p.lastPick = lastPick
+        p.samplesPlanted = samplesPlanted
+        p.introSeen = introSeen
+        p.aesthetic = aesthetic
+        p.aestheticAuto = aestheticAuto
+        p.senseAround = senseAround
+        p.learnedVocab = learnedVocab
+        p.musicOn = musicOn
+        return p
+    }
+    #endif
+
+    // MARK: - Persistence seams (dual-write: SwiftData + the old tdd.* mirror)
+
+    private func persistSeeds() {
+        #if os(watchOS)
+        save(seeds, Key.seeds)
+        #else
+        if mirrorsToDefaults { save(seeds, Key.seeds) }
+        persistence?.replaceSeeds(seeds, profile: activeProfileID)
+        #endif
+    }
+
+    private func persistTraces() {
+        #if os(watchOS)
+        save(traces, Key.traces)
+        #else
+        if mirrorsToDefaults { save(traces, Key.traces) }
+        persistence?.replaceTraces(traces, profile: activeProfileID)
+        #endif
+    }
+
+    private func persistLearningHistory() {
+        #if os(watchOS)
+        save(learningHistory, Key.learningHistory)
+        #else
+        if mirrorsToDefaults { save(learningHistory, Key.learningHistory) }
+        persistence?.replaceLearning(learningHistory, profile: activeProfileID)
+        #endif
+    }
+
+    /// All scalar prefs (settings/lastPick/learnedVocab/skin/toggles) in one go.
+    private func persistPrefs() {
+        #if os(watchOS)
+        save(settings, Key.settings)
+        save(lastPick, Key.lastPick)
+        save(learnedVocab, Key.learnedVocab)
+        defaults.set(samplesPlanted, forKey: Key.samplesPlanted)
+        defaults.set(introSeen, forKey: Key.introSeen)
+        defaults.set(aesthetic.rawValue, forKey: Key.aesthetic)
+        defaults.set(aestheticAuto, forKey: Key.aestheticAuto)
+        defaults.set(senseAround, forKey: Key.senseAround)
+        defaults.set(musicOn, forKey: Key.musicOn)
+        #else
+        if mirrorsToDefaults {
+            save(settings, Key.settings)
+            save(lastPick, Key.lastPick)
+            save(learnedVocab, Key.learnedVocab)
+            defaults.set(samplesPlanted, forKey: Key.samplesPlanted)
+            defaults.set(introSeen, forKey: Key.introSeen)
+            defaults.set(aesthetic.rawValue, forKey: Key.aesthetic)
+            defaults.set(aestheticAuto, forKey: Key.aestheticAuto)
+            defaults.set(senseAround, forKey: Key.senseAround)
+            defaults.set(musicOn, forKey: Key.musicOn)
+        }
+        persistence?.savePrefs(currentPrefs(), profile: activeProfileID)
+        #endif
     }
 
     // MARK: - Seeds
 
     func addSeed(_ seed: Seed) {
         seeds.insert(seed, at: 0)
-        save(seeds, Key.seeds)
+        persistSeeds()
         if samplesPlanted {
             samplesPlanted = false
-            defaults.set(false, forKey: Key.samplesPlanted)
+            persistPrefs()
         }
     }
 
@@ -123,7 +250,7 @@ final class AppStore {
         guard let idx = seeds.firstIndex(where: { $0.id == id }) else { return }
         mutate(&seeds[idx])
         seeds[idx].updatedAt = DomainUtil.nowIso()
-        save(seeds, Key.seeds)
+        persistSeeds()
     }
 
     func setSeedStatus(_ id: String, _ status: SeedStatus) {
@@ -145,18 +272,18 @@ final class AppStore {
     func addTrace(_ trace: DailyTrace) {
         traces.insert(trace, at: 0)
         if traces.count > maxTraces { traces = Array(traces.prefix(maxTraces)) }
-        save(traces, Key.traces)
+        persistTraces()
     }
 
     func updateTrace(_ id: String, text: String) {
         guard let idx = traces.firstIndex(where: { $0.id == id }) else { return }
         traces[idx].text = text
-        save(traces, Key.traces)
+        persistTraces()
     }
 
     func removeTrace(_ id: String) {
         traces.removeAll { $0.id == id }
-        save(traces, Key.traces)
+        persistTraces()
     }
 
     func tracesForToday() -> [DailyTrace] {
@@ -173,19 +300,19 @@ final class AppStore {
 
     func rememberPick(_ mood: Mood, _ energy: Energy) {
         lastPick = LastPick(mood: mood, energy: energy)
-        save(lastPick, Key.lastPick)
+        persistPrefs()
     }
 
     // MARK: - Settings
 
     func setTheme(_ theme: ThemeName) {
         settings.theme = theme
-        save(settings, Key.settings)
+        persistPrefs()
     }
 
     func updateSettings(_ mutate: (inout Settings) -> Void) {
         mutate(&settings)
-        save(settings, Key.settings)
+        persistPrefs()
     }
 
     /// Switch the visual skin and persist it. Picking a skin by hand turns off
@@ -193,25 +320,24 @@ final class AppStore {
     func setAesthetic(_ a: Aesthetic) {
         aesthetic = a
         aestheticAuto = false
-        defaults.set(a.rawValue, forKey: Key.aesthetic)
-        defaults.set(false, forKey: Key.aestheticAuto)
+        persistPrefs()
     }
 
     /// Turn follow-system (Dark → glass / Light → paper) on or off. Persisted.
     func setAestheticAuto(_ on: Bool) {
         aestheticAuto = on
-        defaults.set(on, forKey: Key.aestheticAuto)
+        persistPrefs()
     }
 
     /// Opt in / out of sensing the surroundings. Persisted.
     func setSenseAround(_ on: Bool) {
         senseAround = on
-        defaults.set(on, forKey: Key.senseAround)
+        persistPrefs()
     }
 
     func setMusicOn(_ on: Bool) {
         musicOn = on
-        defaults.set(on, forKey: Key.musicOn)
+        persistPrefs()
     }
 
     func learnedWords(_ language: String) -> [String] { learnedVocab[language] ?? [] }
@@ -221,7 +347,7 @@ final class AppStore {
         var list = learnedVocab[language] ?? []
         for w in words where !list.contains(w) { list.append(w) }
         learnedVocab[language] = Array(list.suffix(200))
-        save(learnedVocab, Key.learnedVocab)
+        persistPrefs()
     }
 
     // MARK: - Learning history (kept across completion)
@@ -230,7 +356,7 @@ final class AppStore {
     func logLearning(_ entry: LearningEntry) {
         learningHistory.insert(entry, at: 0)
         if learningHistory.count > 300 { learningHistory = Array(learningHistory.prefix(300)) }
-        save(learningHistory, Key.learningHistory)
+        persistLearningHistory()
     }
 
     /// History for one language (or all when nil), newest first.
@@ -271,20 +397,21 @@ final class AppStore {
 
     func dismissSamplesNote() {
         samplesPlanted = false
-        defaults.set(false, forKey: Key.samplesPlanted)
+        persistPrefs()
     }
 
     func dismissIntro() {
         introSeen = true
-        defaults.set(true, forKey: Key.introSeen)
+        persistPrefs()
     }
 
+    /// Reset the active garden back to the mock seedlings. On iOS this wipes the
+    /// active profile's records too; the other gardens are untouched.
     func resetAll() {
-        Key.all.forEach { defaults.removeObject(forKey: $0) }
-        seeds = MockGarden.seed()
-        save(seeds, Key.seeds)
-        samplesPlanted = true
-        defaults.set(true, forKey: Key.samplesPlanted)
+        #if !os(watchOS)
+        persistence?.wipeProfileData(activeProfileID)
+        #endif
+        if mirrorsDefaultsForReset { Key.all.forEach { defaults.removeObject(forKey: $0) } }
         traces = []
         settings = .default
         lastPick = LastPick()
@@ -296,6 +423,20 @@ final class AppStore {
         learningHistory = []
         opportunities = []
         lastContext = nil
+        seeds = MockGarden.seed()
+        persistSeeds()
+        persistTraces()
+        persistLearningHistory()
+        samplesPlanted = true
+        persistPrefs()
+    }
+
+    private var mirrorsDefaultsForReset: Bool {
+        #if os(watchOS)
+        return true
+        #else
+        return mirrorsToDefaults
+        #endif
     }
 
     // MARK: - JSON helpers
