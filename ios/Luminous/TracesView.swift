@@ -30,6 +30,8 @@ struct TracesView: View {
                 VStack(alignment: .leading, spacing: Spacing.lg) {
                     PageHeader(title: Copy.Traces.title, subtitle: Copy.Traces.subtitle)
 
+                    WeekReviewCard()
+
                     if store.traces.isEmpty {
                         EmptyState(icon: "🕯️", text: Copy.Traces.empty)
                     } else {
