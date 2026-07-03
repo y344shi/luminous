@@ -78,32 +78,61 @@ final class OrbitSim {
         }
     }
 
-    private func accel(x: Double, y: Double, tx: Double, ty: Double) -> (Double, Double) {
+    /// Weak radial spring toward each body's home ring: a perturbed orbit always
+    /// finds its ring again (correction timescale ~12 s), so no phantom force or
+    /// wild fling can permanently eject a wish. Small next to the central pull.
+    private let springK: Double = 0.006
+
+    /// Slow-adapting rest pose for the gravity vector. Tilt is measured against
+    /// this baseline, so ANY static hold (upright, flat on a table, the zero
+    /// vector in the Simulator) reads as "no lean" within seconds — only an
+    /// active lean perturbs the orbits. This replaces the old hardcoded
+    /// "+1 on y" upright assumption, which fabricated a constant downward force
+    /// whenever the device wasn't vertical (the orbits-blown-away bug).
+    private var baseline = CGSize.zero
+    private var baselineSeeded = false
+
+    private func accel(x: Double, y: Double, ring: Int,
+                       tx: Double, ty: Double) -> (Double, Double) {
         let r2 = x * x + y * y + soft * soft
-        let invR3 = mu / (r2 * r2.squareRoot())
-        return (-x * invR3 + tx, -y * invR3 + ty)
+        let r = r2.squareRoot()
+        let invR3 = mu / (r2 * r)
+        let spring = -springK * (r - radius(for: ring)) / r
+        return (-x * invR3 + spring * x + tx,
+                -y * invR3 + spring * y + ty)
     }
 
-    /// Advance every body to time `t`. `tilt` is the device lean (CMDeviceMotion
-    /// gravity, with the upright baseline removed by the caller).
-    func step(to t: TimeInterval, tilt: CGSize, paused: Bool) {
+    /// Advance every body to time `t`. `gravity` is the RAW CMDeviceMotion
+    /// gravity vector (or .zero on the Simulator); the rest-pose baseline is
+    /// handled here.
+    func step(to t: TimeInterval, tilt gravity: CGSize, paused: Bool) {
         defer { lastT = t }
         if paused { return }
         guard lastT > 0 else { return }          // first frame: just seed lastT
         let dt = t - lastT
         if dt <= 0 || dt > 0.5 { return }        // ignore backsteps / resume gaps
 
-        let tx = Double(tilt.width) * tiltScale
-        let ty = Double(tilt.height) * tiltScale
+        // Learn the rest pose (EMA, ~2 s time constant at 60 fps); the first
+        // sample seeds it directly so launch never starts with a false lean.
+        if baselineSeeded {
+            baseline.width += (gravity.width - baseline.width) * 0.008
+            baseline.height += (gravity.height - baseline.height) * 0.008
+        } else {
+            baseline = gravity
+            baselineSeeded = true
+        }
+        let tx = Double(gravity.width - baseline.width) * tiltScale
+        let ty = Double(gravity.height - baseline.height) * tiltScale
+
         let sub = 4
         let h = dt / Double(sub)
         for _ in 0..<sub {
             for k in bodies.keys {
                 var b = bodies[k]!
-                let (ax0, ay0) = accel(x: b.x, y: b.y, tx: tx, ty: ty)
+                let (ax0, ay0) = accel(x: b.x, y: b.y, ring: b.ring, tx: tx, ty: ty)
                 b.x += b.vx * h + 0.5 * ax0 * h * h
                 b.y += b.vy * h + 0.5 * ay0 * h * h
-                let (ax1, ay1) = accel(x: b.x, y: b.y, tx: tx, ty: ty)
+                let (ax1, ay1) = accel(x: b.x, y: b.y, ring: b.ring, tx: tx, ty: ty)
                 b.vx += 0.5 * (ax0 + ax1) * h
                 b.vy += 0.5 * (ay0 + ay1) * h
                 bodies[k] = b

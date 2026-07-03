@@ -421,15 +421,14 @@ struct HomeView: View {
         return out
     }
 
-    /// Step the gravity sim one frame: make sure a body exists per placement, then
-    /// integrate to `t` under the central pull + the device-tilt field. The tilt
-    /// removes the upright baseline (g.height ≈ −1 when held vertically) so only a
-    /// real lean perturbs the orbits.
+    /// Step the gravity sim one frame: make sure a body exists per placement,
+    /// then integrate to `t` under the central pull + the device-tilt field.
+    /// Raw gravity goes in; the sim learns the rest pose itself, so only an
+    /// active lean perturbs the orbits (upright, flat, or Simulator-zero all
+    /// read as calm).
     private func stepSim(_ places: [Placement], t: TimeInterval) {
         sim.sync(places.map { ($0.wish.id, $0.ring, $0.idx, $0.count) })
-        let g = sensed.gravity
-        let tilt = CGSize(width: g.width, height: g.height + 1.0)
-        sim.step(to: t, tilt: tilt, paused: reduceMotion)
+        sim.step(to: t, tilt: sensed.gravity, paused: reduceMotion)
     }
 
     /// Read a body's simulated screen position (clamped on-screen). Falls back to
