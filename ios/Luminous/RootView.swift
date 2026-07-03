@@ -75,7 +75,15 @@ struct RootView: View {
         .environment(router)
         .environment(sensed)
         .environment(\.theme, tokens)
-        .task { sensed.start(enabled: store.senseAround); updateMusic() }
+        .task {
+            sensed.start(enabled: store.senseAround); updateMusic()
+            #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-demoStars"),
+               store.traces.count < 5 {
+                DemoSky.plant(into: store)
+            }
+            #endif
+        }
         .onChange(of: store.senseAround) { _, on in sensed.start(enabled: on) }
         // Coming back to the app is a moment worth re-sensing — and it
         // dissolves any pending nudge (you're already here). Leaving with a

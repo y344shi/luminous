@@ -74,6 +74,8 @@ struct HomeView: View {
     @State private var sim = OrbitSim()
     @State private var aiMoments: [Suggestion] = []
     @State private var aiMomentsAt: Date?
+    @State private var birth: StarBirth?
+    @State private var canvasSize: CGSize = .zero
     @State private var aiLoading = false
     @State private var aiVocab: [VocabItem] = []
     @State private var aiError: String?
@@ -99,6 +101,13 @@ struct HomeView: View {
                     AestheticField(weather: sensed.weatherKind)
                         .ignoresSafeArea()
                         .simultaneousGesture(revealGesture)
+
+                    // 记忆星座 — every trace is a permanent star in YOUR sky.
+                    if skin == .glass {
+                        ConstellationSkyView(traces: store.traces, size: size,
+                                             bornBeingHidden: birth?.traceId)
+                            .ignoresSafeArea()
+                    }
 
                     bloom.position(center)
                     orb.position(center)
@@ -131,12 +140,21 @@ struct HomeView: View {
 
                     shootingStars(size: size)
 
+                    // The birth ceremony: infall → flare → rise → bloom.
+                    if let birth {
+                        BirthOverlay(birth: birth, center: center) {
+                            self.birth = nil
+                        }
+                    }
+
                     topOverlay
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     bottomOverlay
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 }
                 .frame(width: size.width, height: size.height)
+                .onAppear { canvasSize = size }
+                .onChange(of: size) { _, s in canvasSize = s }
             }
             .hiddenNavBar()
             .navigationDestination(for: Route.self) { route in
@@ -913,6 +931,20 @@ struct HomeView: View {
         withAnimation { justTrace = trace.text }
         doneIds.insert(wish.id)
         picked = nil
+
+        // 记忆星座: the wish falls into the black hole and is reborn as a
+        // permanent star in the sky. Partial counts exactly the same — every
+        // moment of presence earns its light.
+        if skin == .glass, kind != .skipped, !reduceMotion, canvasSize != .zero {
+            let center = CGPoint(x: canvasSize.width / 2, y: canvasSize.height * 0.52)
+            let from = sim.screenPos(wish.id, center: center)
+                ?? CGPoint(x: center.x, y: center.y + 120)
+            birth = StarBirth(traceId: trace.id,
+                              category: trace.category,
+                              from: from,
+                              start: Date(),
+                              to: ConstellationSky.position(for: trace.id, in: canvasSize))
+        }
     }
 
     // MARK: Scene glyph (orb)
