@@ -506,15 +506,19 @@ struct HomeView: View {
     /// (an existing wish × a fitting place right here) lead; generic moment
     /// suggestions fill the rest. Late night only ever offers calm stop-loss.
     private var suggestions: [Suggestion] {
+        // Places already shown as badges on the displayed wishes never repeat
+        // as scouted stars — each surface points somewhere different.
+        let badgePlaces = Set(displayed.compactMap { matchedPlace(for: $0.seed)?.name })
         let scouted = OpportunityScout.scout(
             seeds: store.seeds,
             spots: sensed.nearby.compactMap { p in
                 p.kind.map { OpportunityScout.Spot(name: p.name, kind: $0, distanceM: p.distanceM) }
             },
             hour: hour,
-            isLateNight: isLateNight
+            isLateNight: isLateNight,
+            excludedPlaces: badgePlaces
         )
-        let base = Suggester.suggest(
+        var base = Suggester.suggest(
             hour: hour,
             isLateNight: isLateNight,
             weather: sensed.weatherKind,
@@ -522,6 +526,11 @@ struct HomeView: View {
             nearbyCafe: sensed.nearbyCafe,
             nearbyOuting: sensed.nearbyOuting
         )
+        // The scout already points at real places — the generic go-somewhere
+        // suggestions would just overlap it.
+        if !scouted.isEmpty {
+            base.removeAll { $0.id == "s_cafe" || $0.id == "s_errand" }
+        }
         // scout finds > model's moments > the static floor
         let ai = isLateNight ? [] : aiMoments
         return Array((scouted + ai + base).filter { !caughtIds.contains($0.id) }.prefix(3))
@@ -552,8 +561,9 @@ struct HomeView: View {
                         : (t / 16.0 + Double(i) * 0.33).truncatingRemainder(dividingBy: 1)
                     if prog < 0.85 {
                         let f = CGFloat(prog / 0.85)
-                        let start = CGPoint(x: size.width * 1.08, y: size.height * (0.10 + Double(i) * 0.06))
-                        let end = CGPoint(x: size.width * 0.10, y: size.height * (0.26 + Double(i) * 0.07))
+                        // Star lanes stay in the sky band, above the orbit zone.
+                        let start = CGPoint(x: size.width * 1.08, y: size.height * (0.07 + Double(i) * 0.05))
+                        let end = CGPoint(x: size.width * 0.10, y: size.height * (0.20 + Double(i) * 0.055))
                         let travel = atan2(end.y - start.y, end.x - start.x)  // velocity direction
                         shootingStar(s, travel: travel)
                             .position(x: start.x + (end.x - start.x) * f,
@@ -596,12 +606,17 @@ struct HomeView: View {
         .buttonStyle(.plain)
     }
 
-    /// The nearest place that suits this wish's nature (learn → library/cafe …).
+    /// A place that suits this wish's nature (learn → library/cafe …). Each
+    /// wish hashes to a different candidate so two wishes never share one spot.
     private func matchedPlace(for seed: Seed) -> NearbyPlace? {
         guard nearbyAppropriate else { return nil }
         var kinds = Set<PlaceKind>()
         for c in seed.categories { if let a = Scoring.placeAffinity[c] { kinds.formUnion(a) } }
-        return sensed.nearby.first { p in p.kind.map { kinds.contains($0) } ?? false }
+        let candidates = sensed.nearby.filter { p in p.kind.map { kinds.contains($0) } ?? false }
+        guard !candidates.isEmpty else { return nil }
+        var h: UInt64 = 5381
+        for b in seed.id.utf8 { h = h &* 33 &+ UInt64(b) }
+        return candidates[Int(h % UInt64(candidates.count))]
     }
 
     // MARK: AI help — let the on-device model do the task it can
@@ -617,6 +632,7 @@ struct HomeView: View {
         case .cafe: return "咖啡馆"; case .library: return "图书馆"; case .park: return "公园"
         case .market: return "市场"; case .store: return "商店"; case .restaurant: return "餐馆"
         case .gym: return "健身房"; case .museum: return "博物馆"
+        case .attraction: return "好玩的去处"; case .nature: return "山水"
         }
     }
 

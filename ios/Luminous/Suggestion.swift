@@ -106,6 +106,7 @@ enum OpportunityScout {
                       spots: [Spot],
                       hour: Int,
                       isLateNight: Bool,
+                      excludedPlaces: Set<String> = [],
                       limit: Int = 2) -> [Suggestion] {
         // The same appropriateness gate as the rest of the app: daytime/early
         // evening only, and the late-night rule is absolute.
@@ -115,12 +116,17 @@ enum OpportunityScout {
         var out: [Suggestion] = []
         var usedSeeds = Set<String>()
         var usedSpots = Set<Spot>()
+        var usedNames = excludedPlaces      // places some other surface already shows
 
         for seed in seeds where seed.status == .active && !usedSeeds.contains(seed.id) {
             var kinds = Set<PlaceKind>()
             for c in seed.categories { if let a = Scoring.placeAffinity[c] { kinds.formUnion(a) } }
-            guard let spot = sorted.first(where: { kinds.contains($0.kind) && !usedSpots.contains($0) && $0.distanceM <= 800 })
+            guard let spot = sorted.first(where: {
+                kinds.contains($0.kind) && !usedSpots.contains($0)
+                    && !usedNames.contains($0.name) && $0.distanceM <= 800
+            })
             else { continue }
+            usedNames.insert(spot.name)
             usedSeeds.insert(seed.id)
             usedSpots.insert(spot)
             let dist = spot.distanceM < 1000
@@ -145,6 +151,7 @@ enum OpportunityScout {
         case .cafe: return "☕"; case .library: return "📚"; case .park: return "🌳"
         case .market: return "🛒"; case .store: return "🛍️"; case .restaurant: return "🍴"
         case .gym: return "🏋️"; case .museum: return "🖼️"
+        case .attraction: return "🎡"; case .nature: return "🏞️"
         }
     }
 }

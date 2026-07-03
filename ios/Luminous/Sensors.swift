@@ -202,7 +202,10 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
         let req = MKLocalPointsOfInterestRequest(center: center, radius: 2000)
         req.pointOfInterestFilter = MKPointOfInterestFilter(including:
             [.cafe, .restaurant, .bakery, .foodMarket, .store, .pharmacy,
-             .library, .park, .museum, .fitnessCenter])
+             .library, .park, .museum, .fitnessCenter,
+             // the world is more than shops: attractions + the bigger outdoors
+             .theater, .movieTheater, .aquarium, .zoo, .amusementPark, .stadium,
+             .beach, .nationalPark, .campground, .marina, .winery, .brewery])
         do {
             let resp = try await MKLocalSearch(request: req).start()
             let here = CLLocation(latitude: center.latitude, longitude: center.longitude)
@@ -215,7 +218,19 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
                     mapItem: item)
             }
             .sorted { $0.distanceM < $1.distanceM }
-            self.nearby = Array(places.prefix(12))
+            // Kind-diverse retention: nearest-first but at most 2 per kind, so a
+            // plaza of 12 shops can't crowd out the park and the theater.
+            var kept: [NearbyPlace] = []
+            var perKind: [PlaceKind: Int] = [:]
+            for p in places {
+                guard let k = p.kind else { continue }
+                if perKind[k, default: 0] < 2 {
+                    kept.append(p)
+                    perKind[k, default: 0] += 1
+                }
+                if kept.count == 14 { break }
+            }
+            self.nearby = kept
         } catch {
             // leave nearby as-is on failure
         }
@@ -233,6 +248,17 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
         case .some(.park):         return "🌳"
         case .some(.museum):       return "🖼️"
         case .some(.fitnessCenter): return "🏋️"
+        case .some(.theater):      return "🎭"
+        case .some(.movieTheater): return "🎬"
+        case .some(.aquarium):     return "🐠"
+        case .some(.zoo):          return "🦒"
+        case .some(.amusementPark): return "🎡"
+        case .some(.stadium):      return "🏟️"
+        case .some(.beach):        return "🏖️"
+        case .some(.nationalPark): return "🏞️"
+        case .some(.campground):   return "🏕️"
+        case .some(.marina):       return "⛵"
+        case .some(.winery), .some(.brewery): return "🍷"
         default:                   return "📍"
         }
     }
@@ -247,6 +273,11 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
         case .some(.library):              return .library
         case .some(.park):                 return .park
         case .some(.museum):               return .museum
+        case .some(.theater), .some(.movieTheater), .some(.aquarium), .some(.zoo),
+             .some(.amusementPark), .some(.stadium), .some(.winery), .some(.brewery):
+            return .attraction
+        case .some(.beach), .some(.nationalPark), .some(.campground), .some(.marina):
+            return .nature
         case .some(.fitnessCenter):        return .gym
         default:                           return nil
         }

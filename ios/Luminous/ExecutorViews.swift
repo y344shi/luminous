@@ -52,6 +52,9 @@ struct ExecutorSection: View {
     var body: some View {
         let cats = Set(seed.categories)
         VStack(alignment: .leading, spacing: Spacing.sm) {
+            if WishTopics.isCooking(seed.title) {
+                RecipeHelpView(seed: seed)
+            }
             if let lang = LearningTopic.language(ofTitle: seed.title),
                !store.learnedWords(lang).isEmpty {
                 ReviewQuizView(language: lang)

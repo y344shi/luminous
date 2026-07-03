@@ -57,3 +57,13 @@ final class PlanKitTests: XCTestCase {
         XCTAssertFalse(LanguageScenarios.options(nearby: [], activity: nil, hour: 3).isEmpty)
     }
 }
+
+final class WishTopicsTests: XCTestCase {
+    func testCookingDetection() {
+        XCTAssertTrue(WishTopics.isCooking("想给自己做顿好饭"))
+        XCTAssertTrue(WishTopics.isCooking("学做菜"))
+        XCTAssertTrue(WishTopics.isCooking("cook something nice"))
+        XCTAssertFalse(WishTopics.isCooking("想学法语"))
+        XCTAssertFalse(WishTopics.isCooking("出门走走"))
+    }
+}

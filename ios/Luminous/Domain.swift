@@ -58,6 +58,10 @@ enum WeatherKind: String, Codable, Hashable { case clear, clouds, rain, snow, fo
 /// (learn French at a library/cafe; walk in a park; an errand at a store).
 enum PlaceKind: String, Codable, Hashable, CaseIterable {
     case cafe, library, park, market, store, restaurant, gym, museum
+    /// Theaters, cinemas, zoos, aquariums, stadiums — somewhere to be delighted.
+    case attraction
+    /// Beaches, national parks, campgrounds, marinas — the bigger outdoors.
+    case nature
 }
 
 enum ThemeName: String, Codable, CaseIterable, Hashable {

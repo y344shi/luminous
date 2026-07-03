@@ -72,6 +72,18 @@ enum PlanKit {
     }
 }
 
+// MARK: - Wish topics (pure detection for the deep-assist executors)
+
+enum WishTopics {
+    /// Is this a cooking/eating-at-home wish? ("想做顿好饭", "学做菜"…)
+    static func isCooking(_ raw: String) -> Bool {
+        let t = raw.lowercased()
+        let hits = ["做饭", "做菜", "做顿", "做点吃", "下厨", "煮", "烤", "炒", "食谱",
+                    "一顿", "晚饭", "晚餐", "午饭", "早餐", "cook", "recipe", "bake", "dinner"]
+        return hits.contains { t.contains($0) }
+    }
+}
+
 // MARK: - Language options grown from the day (pure, deterministic)
 
 /// "What direction suits learning right now" — derived from where you are and

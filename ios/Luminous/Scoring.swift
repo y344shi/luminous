@@ -170,12 +170,12 @@ enum Scoring {
     /// Which nearby place kinds suit each wish category (do it *somewhere that fits*).
     static let placeAffinity: [SeedCategory: Set<PlaceKind>] = [
         .learning:    [.library, .cafe, .museum],
-        .creation:    [.library, .cafe],
-        .connection:  [.cafe, .restaurant],
-        .exploration: [.store, .market, .museum],
-        .aesthetic:   [.park, .museum, .cafe],
-        .body:        [.park, .gym],
-        .recovery:    [.cafe, .park],
+        .creation:    [.library, .cafe, .nature],
+        .connection:  [.cafe, .restaurant, .attraction],
+        .exploration: [.store, .market, .museum, .attraction, .nature],
+        .aesthetic:   [.park, .museum, .cafe, .nature, .attraction],
+        .body:        [.park, .gym, .nature],
+        .recovery:    [.cafe, .park, .nature],
     ]
 
     /// Bonus when a fitting place is within a short walk (learn French → a nearby
