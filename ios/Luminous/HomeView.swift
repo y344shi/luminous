@@ -77,6 +77,7 @@ struct HomeView: View {
     @State private var aiLoading = false
     @State private var aiVocab: [VocabItem] = []
     @State private var aiError: String?
+    @State private var aiTheme: String?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var colorScheme
 
@@ -635,11 +636,29 @@ struct HomeView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     }
                 } else if AIHelper.isAvailable {
+                    // Directions grown from the day: nearby places + motion +
+                    // hour propose what kind of words suit right now.
+                    let scenarios = LanguageScenarios.options(
+                        nearby: nearbyAppropriate ? sensed.nearbyKinds : [],
+                        activity: sensed.activity, hour: hour)
+                    HStack(spacing: 6) {
+                        ForEach(scenarios, id: \.self) { s in
+                            Button { aiTheme = (aiTheme == s ? nil : s) } label: {
+                                Text(s).font(.system(size: 12, weight: .medium))
+                                    .padding(.horizontal, 10).padding(.vertical, 5)
+                                    .background(aiTheme == s ? theme.accentSoft : theme.surfaceSoft)
+                                    .foregroundStyle(aiTheme == s ? theme.accentText : theme.textSecondary)
+                                    .clipShape(Capsule())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
                     Button { runAI(language: lang) } label: {
                         HStack(spacing: 6) {
                             if aiLoading { ProgressView().controlSize(.small) }
                             else { Image(systemName: "sparkles") }
-                            Text(aiLoading ? "正在挑词…" : "让 AI 帮我挑三个\(lang)词")
+                            Text(aiLoading ? "正在挑词…"
+                                 : (aiTheme.map { "挑三个「\($0)」的\(lang)词" } ?? "让 AI 帮我挑三个\(lang)词"))
                                 .font(.system(size: 14, weight: .medium))
                         }
                         .frame(maxWidth: .infinity)
@@ -715,7 +734,7 @@ struct HomeView: View {
     private func runAI(language: String) {
         aiError = nil; aiLoading = true
         let learned = store.learnedWords(language)
-        let context = aiContext()
+        let context = aiTheme.map { aiContext() + "；主题：\($0)" } ?? aiContext()
         Task {
             do {
                 let words = try await AIHelper.vocab(language: language, learned: learned, context: context)
@@ -831,6 +850,7 @@ struct HomeView: View {
                 }
 
                 aiSection(for: wish)
+                PlanSectionView(seed: seed, onPhoto: { picked = nil; showTranslate = true })
                 ExecutorSection(seed: seed)
 
                 VStack(spacing: Spacing.sm) {

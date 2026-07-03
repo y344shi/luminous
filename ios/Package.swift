@@ -21,6 +21,7 @@ let package = Package(
                 "Domain.swift",
                 "Mentality.swift",
                 "Nudge.swift",
+                "PlanKit.swift",
                 "Places.swift",
                 "Recurrence.swift",
                 "Rhythm.swift",
