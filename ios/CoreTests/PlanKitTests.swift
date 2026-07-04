@@ -93,3 +93,29 @@ final class TagSuggestTests: XCTestCase {
         XCTAssertLessThanOrEqual(s.count, 7)
     }
 }
+
+final class SeedTagsCodableTests: XCTestCase {
+
+    func testTagsSurviveEncodeDecodeRoundTrip() throws {
+        var draft = SeedParser.parse("想学法语单词")
+        draft.tags = ["法语", "阅读"]
+        let seed = SeedParser.draftToSeed(draft)
+        XCTAssertEqual(seed.tags, ["法语", "阅读"])
+        let data = try JSONEncoder().encode(seed)
+        let back = try JSONDecoder().decode(Seed.self, from: data)
+        XCTAssertEqual(back.tags, ["法语", "阅读"])
+        XCTAssertEqual(back.title, seed.title)
+    }
+
+    func testLegacySeedWithoutTagsKeyStillDecodes() throws {
+        // a pre-tags seed as persisted by older builds — no "tags" key at all
+        let seed = SeedParser.draftToSeed(SeedParser.parse("出门走走"))
+        var json = try JSONSerialization.jsonObject(
+            with: JSONEncoder().encode(seed)) as! [String: Any]
+        json.removeValue(forKey: "tags")
+        let legacy = try JSONSerialization.data(withJSONObject: json)
+        let back = try JSONDecoder().decode(Seed.self, from: legacy)
+        XCTAssertNil(back.tags)
+        XCTAssertEqual(back.title, seed.title)
+    }
+}

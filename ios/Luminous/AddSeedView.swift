@@ -19,6 +19,8 @@ struct AddSeedView: View {
     @State private var parsing = false
     @State private var chosenTags: [String] = []
     @State private var customTag = ""
+    /// A merge the model suggests — always CONFIRMED by the user, never silent.
+    @State private var mergeOffer: (id: String, title: String, draft: SeedDraft)?
 
     var body: some View {
         ScrollView {
@@ -34,6 +36,30 @@ struct AddSeedView: View {
         .themedScreen()
         .navigationTitle(Copy.Home.addSeed)
         .inlineNavTitle()
+        .confirmationDialog(
+            "这好像是「\(mergeOffer?.title ?? "")」的延续",
+            isPresented: Binding(get: { mergeOffer != nil },
+                                 set: { if !$0 { mergeOffer = nil } }),
+            titleVisibility: .visible
+        ) {
+            Button("并进去，记在一起") {
+                if let offer = mergeOffer {
+                    store.mergeLearningSeed(newRaw: text, into: offer.id)
+                }
+                mergeOffer = nil
+                path.removeLast(path.count)
+            }
+            Button("种一颗新的") {
+                if let offer = mergeOffer {
+                    store.addSeed(SeedParser.draftToSeed(offer.draft))
+                }
+                mergeOffer = nil
+                path.removeLast(path.count)
+            }
+            Button("再想想", role: .cancel) { mergeOffer = nil }
+        } message: {
+            Text("并进去：新想法记到它的手帐里，愿望不重复。种新的：作为独立的愿望出现在花园里。")
+        }
     }
 
     private var input: some View {
@@ -165,13 +191,15 @@ struct AddSeedView: View {
                 return first ?? nil
             }
             await MainActor.run {
-                if let target, store.mergeLearningSeed(newRaw: text, into: target) != nil {
-                    // merged — no new seed
+                saving = false
+                // Never merge silently: a saved wish quietly vanishing into an
+                // old one reads as data loss. The model may only SUGGEST.
+                if let target, let anchor = store.findSeed(target) {
+                    mergeOffer = (target, anchor.title, draft)
                 } else {
                     store.addSeed(SeedParser.draftToSeed(draft))
+                    path.removeLast(path.count)
                 }
-                saving = false
-                path.removeLast(path.count)
             }
         }
     }
