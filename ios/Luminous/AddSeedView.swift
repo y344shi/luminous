@@ -132,11 +132,15 @@ struct AddSeedView: View {
     private func save(_ draft: SeedDraft) {
         var draft = draft
         draft.tags = chosenTags                      // the user's edited tag set
-        let draftCats = Set(draft.categories)
-        let candidates = store.seeds
-            .filter { ($0.status == .active || $0.status == .sleeping)
-                && !draftCats.isDisjoint(with: Set($0.categories)) }
-            .map { (id: $0.id, title: $0.title) }
+
+        // Merge is offered ONLY for learning pursuits (where "the same long-term
+        // thing" is unambiguous). Anything else always plants fresh — a saved
+        // wish must never silently vanish into an old one.
+        let isLearning = LearningTopic.language(ofTitle: draft.title) != nil
+            || draft.categories.contains(.learning)
+        let candidates = isLearning
+            ? store.learningSeeds.map { (id: $0.id, title: $0.title) }
+            : []
         guard !candidates.isEmpty else {
             store.addSeed(SeedParser.draftToSeed(draft))
             path.removeLast(path.count)
@@ -144,7 +148,22 @@ struct AddSeedView: View {
         }
         saving = true
         Task { [draft] in
-            let target = await LearningMerge.mergeTarget(newTitle: draft.title, candidates: candidates)
+            // The model gets 6 seconds to say "this continues an old pursuit";
+            // silence, errors, or timeout all mean: plant fresh. Saving can
+            // never hang and never lose the wish.
+            let target: String? = await withTaskGroup(of: String??.self) { group in
+                group.addTask {
+                    await LearningMerge.mergeTarget(newTitle: draft.title,
+                                                    candidates: candidates)
+                }
+                group.addTask {
+                    try? await Task.sleep(nanoseconds: 6_000_000_000)
+                    return String??.some(nil)
+                }
+                let first = await group.next() ?? nil
+                group.cancelAll()
+                return first ?? nil
+            }
             await MainActor.run {
                 if let target, store.mergeLearningSeed(newRaw: text, into: target) != nil {
                     // merged — no new seed
@@ -159,13 +178,15 @@ struct AddSeedView: View {
 
     // MARK: 标签 — suggested chips to toggle, plus the user's own; at most 5.
 
-    @ViewBuilder private func tagEditor(_ draft: SeedDraft) -> some View {
-        let suggested = TagSuggest.merge(
-            draft.tags,
-            TagSuggest.suggest(title: draft.title, categories: draft.categories),
-            chosenTags)
+    private func tagEditor(_ draft: SeedDraft) -> some View {
+        // chosen chips first, then remaining suggestions (cleaned, deduped)
+        let pool = (draft.tags
+                    + TagSuggest.suggest(title: draft.title, categories: draft.categories))
+            .compactMap(TagSuggest.clean)
+        var display = chosenTags
+        for t in pool where !display.contains(t) { display.append(t) }
         let full = chosenTags.count >= TagSuggest.maxTags
-        VStack(alignment: .leading, spacing: Spacing.xs) {
+        return VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack {
                 Text("标签")
                     .font(.system(size: 12))
@@ -176,10 +197,8 @@ struct AddSeedView: View {
                     .foregroundStyle(full ? theme.accentText : theme.textMuted)
             }
             FlowLayout(spacing: Spacing.xs) {
-                // every known tag (suggested ∪ chosen) is a toggle chip
-                ForEach(TagSuggest.merge(chosenTags + suggested,
-                                         suggested).sorted { chosenTags.contains($0) && !chosenTags.contains($1) },
-                        id: \.self) { t in
+                // every known tag (chosen ∪ suggested) is a toggle chip
+                ForEach(display, id: \.self) { t in
                     tagChip(t)
                 }
             }
