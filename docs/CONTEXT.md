@@ -132,6 +132,8 @@ is DONE; `docs/ios-roadmap.md` items native push/widgets/Siri/complication remai
 Never count on chat history carrying over between machines — write it here.
 
 ## Doc index
+- **`docs/BRAIN.md` — THE cross-machine handoff: full environment/commands/
+  architecture/decisions/traps handbook. On a new machine, read it first.**
 - `CLAUDE.md` / `AGENTS.md` — working rules (auto-loaded each session).
 - `docs/product-philosophy.md` — tone/voice (read before copy changes).
 - `docs/architecture-skins.md` — the shared-core + swappable-skins design.
