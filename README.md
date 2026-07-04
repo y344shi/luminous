@@ -61,11 +61,31 @@ self-signed-cert warning once, then 感受周围 can open the mic. (A tunnel lik
   hooks, and illustration packs; `home/skins` holds the three looks.
 - `app/` — routes. `docs/` — living documentation. `tests/` — Vitest.
 
+## The native app — iOS · macOS · watchOS (`ios/`)
+A full SwiftUI implementation, now the most capable build — see
+[`ios/README.md`](ios/README.md). Highlights:
+
+- **On-device LLM** (Apple FoundationModels): parses wishes, breaks tasks into
+  tiny steps with live resources (real walking routes, themed vocab, camera
+  translation, a recipe → shopping list → nearest market), estimates the day's
+  mentality as one clamped scoring tilt, writes the weekly review. The LLM
+  decides content; code decides truth and safety — hard gates are never prompts.
+- **The planetarium home**: wishes orbit a physics-rendered black hole on a real
+  gravity sim; **记忆星座** turns every trace into a permanent star in your sky,
+  with a birth ceremony on completion.
+- **Awareness**: motion, weather, kind-diverse nearby places, learned home/work
+  (coarse cells, raw coords never stored), a life-event log → rhythm, recurrence,
+  fit-learning.
+- **SwiftData multi-profile** ("gardens"), CloudKit-sync-ready; notifications
+  wired but off by default; `swift test` green gate (49 tests pin the safety rules).
+
 ## Privacy
 No hardcoded API keys. Only coarse, derived context ever feeds the ranking; raw
-audio, heart rate, and precise location **never leave the device**.
+audio, heart rate, and precise location **never leave the device**. On iOS all
+AI runs on-device (Apple Intelligence); only a coarse coordinate reaches
+open-meteo/MapKit.
 
 ---
-*Built with Next.js · React · Tailwind · Zustand · TypeScript. iOS lives in `ios/`
-(SwiftUI); a React Native + shared-core unification is under consideration — see
-[`docs/CONTEXT.md`](docs/CONTEXT.md).*
+*Web: Next.js · React · Tailwind · Zustand · TypeScript. Native: SwiftUI +
+FoundationModels + SwiftData in `ios/` (SwiftUI chosen; the RN question is
+settled). Cross-machine map: [`docs/CONTEXT.md`](docs/CONTEXT.md).*

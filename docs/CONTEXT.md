@@ -37,7 +37,8 @@ Put shared docs **inside the app dir** on WSL or they won't reach the Mac.
 | branch | contents |
 | --- | --- |
 | `main` | the web trunk — shared core + all 3 skins (`luminous-trunk` pushes here) |
-| `ios-glass` | the iOS trunk — `ios/Luminous/` core + `Aesthetic` enum + all 3 skins |
+| `ios-glass` | the **native trunk** — the full iOS/macOS/watchOS app (see below) |
+| `ios-aware` / `macos` | working branches for the native app; currently identical to `ios-glass` (kept fast-forwarded) |
 | `archive/*` | retired direction branches (glass/sense/craft/ocean, ios-sense/ios-craft) — reference only |
 
 ## Skins — status (one core, three looks; backlog in `docs/next-steps.md`)
@@ -90,22 +91,32 @@ a wish's categories. Shown on the home wishes, tap-sheet, Garden, Now, detail, a
 everywhere except the keepsake `TraceCard` (kept warm by decision). See
 `docs/scene-library.md` for sources/licenses.
 
-## iOS — status (one trunk: `ios-glass`)
-`ios/Luminous/` is a full SwiftUI app mirroring the web core
-(`Domain`/`Store`/`Scoring`/`SeedParser`/`SemanticTime`/`Theme`/`Copy`/`DesignKit`/
-`Feedback`/`DayGrade`) with an `Aesthetic` enum + `AestheticField` switching
-`GlassField`/`OceanField`(=GlassField buoyancy)/`PaperField`. A time-of-day
-`SceneBackground` (MeshGradient) sits behind glass/ocean. **Build on the Mac with
-Xcode** (last reconciliation is verified by reading only — confirm it compiles).
-Plan: `docs/ios-roadmap.md`.
+## iOS — status (one trunk: `ios-glass`; **the native app pulled ahead**)
+`ios/` is a full SwiftUI app for **iOS + macOS + watchOS** from one project —
+see **`ios/README.md`** (the front door) and `ios/OVERNIGHT-SESSION.md` (the
+"aware" build record). As of 2026-07 it has, beyond the web:
 
-**Not yet on iOS (the web pulled ahead):** the sensing fusion, the illustration
-packs, and the boxless floating wishes. Brief to port the sensors (CoreMotion /
-AVAudioSession / **HealthKit heart-rate → arousal** / CoreLocation / weather,
-mirroring `lib/sensors`+`scoring`): `docs/ios-sensor-port.md`. **Open strategic
-call (needs the human):** unify on **React Native + a shared `packages/core`**
-(extract the pure `lib/` first — kills the Swift logic duplication) vs. keep
-SwiftUI. The pure classifiers/scoring are already RN-portable.
+- **On-device LLM** (Apple FoundationModels): seed parsing, task breakdown with
+  live resources (walking routes / themed vocab / camera translate / recipe →
+  shopping list → nearest market), review quiz, creation/connection sparks,
+  mentality estimate (one clamped scoring term), reason-writer, weekly review,
+  pursuit merge. House law: @Generable output + deterministic fallback +
+  ForbiddenWords; hard gates in code, never prompts.
+- **Sensing fusion ported and surpassed**: motion, weather, kind-diverse nearby
+  places (MapKit), learned home/work cells, a SwiftData life-event log → rhythm
+  histograms, recurrence + fit-learning. (HealthKit arousal still needs the paid
+  program; mic loudness still stubbed.)
+- **The planetarium**: black-hole home on a real gravity sim (velocity-Verlet),
+  记忆星座 (traces = permanent stars + birth ceremony), scouted shooting stars.
+- **SwiftData multi-profile "gardens"** (CloudKit-ready), notifications default-OFF
+  behind quiet hours + the absolute late-night rule.
+- **Test harness**: `cd ios && swift test` (SwiftPM package over the pure core;
+  49 tests pin the safety gates).
+
+**The RN-vs-SwiftUI call is settled: SwiftUI.** The remaining parity direction is
+now web ← iOS (port `Rhythm`/`Places`/`Recurrence`/`PlanKit` patterns back into
+`packages/core` when the web needs them). Sensor brief `docs/ios-sensor-port.md`
+is DONE; `docs/ios-roadmap.md` items native push/widgets/Siri/complication remain.
 
 ## Cross-machine sync protocol
 **Start** of any session, on either machine:
@@ -128,8 +139,11 @@ Never count on chat history carrying over between machines — write it here.
 - `docs/overnight-plan.md` — the original 3-direction 20-item plan (historical).
 - `docs/TIMELINE.md` — Notion-loadable git history (auto-generated).
 - `docs/iteration-log.md` — per-cycle journal.
-- `docs/ios-roadmap.md` — native plan.
-- `docs/ios-sensor-port.md` — brief to port the sensing fusion to iOS (Swift / RN).
+- `ios/README.md` — the native app's front door (features, build, layout, law).
+- `ios/VISION-AUDIT.md` — native product/architecture audit + build order (shipped).
+- `ios/OVERNIGHT-SESSION.md` — the "aware" overnight build record + decisions.
+- `docs/ios-roadmap.md` — native plan (push/widgets/Siri/complication remain).
+- `docs/ios-sensor-port.md` — brief to port the sensing fusion to iOS (**done**).
 - `docs/INTEGRATION.md` — how the pieces fit + how to integrate RN/iOS on @luminous/core.
 - `docs/scene-library.md` — ~100 scenarios + illustration-library sources/licenses.
 - `docs/GALLERY.md` — latest Home screenshot per **skin** (glass/ocean/paper).
