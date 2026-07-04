@@ -28,6 +28,7 @@ struct SettingsView: View {
                     themeSection
                     nudgeSection
                     gardenSection
+                    cloudSection
                     resetSection
 
                     Text(Copy.SettingsCopy.privacy)
@@ -406,6 +407,58 @@ struct SettingsView: View {
             TextField("比如：妈妈的花园", text: $newGardenName)
             Button("种下") { store.createGarden(name: newGardenName) }
             Button("先不了", role: .cancel) {}
+        }
+    }
+
+    // MARK: iCloud 同步 — the same gardens on every device with this Apple 账户.
+    // The interactive toggle only exists in builds carrying the CloudKit
+    // entitlement (CLOUDKIT_ENABLED, paid developer program). Until then the
+    // section is a quiet, inert note — the feature is disabled by decision.
+
+    private var cloudSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("iCloud 同步")
+                .font(.system(size: 14))
+                .foregroundStyle(theme.textMuted)
+            #if CLOUDKIT_ENABLED
+            Toggle(isOn: Binding(
+                get: { store.cloudSyncOn },
+                set: { store.setCloudSync($0) }
+            )) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(store.cloudSyncOn ? "在你的设备之间同步" : "只留在这台设备上")
+                        .font(.system(size: 15))
+                        .foregroundStyle(theme.textPrimary)
+                    Text("同一个 Apple 账户的 iPhone / iPad / Mac 共享愿望、痕迹、手帐和设置。走 iCloud 私人数据库，别人看不到。")
+                        .font(.system(size: 12)).lineSpacing(2)
+                        .foregroundStyle(theme.textSecondary)
+                }
+            }
+            .tint(theme.accent)
+            .padding(Spacing.md)
+            .background(theme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(store.cloudSyncOn ? theme.accent : theme.border, lineWidth: 1))
+            Text(store.cloudSyncActive
+                 ? "已连接 iCloud · 回到应用时会带回其他设备的痕迹。"
+                 : "开关在下次启动时生效。")
+                .font(.system(size: 12))
+                .foregroundStyle(theme.textMuted)
+            #else
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "icloud.slash")
+                    .font(.system(size: 16))
+                    .foregroundStyle(theme.textMuted)
+                Text("暂未开通 — 需要 Apple 开发者计划的 iCloud 权限。开通后，同一个 Apple 账户的设备会共享愿望、痕迹、手帐和设置。")
+                    .font(.system(size: 12)).lineSpacing(2)
+                    .foregroundStyle(theme.textMuted)
+            }
+            .padding(Spacing.md)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(theme.surfaceSoft)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            #endif
         }
     }
 

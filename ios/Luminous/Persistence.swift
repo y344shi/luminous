@@ -102,6 +102,17 @@ final class Persistence {
 
     static let defaultProfileName = "我的花园"
 
+    /// The CloudKit private-database container (same-Apple-ID sync). Activating
+    /// it requires the PAID Apple Developer Program (iCloud entitlement) — the
+    /// schema has been CloudKit-shaped since day one (all defaults, no uniques,
+    /// no relationships), so the flip-on is just entitlement + toggle.
+    static let cloudContainerID = "iCloud.rainymushroom.Luminous"
+
+    /// True when this launch actually attached to CloudKit. False = local-only
+    /// (toggle off, no entitlement, or no iCloud account) — the app is whole
+    /// either way.
+    private(set) var cloudActive = false
+
     let container: ModelContainer
     var context: ModelContext { container.mainContext }
 
@@ -115,11 +126,41 @@ final class Persistence {
     /// Self-healing open: if the schema changed under a dev build, drop the
     /// store file and retry once. Loss-free — the UserDefaults mirror is kept
     /// dual-written and migration re-imports it.
+    ///
+    /// When the user has turned on iCloud 同步 (tdd.cloudSync) AND the build
+    /// carries the CloudKit entitlement, we use the CloudKit-backed
+    /// configuration. The attempt is COMPILE-TIME gated: without the real
+    /// entitlement, CloudKit's mirroring delegate traps asynchronously on a
+    /// background queue (verified: EXC_BREAKPOINT in
+    /// PFCloudKitContainerProvider containerWithIdentifier:) — no try? can
+    /// catch it, so the code path must not exist in unentitled builds.
+    ///
+    /// FLIP-ON (requires the PAID Apple Developer Program):
+    ///  1. Xcode → target Luminous → Signing & Capabilities → + iCloud →
+    ///     CloudKit → container `iCloud.rainymushroom.Luminous`.
+    ///  2. Build Settings → SWIFT_ACTIVE_COMPILATION_CONDITIONS: add
+    ///     `CLOUDKIT_ENABLED` (Debug + Release).
+    ///  3. UIBackgroundModes remote-notification is already in place.
+    ///  4. Settings → iCloud 同步 on each device; relaunch.
     private init?() {
         let schema = Schema([ProfileRecord.self, SeedRecord.self, TraceRecord.self,
                              LearningRecord.self, EventRecord.self, NoteRecord.self])
         let url = Self.storeURL()
-        let config = ModelConfiguration(url: url)
+
+        #if CLOUDKIT_ENABLED
+        if UserDefaults.standard.bool(forKey: "tdd.cloudSync") {
+            let cloud = ModelConfiguration(schema: schema, url: url,
+                                           cloudKitDatabase: .private(Self.cloudContainerID))
+            if let c = try? ModelContainer(for: schema, configurations: [cloud]) {
+                container = c
+                cloudActive = true
+                return
+            }
+        }
+        #endif
+
+        let config = ModelConfiguration(schema: schema, url: url,
+                                        cloudKitDatabase: .none)
         if let c = try? ModelContainer(for: schema, configurations: [config]) {
             container = c
         } else {

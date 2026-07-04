@@ -251,6 +251,29 @@ final class AppStore {
         #endif
     }
 
+    // MARK: - iCloud sync (same-Apple-ID devices; iOS/macOS only)
+
+    #if !os(watchOS)
+    /// The user's wish to sync (device-local, takes effect at next launch —
+    /// the SwiftData container is created once at startup).
+    var cloudSyncOn: Bool = UserDefaults.standard.bool(forKey: "tdd.cloudSync")
+
+    /// Whether THIS launch actually attached to CloudKit.
+    var cloudSyncActive: Bool { persistence?.cloudActive ?? false }
+
+    func setCloudSync(_ on: Bool) {
+        cloudSyncOn = on
+        defaults.set(on, forKey: "tdd.cloudSync")
+    }
+
+    /// Re-read everything for the active garden — called on foreground when
+    /// cloud sync is live, so changes made on another device show up.
+    func rehydrate() {
+        guard let p = persistence else { return }
+        hydrateActiveProfile(p)
+    }
+    #endif
+
     // MARK: - Gardens (multi-profile; iOS/macOS only)
 
     #if !os(watchOS)

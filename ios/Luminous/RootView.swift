@@ -93,6 +93,8 @@ struct RootView: View {
             case .active:
                 sensed.refresh()
                 Nudger.shared.cancelPending()
+                // Another device may have written while we were away.
+                if store.cloudSyncActive { store.rehydrate() }
             case .background:
                 scheduleGentleNudgeIfRipe()
             default: break

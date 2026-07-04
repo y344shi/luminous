@@ -364,6 +364,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIBackgroundModes = "remote-notification";
 				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphoneos*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphonesimulator*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_NSLocationWhenInUseUsageDescription[sdk=iphoneos*]" = "感受此刻的天气，帮我挑现在合适的事；只在本机，不记录位置。";
@@ -412,6 +413,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIBackgroundModes = "remote-notification";
 				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphoneos*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphonesimulator*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_NSLocationWhenInUseUsageDescription[sdk=iphoneos*]" = "感受此刻的天气，帮我挑现在合适的事；只在本机，不记录位置。";
@@ -458,6 +460,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Luminous;
+				INFOPLIST_KEY_UIBackgroundModes = "remote-notification";
 				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphoneos*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphonesimulator*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_NSLocationWhenInUseUsageDescription[sdk=iphoneos*]" = "感受此刻的天气，帮我挑现在合适的事；只在本机，不记录位置。";
@@ -494,6 +497,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Luminous;
+				INFOPLIST_KEY_UIBackgroundModes = "remote-notification";
 				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphoneos*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphonesimulator*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_NSLocationWhenInUseUsageDescription[sdk=iphoneos*]" = "感受此刻的天气，帮我挑现在合适的事；只在本机，不记录位置。";
