@@ -22,6 +22,11 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
     private let synth = AVSpeechSynthesizer()
     /// Which section is playing right now (nil = silent).
     private(set) var speakingId: String?
+    /// Playback speed multiplier (0.5× / 0.75× / 1× / 2×). Applies to the next
+    /// play; changing it stops current speech.
+    var rate: Double = 1.0 {
+        didSet { if oldValue != rate { stop() } }
+    }
 
     override init() {
         super.init()
@@ -43,7 +48,8 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
         if let code, let voice = AVSpeechSynthesisVoice(language: code) {
             utterance.voice = voice
         }
-        utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.9
+        utterance.rate = Float(min(Double(AVSpeechUtteranceDefaultSpeechRate) * 0.9 * rate,
+                                   Double(AVSpeechUtteranceMaximumSpeechRate)))
         speakingId = id
         synth.speak(utterance)
     }
@@ -102,8 +108,8 @@ struct TranslateView: View {
                         working
                     }
                     if !ocrText.isEmpty {
-                        section(title: "原文", body: ocrText, mono: true,
-                                speakId: "src", speakLang: nil)   // voice auto-detects
+                        speedRow
+                        sourceEditor
                     }
                     if let result {
                         section(title: "English" + (result.sourceLanguage.isEmpty ? "" : " · from \(result.sourceLanguage)"),
@@ -199,6 +205,98 @@ struct TranslateView: View {
                 .font(.system(size: 14)).foregroundStyle(theme.textSecondary)
         }
         .padding(.vertical, 4)
+    }
+
+    /// 朗读速度 — one control for every play button.
+    private var speedRow: some View {
+        HStack(spacing: Spacing.sm) {
+            Text("朗读速度")
+                .font(.system(size: 12))
+                .foregroundStyle(theme.textMuted)
+            ForEach([0.5, 0.75, 1.0, 2.0], id: \.self) { r in
+                Button { speaker.rate = r } label: {
+                    Text(r == 1 ? "1×" : (r == 2 ? "2×" : String(format: "%g×", r)))
+                        .font(.system(size: 12, weight: speaker.rate == r ? .semibold : .regular))
+                        .padding(.horizontal, 10).padding(.vertical, 5)
+                        .background(speaker.rate == r ? theme.accentSoft : theme.surfaceSoft)
+                        .foregroundStyle(speaker.rate == r ? theme.accentText : theme.textSecondary)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+            Spacer()
+        }
+    }
+
+    /// 原文 — editable, so a recognition mistake can be fixed by hand, then
+    /// re-translated.
+    private var sourceEditor: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text("原文 · 可以修改认错的字")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(theme.textMuted)
+                Spacer()
+                Button {
+                    speaker.toggle(id: "src", text: ocrText, language: nil)
+                } label: {
+                    Image(systemName: speaker.speakingId == "src"
+                          ? "stop.circle.fill" : "play.circle")
+                        .font(.system(size: 20))
+                        .foregroundStyle(speaker.speakingId == "src"
+                                         ? theme.accent : theme.textSecondary)
+                }
+                .buttonStyle(.plain)
+            }
+            TextEditor(text: $ocrText)
+                .font(.system(size: 14, design: .monospaced))
+                .frame(minHeight: 72, maxHeight: 160)
+                .scrollContentBackground(.hidden)
+                .padding(8)
+                .background(theme.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(theme.border, lineWidth: 1))
+            Button { retranslate() } label: {
+                HStack(spacing: 6) {
+                    if phase == .translating { ProgressView().controlSize(.small) }
+                    else { Image(systemName: "arrow.triangle.2.circlepath") }
+                    Text(phase == .translating ? "正在翻译…" : "重新翻译")
+                        .font(.system(size: 13, weight: .medium))
+                }
+                .padding(.horizontal, 12).padding(.vertical, 8)
+                .background(theme.accentSoft)
+                .foregroundStyle(theme.accentText)
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .disabled(phase == .translating
+                      || ocrText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        }
+    }
+
+    /// Translate the (possibly hand-corrected) 原文 again, skipping OCR.
+    private func retranslate() {
+        let clean = ocrText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.isEmpty else { return }
+        guard Translator.isAvailable else {
+            errorText = Translator.unavailableReason
+            return
+        }
+        errorText = nil
+        speaker.stop()
+        phase = .translating
+        Task {
+            do {
+                let t = try await Translator.translate(clean)
+                await MainActor.run { result = t; phase = .done; logHistory(clean, t) }
+            } catch {
+                await MainActor.run {
+                    phase = .idle
+                    errorText = "翻译遇到点问题：\(error.localizedDescription)。再试一次，或换一张更短的文字。"
+                }
+            }
+        }
     }
 
     private func section(title: String, body: String, mono: Bool = false,
