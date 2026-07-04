@@ -446,14 +446,17 @@ struct HomeView: View {
     /// active lean perturbs the orbits (upright, flat, or Simulator-zero all
     /// read as calm).
     private func stepSim(_ places: [Placement], t: TimeInterval) {
-        sim.sync(places.map { ($0.wish.id, $0.ring, $0.idx, $0.count) })
+        // Bodies are keyed by SEED id — stable across re-ranks. (Wish ids are
+        // freshly minted opportunity ids each rebuild; keying by them made a
+        // re-ranked wish teleport to a newly-seeded slot.)
+        sim.sync(places.map { ($0.wish.seed.id, $0.ring, $0.idx, $0.count) })
         sim.step(to: t, tilt: sensed.gravity, paused: reduceMotion)
     }
 
     /// Read a body's simulated screen position (clamped on-screen). Falls back to
     /// the orb centre if the body isn't seeded yet.
     private func simPosition(_ pl: Placement, center: CGPoint, size: CGSize) -> CGPoint {
-        let p = sim.screenPos(pl.wish.id, center: center) ?? center
+        let p = sim.screenPos(pl.wish.seed.id, center: center) ?? center
         return CGPoint(x: clamp(p.x, 44, size.width - 44),
                        y: clamp(p.y, 100, size.height - 120))
     }
@@ -555,15 +558,18 @@ struct HomeView: View {
         if !items.isEmpty {
             TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion)) { tl in
                 let t = reduceMotion ? 0 : tl.date.timeIntervalSinceReferenceDate
-                ForEach(Array(items.enumerated()), id: \.element.id) { i, s in
+                ForEach(items) { s in
+                    // Lane + phase are hashed from the suggestion itself, so a
+                    // reordered list never makes a star switch lines mid-flight.
+                    let lane = Double(Int(Scoring.stableSerendipity(s.id, "lane") * 3))
                     let prog = reduceMotion
                         ? 0.4
-                        : (t / 16.0 + Double(i) * 0.33).truncatingRemainder(dividingBy: 1)
+                        : (t / 16.0 + lane * 0.33).truncatingRemainder(dividingBy: 1)
                     if prog < 0.85 {
                         let f = CGFloat(prog / 0.85)
                         // Star lanes stay in the sky band, above the orbit zone.
-                        let start = CGPoint(x: size.width * 1.08, y: size.height * (0.07 + Double(i) * 0.05))
-                        let end = CGPoint(x: size.width * 0.10, y: size.height * (0.20 + Double(i) * 0.055))
+                        let start = CGPoint(x: size.width * 1.08, y: size.height * (0.07 + lane * 0.05))
+                        let end = CGPoint(x: size.width * 0.10, y: size.height * (0.20 + lane * 0.055))
                         let travel = atan2(end.y - start.y, end.x - start.x)  // velocity direction
                         shootingStar(s, travel: travel)
                             .position(x: start.x + (end.x - start.x) * f,
@@ -974,7 +980,7 @@ struct HomeView: View {
         // moment of presence earns its light.
         if skin == .glass, kind != .skipped, !reduceMotion, canvasSize != .zero {
             let center = CGPoint(x: canvasSize.width / 2, y: canvasSize.height * 0.52)
-            let from = sim.screenPos(wish.id, center: center)
+            let from = sim.screenPos(wish.seed.id, center: center)
                 ?? CGPoint(x: center.x, y: center.y + 120)
             birth = StarBirth(traceId: trace.id,
                               category: trace.category,

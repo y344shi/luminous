@@ -60,12 +60,21 @@ final class OrbitSim {
 
     private func circularSpeed(_ r: Double) -> Double { (mu / r).squareRoot() }
 
-    /// One body per placement. New ones launch on a circular orbit at their ring;
-    /// vanished ones are dropped. Existing bodies keep their evolved state.
+    /// One body per placement. New ones launch on a circular orbit at their
+    /// ring; vanished ones are dropped. Existing bodies keep their evolved
+    /// state — and when a re-rank moves a wish to another ring, only its HOME
+    /// ring changes: the spring walks it over smoothly (~12 s), it never jumps.
     func sync(_ places: [(id: String, ring: Int, idx: Int, count: Int)]) {
         let ids = Set(places.map { $0.id })
         bodies = bodies.filter { ids.contains($0.key) }
-        for pl in places where bodies[pl.id] == nil {
+        for pl in places {
+            if var b = bodies[pl.id] {
+                if b.ring != pl.ring {
+                    b.ring = pl.ring
+                    bodies[pl.id] = b
+                }
+                continue
+            }
             let r = radius(for: pl.ring)
             let a = Double.pi / 2
                   + 2 * Double.pi / Double(max(pl.count, 1)) * Double(pl.idx)
