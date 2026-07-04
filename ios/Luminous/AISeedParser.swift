@@ -34,7 +34,7 @@ private struct GenSeedDraft {
     var location: String
     @Guide(description: "适合的时段，0-2 个，只能从：morning, lunch, afternoon, after_work, evening, weekend 里选（不要选 late_night）")
     var times: [String]
-    @Guide(description: "3 到 5 个很短的标签（每个 2-6 字），像「法语」「傍晚」「身边的人」这样贴近生活的词，不是分类学")
+    @Guide(description: "2 到 4 个很短的标签（每个 2-6 字），像「法语」「身边的人」「窗边」这样贴近生活的具体词。不要重复类别词（身体/创作/连接/探索/恢复/学习/审美），也不要时长或能量")
     var tags: [String]
 }
 #endif

@@ -55,13 +55,24 @@ enum TagSuggest {
     /// The hard cap — a wish wears at most five tags.
     static let maxTags = 5
 
+    /// The card's FIXED facets — category / duration / energy already live as
+    /// uneditable chips above. User tags are alternatives to these dimensions,
+    /// never duplicates of them.
+    static let reserved: Set<String> = {
+        var r = Set(SeedCategory.allCases.compactMap { Meta.category[$0]?.label })
+        r.formUnion(Meta.energyLabel.values)
+        r.formUnion(["几分钟", "十几分钟", "半小时内", "一小时内", "可长可短"])
+        return r
+    }()
+
     /// Clean one raw tag: trims, strips a leading #, caps length, refuses
-    /// forbidden vocabulary. Returns nil when nothing worth keeping remains.
+    /// forbidden vocabulary and the card's fixed facets. Returns nil when
+    /// nothing worth keeping remains.
     static func clean(_ raw: String) -> String? {
         var t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         while t.hasPrefix("#") { t.removeFirst() }
         t = t.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !t.isEmpty, ForbiddenWords.passes(t) else { return nil }
+        guard !t.isEmpty, ForbiddenWords.passes(t), !reserved.contains(t) else { return nil }
         return String(t.prefix(10))
     }
 
@@ -89,8 +100,9 @@ enum TagSuggest {
         ("睡|休息|躺", "休息"),
     ]
 
-    /// Suggestions grown from what the wish already is. More than the cap may
-    /// be offered — the user picks; their own entries take priority at save.
+    /// Suggestions grown from what the wish already is — TOPIC tags only
+    /// (language, 下厨, title keywords). Category/duration/energy stay on the
+    /// card's fixed chips and are never offered here.
     static func suggest(title: String, categories: [SeedCategory]) -> [String] {
         var out: [String] = []
         if let lang = LearningTopic.language(ofTitle: title) { out.append(lang) }
@@ -98,11 +110,6 @@ enum TagSuggest {
         for (pattern, tag) in keywordTags where title.range(of: pattern, options: .regularExpression) != nil {
             if !out.contains(tag) { out.append(tag) }
         }
-        for c in categories {
-            if let label = Meta.category[c]?.label, !out.contains(label) {
-                out.append(label)
-            }
-        }
-        return Array(out.prefix(7))   // offer a few more than the cap; user chooses
+        return Array(out.prefix(6))   // offer a bit more than the cap; user chooses
     }
 }

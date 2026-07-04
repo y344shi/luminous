@@ -85,12 +85,20 @@ final class TagSuggestTests: XCTestCase {
         XCTAssertEqual(Set(merged).count, 5, "no duplicates")
     }
 
-    func testSuggestGrowsFromTopicAndCategories() {
+    func testSuggestOffersTopicsNeverTheFixedFacets() {
         let s = TagSuggest.suggest(title: "想学法语单词", categories: [.learning])
         XCTAssertTrue(s.contains("法语"))
+        XCTAssertFalse(s.contains("学习"), "category chips stay fixed on the card, never as tags")
         let cook = TagSuggest.suggest(title: "做顿好饭", categories: [.body])
         XCTAssertTrue(cook.contains("下厨"))
-        XCTAssertLessThanOrEqual(s.count, 7)
+        XCTAssertLessThanOrEqual(s.count, 6)
+    }
+
+    func testReservedFacetsCanNeverBecomeTags() {
+        XCTAssertNil(TagSuggest.clean("探索"))
+        XCTAssertNil(TagSuggest.clean("低能量"))
+        XCTAssertNil(TagSuggest.clean("十几分钟"))
+        XCTAssertNotNil(TagSuggest.clean("法语"))
     }
 }
 

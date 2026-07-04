@@ -216,7 +216,7 @@ struct AddSeedView: View {
         let full = chosenTags.count >= TagSuggest.maxTags
         return VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack {
-                Text("标签")
+                Text("自选标签 · 类别之外的角度")
                     .font(.system(size: 12))
                     .foregroundStyle(theme.textMuted)
                 Spacer()
