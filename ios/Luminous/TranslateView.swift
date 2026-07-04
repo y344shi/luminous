@@ -9,9 +9,59 @@
 import SwiftUI
 import PhotosUI
 import ImageIO
+import AVFoundation
+import NaturalLanguage
 #if os(iOS)
 import UIKit
 #endif
+
+// MARK: - Read-aloud (on-device TTS; the voice matches the text's language)
+
+@MainActor @Observable
+final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
+    private let synth = AVSpeechSynthesizer()
+    /// Which section is playing right now (nil = silent).
+    private(set) var speakingId: String?
+
+    override init() {
+        super.init()
+        synth.delegate = self
+    }
+
+    /// Tap to play; tap again to stop. `language` is a BCP-47 hint ("en-US",
+    /// "zh-CN"); nil auto-detects from the text, so a French sign gets a
+    /// French voice.
+    func toggle(id: String, text: String, language: String? = nil) {
+        if speakingId == id {
+            synth.stopSpeaking(at: .immediate)
+            speakingId = nil
+            return
+        }
+        synth.stopSpeaking(at: .immediate)
+        let utterance = AVSpeechUtterance(string: text)
+        let code = language ?? NLLanguageRecognizer.dominantLanguage(for: text)?.rawValue
+        if let code, let voice = AVSpeechSynthesisVoice(language: code) {
+            utterance.voice = voice
+        }
+        utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.9
+        speakingId = id
+        synth.speak(utterance)
+    }
+
+    func stop() {
+        synth.stopSpeaking(at: .immediate)
+        speakingId = nil
+    }
+
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
+                                       didFinish utterance: AVSpeechUtterance) {
+        Task { @MainActor in self.speakingId = nil }
+    }
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
+                                       didCancel utterance: AVSpeechUtterance) {
+        Task { @MainActor in self.speakingId = nil }
+    }
+}
 
 struct TranslateView: View {
     @Environment(\.theme) private var theme
@@ -26,6 +76,7 @@ struct TranslateView: View {
     @State private var errorText: String?
 
     @State private var pickerItem: PhotosPickerItem?
+    @State private var speaker = Speaker()
     #if os(iOS)
     @State private var showCamera = false
     #endif
@@ -51,12 +102,15 @@ struct TranslateView: View {
                         working
                     }
                     if !ocrText.isEmpty {
-                        section(title: "原文", body: ocrText, mono: true)
+                        section(title: "原文", body: ocrText, mono: true,
+                                speakId: "src", speakLang: nil)   // voice auto-detects
                     }
                     if let result {
                         section(title: "English" + (result.sourceLanguage.isEmpty ? "" : " · from \(result.sourceLanguage)"),
-                                body: result.english)
-                        section(title: "简体中文", body: result.chinese)
+                                body: result.english,
+                                speakId: "en", speakLang: "en-US")
+                        section(title: "简体中文", body: result.chinese,
+                                speakId: "zh", speakLang: "zh-CN")
                     }
                 }
                 .padding(Spacing.lg)
@@ -69,6 +123,7 @@ struct TranslateView: View {
                     Button("完成") { dismiss() }
                 }
             }
+            .onDisappear { speaker.stop() }
             .onChange(of: pickerItem) { _, item in
                 guard let item else { return }
                 Task { await loadFromPicker(item) }
@@ -146,10 +201,27 @@ struct TranslateView: View {
         .padding(.vertical, 4)
     }
 
-    private func section(title: String, body: String, mono: Bool = false) -> some View {
+    private func section(title: String, body: String, mono: Bool = false,
+                         speakId: String? = nil, speakLang: String? = nil) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(theme.textMuted)
+            HStack {
+                Text(title).font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(theme.textMuted)
+                Spacer()
+                if let speakId {
+                    Button {
+                        speaker.toggle(id: speakId, text: body, language: speakLang)
+                    } label: {
+                        Image(systemName: speaker.speakingId == speakId
+                              ? "stop.circle.fill" : "play.circle")
+                            .font(.system(size: 20))
+                            .foregroundStyle(speaker.speakingId == speakId
+                                             ? theme.accent : theme.textSecondary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(speaker.speakingId == speakId ? "停止朗读" : "朗读")
+                }
+            }
             Text(body)
                 .font(mono ? .system(size: 14, design: .monospaced) : .system(size: 16))
                 .lineSpacing(4)
@@ -212,7 +284,12 @@ struct TranslateView: View {
             let t = try await Translator.translate(clean)
             await MainActor.run { result = t; phase = .done; logHistory(clean, t) }
         } catch {
-            await MainActor.run { phase = .idle; errorText = "翻译遇到点问题，再试一次。" }
+            // Show the real reason — a hidden generic line made this look like
+            // "只有原文，没有译文".
+            await MainActor.run {
+                phase = .idle
+                errorText = "翻译遇到点问题：\(error.localizedDescription)。再试一次，或换一张更短的文字。"
+            }
         }
     }
 

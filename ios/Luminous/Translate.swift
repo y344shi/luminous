@@ -92,29 +92,60 @@ enum Translator {
     enum TError: Error { case unavailable, noText }
 
     /// Translate the OCR'd text into both English and Simplified Chinese, whatever
-    /// language it started in. Long captures are trimmed to stay within the model's
-    /// context window.
+    /// language it started in. Strategy: try the structured single call first;
+    /// if guided generation balks (long text, guardrails, structure sanitization
+    /// — the common reasons the 译文 never arrived), fall back to two SIMPLE
+    /// unguided calls, which are far more forgiving. Trimmed to stay well inside
+    /// the on-device context window.
     static func translate(_ text: String) async throws -> Translation {
-        let trimmed = String(text.trimmingCharacters(in: .whitespacesAndNewlines).prefix(1400))
+        let trimmed = String(text.trimmingCharacters(in: .whitespacesAndNewlines).prefix(900))
         guard !trimmed.isEmpty else { throw TError.noText }
         #if canImport(FoundationModels)
         if #available(iOS 26.0, macOS 26.0, *) {
-            let instructions = """
-            你是一个精准的翻译。无论原文是什么语言，都要给出忠实、自然的英文和简体中文翻译。\
-            只翻译文字本身，不要添加解释或评论。保留原意与语气。
-            """
-            let session = LanguageModelSession(instructions: instructions)
-            let prompt = """
-            识别下面这段文字的语言，然后把它翻译成英文和简体中文：
-
-            \(trimmed)
-            """
-            let r = try await session.respond(to: prompt, generating: GenTranslation.self)
-            return Translation(sourceLanguage: r.content.sourceLanguage,
-                               english: r.content.english,
-                               chinese: r.content.chinese)
+            if let t = try? await guided(trimmed) { return t }
+            return try await plainTwoStep(trimmed)
         }
         #endif
         throw TError.unavailable
     }
+
+    #if canImport(FoundationModels)
+    @available(iOS 26.0, macOS 26.0, *)
+    private static func guided(_ text: String) async throws -> Translation {
+        let instructions = """
+        你是一个精准的翻译。无论原文是什么语言，都要给出忠实、自然的英文和简体中文翻译。\
+        只翻译文字本身，不要添加解释或评论。保留原意与语气。
+        """
+        let session = LanguageModelSession(instructions: instructions)
+        let prompt = """
+        识别下面这段文字的语言，然后把它翻译成英文和简体中文：
+
+        \(text)
+        """
+        let r = try await session.respond(to: prompt, generating: GenTranslation.self)
+        guard !r.content.english.isEmpty, !r.content.chinese.isEmpty else { throw TError.noText }
+        return Translation(sourceLanguage: r.content.sourceLanguage,
+                           english: r.content.english,
+                           chinese: r.content.chinese)
+    }
+
+    /// The forgiving path: plain text out, one target language per call.
+    @available(iOS 26.0, macOS 26.0, *)
+    private static func plainTwoStep(_ text: String) async throws -> Translation {
+        let instructions = "你是一个精准的翻译。只输出译文本身，不要任何解释、前缀或引号。"
+        let en = try await LanguageModelSession(instructions: instructions)
+            .respond(to: "把下面这段文字翻译成英文：\n\n\(text)").content
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let zh = try await LanguageModelSession(instructions: instructions)
+            .respond(to: "把下面这段文字翻译成简体中文：\n\n\(text)").content
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !en.isEmpty || !zh.isEmpty else { throw TError.noText }
+        // language name is a nicety — never let it fail the translation
+        let lang = (try? await LanguageModelSession(instructions: "只用一个英文单词回答。")
+            .respond(to: "下面这段文字是什么语言？\n\n\(String(text.prefix(120)))").content
+            .trimmingCharacters(in: .whitespacesAndNewlines)) ?? ""
+        return Translation(sourceLanguage: String(lang.prefix(20)),
+                           english: en, chinese: zh)
+    }
+    #endif
 }
