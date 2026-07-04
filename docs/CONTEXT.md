@@ -140,6 +140,7 @@ Never count on chat history carrying over between machines — write it here.
 - `docs/TIMELINE.md` — Notion-loadable git history (auto-generated).
 - `docs/iteration-log.md` — per-cycle journal.
 - `ios/README.md` — the native app's front door (features, build, layout, law).
+- `ios/TOUR.md` — the illustrated codebase tour (functions ↔ screenshots ↔ diagrams).
 - `ios/VISION-AUDIT.md` — native product/architecture audit + build order (shipped).
 - `ios/OVERNIGHT-SESSION.md` — the "aware" overnight build record + decisions.
 - `docs/ios-roadmap.md` — native plan (push/widgets/Siri/complication remain).

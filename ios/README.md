@@ -100,6 +100,8 @@ tests fail if that ever changes. Every LLM feature has a deterministic fallback
 and its output passes `ForbiddenWords`.
 
 ## Docs in this directory
+- **`TOUR.md` — the illustrated tour: every function mapped to what it draws,
+  with diagrams and screenshots. Start here.**
 - `CLAUDE.md` — working rules (branch safety, build commands).
 - `VISION-AUDIT.md` — the product/architecture audit + build order (largely shipped).
 - `OVERNIGHT-SESSION.md` — the "aware" overnight build record + decisions.
