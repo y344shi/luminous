@@ -105,12 +105,19 @@ struct PursuitPageView: View {
                             .foregroundStyle(theme.textMuted)
                     }
                     Spacer(minLength: 0)
-                    Button { store.removeNote(note.id) } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 10))
-                            .foregroundStyle(theme.textMuted)
+                    Button {
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            store.removeNote(note.id)
+                        }
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 16))
+                            .foregroundStyle(theme.textMuted.opacity(0.7))
+                            .frame(width: 40, height: 40)   // a real finger target
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("删除这条想法")
                 }
                 .padding(Spacing.sm)
                 .background(theme.surfaceSoft)
