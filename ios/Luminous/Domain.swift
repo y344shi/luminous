@@ -88,6 +88,10 @@ struct Seed: Codable, Identifiable, Hashable {
     var preferredTimes: [SemanticTime]
     var triggerConditions: [String]
 
+    /// Up to 5 short free-form tags ("法语", "在路上", …) — some suggested, some
+    /// the user's own. Optional so seeds saved before tags existed still decode.
+    var tags: [String]?
+
     var status: SeedStatus
 
     var createdAt: String

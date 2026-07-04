@@ -30,6 +30,7 @@ let package = Package(
                 "SemanticTime.swift",
                 "SensorClassifiers.swift",
                 "Suggestion.swift",
+                "Tags.swift",
             ],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),

@@ -20,6 +20,8 @@ struct SeedTemplate {
     var locationType: LocationType
     var preferredTimes: [SemanticTime]
     var triggerConditions: [String]
+    /// Up to 5 short tags — suggested, then edited by the user before saving.
+    var tags: [String] = []
 }
 
 typealias SeedDraft = SeedTemplate
@@ -203,7 +205,9 @@ enum SeedParser {
             categories: draft.categories, minimumAction: draft.minimumAction,
             estimatedDurationMin: draft.estimatedDurationMin, energyRequired: draft.energyRequired,
             locationType: draft.locationType, preferredTimes: draft.preferredTimes,
-            triggerConditions: draft.triggerConditions, status: .active,
+            triggerConditions: draft.triggerConditions,
+            tags: draft.tags.isEmpty ? nil : Array(draft.tags.prefix(5)),
+            status: .active,
             createdAt: ts, updatedAt: ts
         )
     }

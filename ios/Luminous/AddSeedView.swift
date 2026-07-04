@@ -17,6 +17,8 @@ struct AddSeedView: View {
     @State private var draft: SeedDraft?
     @State private var saving = false
     @State private var parsing = false
+    @State private var chosenTags: [String] = []
+    @State private var customTag = ""
 
     var body: some View {
         ScrollView {
@@ -64,7 +66,11 @@ struct AddSeedView: View {
                 Task {
                     // On-device model reads the wish; keyword net is the fallback.
                     let parsed = await AISeedParser.parse(text)
-                    await MainActor.run { draft = parsed; parsing = false }
+                    await MainActor.run {
+                        draft = parsed
+                        chosenTags = parsed.tags        // suggested set, pre-chosen
+                        parsing = false
+                    }
                 }
             }
         }
@@ -101,6 +107,8 @@ struct AddSeedView: View {
                             .foregroundStyle(theme.textPrimary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
+
+                    tagEditor(draft)
                 }
             }
 
@@ -122,6 +130,8 @@ struct AddSeedView: View {
     /// stays in one place. The LLM judges; keyword language-match is the
     /// fallback; when unsure it always plants fresh.
     private func save(_ draft: SeedDraft) {
+        var draft = draft
+        draft.tags = chosenTags                      // the user's edited tag set
         let draftCats = Set(draft.categories)
         let candidates = store.seeds
             .filter { ($0.status == .active || $0.status == .sleeping)
@@ -133,7 +143,7 @@ struct AddSeedView: View {
             return
         }
         saving = true
-        Task {
+        Task { [draft] in
             let target = await LearningMerge.mergeTarget(newTitle: draft.title, candidates: candidates)
             await MainActor.run {
                 if let target, store.mergeLearningSeed(newRaw: text, into: target) != nil {
@@ -145,6 +155,87 @@ struct AddSeedView: View {
                 path.removeLast(path.count)
             }
         }
+    }
+
+    // MARK: 标签 — suggested chips to toggle, plus the user's own; at most 5.
+
+    @ViewBuilder private func tagEditor(_ draft: SeedDraft) -> some View {
+        let suggested = TagSuggest.merge(
+            draft.tags,
+            TagSuggest.suggest(title: draft.title, categories: draft.categories),
+            chosenTags)
+        let full = chosenTags.count >= TagSuggest.maxTags
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            HStack {
+                Text("标签")
+                    .font(.system(size: 12))
+                    .foregroundStyle(theme.textMuted)
+                Spacer()
+                Text("\(chosenTags.count)/\(TagSuggest.maxTags)")
+                    .font(.system(size: 11))
+                    .foregroundStyle(full ? theme.accentText : theme.textMuted)
+            }
+            FlowLayout(spacing: Spacing.xs) {
+                // every known tag (suggested ∪ chosen) is a toggle chip
+                ForEach(TagSuggest.merge(chosenTags + suggested,
+                                         suggested).sorted { chosenTags.contains($0) && !chosenTags.contains($1) },
+                        id: \.self) { t in
+                    tagChip(t)
+                }
+            }
+            HStack(spacing: Spacing.sm) {
+                TextField("自己写一个…", text: $customTag)
+                    .font(.system(size: 13))
+                    .padding(.horizontal, 10).padding(.vertical, 7)
+                    .background(theme.surfaceSoft)
+                    .clipShape(Capsule())
+                    .onSubmit { addCustomTag() }
+                Button { addCustomTag() } label: {
+                    Text("加上")
+                        .font(.system(size: 12, weight: .medium))
+                        .padding(.horizontal, 12).padding(.vertical, 7)
+                        .background(theme.accentSoft)
+                        .foregroundStyle(theme.accentText)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .disabled(full || TagSuggest.clean(customTag) == nil)
+            }
+            if full {
+                Text("五个刚刚好，多了就吵了。")
+                    .font(.system(size: 11))
+                    .foregroundStyle(theme.textMuted)
+            }
+        }
+    }
+
+    private func tagChip(_ t: String) -> some View {
+        let on = chosenTags.contains(t)
+        return Button {
+            if on {
+                chosenTags.removeAll { $0 == t }
+            } else if chosenTags.count < TagSuggest.maxTags {
+                chosenTags.append(t)
+            }
+        } label: {
+            Text(t)
+                .font(.system(size: 12, weight: on ? .medium : .regular))
+                .padding(.horizontal, 10).padding(.vertical, 5)
+                .background(on ? theme.accentSoft : theme.surfaceSoft)
+                .foregroundStyle(on ? theme.accentText : theme.textSecondary)
+                .clipShape(Capsule())
+                .overlay(Capsule().strokeBorder(on ? theme.accent.opacity(0.5) : .clear, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .opacity(!on && chosenTags.count >= TagSuggest.maxTags ? 0.45 : 1)
+    }
+
+    private func addCustomTag() {
+        guard let t = TagSuggest.clean(customTag),
+              chosenTags.count < TagSuggest.maxTags,
+              !chosenTags.contains(t) else { return }
+        chosenTags.append(t)
+        customTag = ""
     }
 
     private func tag(_ t: String) -> some View {

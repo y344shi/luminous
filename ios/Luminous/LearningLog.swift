@@ -38,45 +38,8 @@ struct LearningEntry: Codable, Identifiable, Hashable {
     }
 }
 
-// MARK: - Topic detection (single source of truth)
-
-enum LearningTopic {
-    /// The language a wish is about, as a Chinese label — or nil if it isn't a
-    /// language-learning wish. Mirrors the web app's keyword parse.
-    static func language(ofTitle raw: String) -> String? {
-        let t = raw.lowercased()
-        if raw.contains("法语") || raw.contains("法文") || t.contains("french") { return "法语" }
-        if raw.contains("英语") || raw.contains("英文") || t.contains("english") { return "英语" }
-        if raw.contains("日语") || raw.contains("日文") || t.contains("japanese") { return "日语" }
-        if raw.contains("西班牙") || t.contains("spanish") { return "西班牙语" }
-        if raw.contains("德语") || raw.contains("德文") || t.contains("german") { return "德语" }
-        if raw.contains("韩语") || raw.contains("韩文") || t.contains("korean") { return "韩语" }
-        if raw.contains("意大利") || t.contains("italian") { return "意大利语" }
-        return nil
-    }
-
-    /// Is this seed a learning pursuit at all (language wish, or learning category)?
-    static func isLearning(_ seed: Seed) -> Bool {
-        language(ofTitle: seed.title) != nil || seed.categories.contains(.learning)
-    }
-
-    /// Map a detected source-language name (English, as the OCR/LLM returns it) to
-    /// the Chinese label the learning pursuits use, so a translated photo lands in
-    /// the right anchor's history. Unknown names pass through unchanged.
-    static func label(forEnglishLanguage name: String) -> String {
-        switch name.lowercased() {
-        case let n where n.contains("french"):   return "法语"
-        case let n where n.contains("english"):  return "英语"
-        case let n where n.contains("japanese"): return "日语"
-        case let n where n.contains("spanish"):  return "西班牙语"
-        case let n where n.contains("german"):   return "德语"
-        case let n where n.contains("korean"):   return "韩语"
-        case let n where n.contains("italian"):  return "意大利语"
-        case let n where n.contains("chinese"):  return "中文"
-        default: return name.isEmpty ? "未知" : name
-        }
-    }
-}
+// LearningTopic (topic detection) moved to Tags.swift — pure Foundation, shared
+// with the watch target and the SwiftPM test package.
 
 // MARK: - Merge decision
 

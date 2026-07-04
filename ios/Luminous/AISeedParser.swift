@@ -34,6 +34,8 @@ private struct GenSeedDraft {
     var location: String
     @Guide(description: "适合的时段，0-2 个，只能从：morning, lunch, afternoon, after_work, evening, weekend 里选（不要选 late_night）")
     var times: [String]
+    @Guide(description: "3 到 5 个很短的标签（每个 2-6 字），像「法语」「傍晚」「身边的人」这样贴近生活的词，不是分类学")
+    var tags: [String]
 }
 #endif
 
@@ -82,6 +84,10 @@ enum AISeedParser {
         draft.energyRequired = Energy(rawValue: g.energy) ?? fallback.energyRequired
         draft.locationType = LocationType(rawValue: g.location) ?? fallback.locationType
         if !times.isEmpty { draft.preferredTimes = Array(times.prefix(2)) }
+        // Model's tags lead; deterministic suggestions fill the gaps. All rules
+        // (clean, dedupe, cap 5) live in TagSuggest.
+        draft.tags = TagSuggest.merge(g.tags,
+                                      TagSuggest.suggest(title: title, categories: draft.categories))
         return draft
     }
     #endif

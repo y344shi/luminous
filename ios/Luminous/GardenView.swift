@@ -135,6 +135,19 @@ struct SeedDetailView: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
 
+                    if let tags = seed.tags, !tags.isEmpty {
+                        FlowLayout(spacing: Spacing.xs) {
+                            ForEach(tags, id: \.self) { t in
+                                Text(t)
+                                    .font(.system(size: 12))
+                                    .padding(.horizontal, 10).padding(.vertical, 5)
+                                    .background(theme.surfaceSoft)
+                                    .foregroundStyle(theme.textSecondary)
+                                    .clipShape(Capsule())
+                            }
+                        }
+                    }
+
                     BreathingCard {
                         VStack(alignment: .leading, spacing: Spacing.sm) {
                             Text(Copy.SeedDetail.minLabel)

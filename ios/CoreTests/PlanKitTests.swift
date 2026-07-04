@@ -67,3 +67,29 @@ final class WishTopicsTests: XCTestCase {
         XCTAssertFalse(WishTopics.isCooking("出门走走"))
     }
 }
+
+final class TagSuggestTests: XCTestCase {
+
+    func testCleanNormalizesAndRefuses() {
+        XCTAssertEqual(TagSuggest.clean("  #法语 "), "法语")
+        XCTAssertEqual(TagSuggest.clean("a-very-long-tag-name"), "a-very-lon", "capped at 10")
+        XCTAssertNil(TagSuggest.clean("   "))
+        XCTAssertNil(TagSuggest.clean("打卡"), "forbidden vocabulary never becomes a tag")
+    }
+
+    func testMergeDedupesAndCapsAtFive() {
+        let merged = TagSuggest.merge(["法语", "法语", "阅读"],
+                                      ["走动", "音乐", "休息", "下厨"])
+        XCTAssertEqual(merged.count, 5)
+        XCTAssertEqual(merged.first, "法语", "earlier lists win slots first")
+        XCTAssertEqual(Set(merged).count, 5, "no duplicates")
+    }
+
+    func testSuggestGrowsFromTopicAndCategories() {
+        let s = TagSuggest.suggest(title: "想学法语单词", categories: [.learning])
+        XCTAssertTrue(s.contains("法语"))
+        let cook = TagSuggest.suggest(title: "做顿好饭", categories: [.body])
+        XCTAssertTrue(cook.contains("下厨"))
+        XCTAssertLessThanOrEqual(s.count, 7)
+    }
+}
