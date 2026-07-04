@@ -257,6 +257,7 @@ final class AppStore {
     var gardens: [ProfileInfo] { persistence?.profiles() ?? [] }
 
     /// Per-seed recurrence stats from the outcome events (the rings, read back).
+    /// Pursuits touched recently on their 手帐 page stay warm (engagedRecently).
     func seedHistory() -> [String: Recurrence.SeedStats] {
         guard let p = persistence else { return [:] }
         let outcomes = p.events(profile: activeProfileID, kindPrefix: "outcome.")
@@ -269,8 +270,36 @@ final class AppStore {
                 return Outcome(time: r.timestamp, seedId: r.payloadJSON,
                                kind: kind, semanticTime: st)
             }
-        return Recurrence.stats(outcomes)
+        var stats = Recurrence.stats(outcomes)
+        let weekAgo = Date().addingTimeInterval(-7 * 86_400)
+        for e in p.events(profile: activeProfileID, since: weekAgo, kindPrefix: "pursuit.") {
+            stats[e.payloadJSON, default: Recurrence.SeedStats()].engagedRecently = true
+        }
+        return stats
     }
+
+    // MARK: - Pursuit notes (手帐; iOS/macOS only)
+
+    func notes(for seedId: String) -> [PursuitNote] {
+        persistence?.loadNotes(profile: activeProfileID, seed: seedId) ?? []
+    }
+
+    func addNote(_ text: String, to seedId: String, kind: PursuitNote.Kind = .note) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let p = persistence else { return }
+        p.insertNote(PursuitNote(seedId: seedId, kind: kind, text: trimmed),
+                     profile: activeProfileID)
+        logEvent(kind: "pursuit.note", payload: seedId)
+        noteBump += 1
+    }
+
+    func removeNote(_ id: String) {
+        persistence?.deleteNote(id: id, profile: activeProfileID)
+        noteBump += 1
+    }
+
+    /// Bumped on note changes so views re-read (notes aren't mirrored in memory).
+    private(set) var noteBump = 0
 
     /// Home/work grid cells learned from the last 90 days of coarse fixes.
     func learnedPlaceCells() -> (home: String?, work: String?) {

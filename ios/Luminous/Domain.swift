@@ -135,6 +135,25 @@ struct Opportunity: Codable, Identifiable, Hashable {
     var createdAt: String
 }
 
+/// One thought kept on a pursuit's journal page (手帐) — an idea, a note, or a
+/// suggestion the AI made that was worth keeping. Never a subtask.
+struct PursuitNote: Codable, Identifiable, Hashable {
+    enum Kind: String, Codable { case note, idea, aiIdea }
+    var id: String
+    var seedId: String
+    var dateKey: String   // YYYY-MM-DD
+    var kind: Kind
+    var text: String
+
+    init(seedId: String, kind: Kind = .note, text: String) {
+        self.id = DomainUtil.uid("pnote")
+        self.seedId = seedId
+        self.dateKey = DomainUtil.localDateKey()
+        self.kind = kind
+        self.text = text
+    }
+}
+
 struct DailyTrace: Codable, Identifiable, Hashable {
     var id: String
     var date: String // YYYY-MM-DD

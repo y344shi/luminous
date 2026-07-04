@@ -149,6 +149,9 @@ struct SeedDetailView: View {
                         }
                     }
 
+                    // The pursuit's 手帐 — its notes, ideas, and growth directions.
+                    PursuitPageView(seed: seed)
+
                     actions(seed)
                 }
                 .padding(Spacing.lg)

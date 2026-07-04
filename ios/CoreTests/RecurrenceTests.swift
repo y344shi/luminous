@@ -62,3 +62,20 @@ final class RecurrenceTests: XCTestCase {
         XCTAssertTrue((0..<1).contains(a))
     }
 }
+
+extension RecurrenceTests {
+    func testJournalEngagementKeepsAPursuitWarmButClamped() {
+        var stats = Recurrence.SeedStats()
+        stats.engagedRecently = true
+        var input = ContextInput(mood: .okay, energy: .medium)
+        input.now = Calendar.current.date(bySettingHour: 15, minute: 0, second: 0, of: Date())!
+        let ctx = ContextBuilder.build(input)
+        let seed = makeSeed()
+        XCTAssertEqual(Recurrence.historyBonus(seed, ctx, stats: stats), 0.05, accuracy: 0.001)
+        // engagement + due-cadence together still clamp at 0.15
+        stats.completions = 3
+        stats.lastDone = Date().addingTimeInterval(-10 * 86_400)
+        stats.medianGapDays = 2
+        XCTAssertLessThanOrEqual(Recurrence.historyBonus(makeSeed(status: .sleeping), ctx, stats: stats), 0.15)
+    }
+}

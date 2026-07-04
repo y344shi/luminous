@@ -35,6 +35,9 @@ enum Recurrence {
         var modalDoneTime: SemanticTime?
         var skipsByTime: [SemanticTime: Int] = [:]
         var doneByTime: [SemanticTime: Int] = [:]
+        /// The pursuit's 手帐 page was touched (a note/idea kept) this week —
+        /// a pursuit being thought about stays gently warm.
+        var engagedRecently = false
     }
 
     /// Fold the outcome stream into per-seed stats.
@@ -91,6 +94,9 @@ enum Recurrence {
         let dones = s.doneByTime[ctx.semanticTime] ?? 0
         if skips >= 3 && dones == 0 {
             b -= 0.1                                          // wrong moment, not wrong wish
+        }
+        if s.engagedRecently {
+            b += 0.05                                         // being thought about = warm
         }
         return DomainUtil.clamp(b, -0.15, 0.15)
     }

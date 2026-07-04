@@ -887,6 +887,27 @@ struct HomeView: View {
                 PlanSectionView(seed: seed, onPhoto: { picked = nil; showTranslate = true })
                 ExecutorSection(seed: seed)
 
+                // The pursuit's journal page lives one tap away.
+                Button {
+                    picked = nil
+                    path.append(Route.seedDetail(seed.id))
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "book.closed")
+                        Text("打开它的手帐")
+                            .font(.system(size: 14, weight: .medium))
+                        Spacer()
+                        Image(systemName: "chevron.right").font(.system(size: 11))
+                    }
+                    .foregroundStyle(theme.textPrimary)
+                    .padding(.vertical, 10).padding(.horizontal, Spacing.md)
+                    .background(theme.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(theme.border, lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+
                 VStack(spacing: Spacing.sm) {
                     SoftButton(title: Copy.Completion.done) {
                         if let lang = helpLanguage(for: seed), !aiVocab.isEmpty {

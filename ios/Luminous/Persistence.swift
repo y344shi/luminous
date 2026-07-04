@@ -53,6 +53,14 @@ import SwiftData
     init() {}
 }
 
+@Model final class NoteRecord {
+    var noteID: String = ""
+    var profileID: String = ""
+    var seedID: String = ""
+    var payload: String = ""     // JSON of PursuitNote
+    init() {}
+}
+
 /// Append-only life-event log: outcomes and sensed transitions, each with the
 /// coarse context snapshot of its moment. The substrate for rhythm/recurrence.
 @Model final class EventRecord {
@@ -109,7 +117,7 @@ final class Persistence {
     /// dual-written and migration re-imports it.
     private init?() {
         let schema = Schema([ProfileRecord.self, SeedRecord.self, TraceRecord.self,
-                             LearningRecord.self, EventRecord.self])
+                             LearningRecord.self, EventRecord.self, NoteRecord.self])
         let url = Self.storeURL()
         let config = ModelConfiguration(url: url)
         if let c = try? ModelContainer(for: schema, configurations: [config]) {
@@ -236,6 +244,31 @@ final class Persistence {
         save()
     }
 
+    // MARK: Pursuit notes (the 手帐 pages)
+
+    func loadNotes(profile: String, seed: String? = nil) -> [PursuitNote] {
+        let recs = (try? context.fetch(FetchDescriptor<NoteRecord>(
+            predicate: #Predicate { $0.profileID == profile }))) ?? []
+        return recs.compactMap { Self.decode(PursuitNote.self, $0.payload) }
+            .filter { seed == nil || $0.seedId == seed }
+            .sorted { $0.id > $1.id }          // uid embeds time → newest first
+    }
+
+    func insertNote(_ note: PursuitNote, profile: String) {
+        let r = NoteRecord()
+        r.noteID = note.id; r.profileID = profile; r.seedID = note.seedId
+        r.payload = Self.encode(note)
+        context.insert(r)
+        save()
+    }
+
+    func deleteNote(id: String, profile: String) {
+        let recs = (try? context.fetch(FetchDescriptor<NoteRecord>(
+            predicate: #Predicate { $0.profileID == profile && $0.noteID == id }))) ?? []
+        recs.forEach { context.delete($0) }
+        save()
+    }
+
     // MARK: Events (append-only)
 
     func appendEvent(kind: String, payload: String, context ctx: ContextSnapshot?, profile: String) {
@@ -277,6 +310,9 @@ final class Persistence {
         let evts = (try? context.fetch(FetchDescriptor<EventRecord>(
             predicate: #Predicate { $0.profileID == profile }))) ?? []
         evts.forEach { context.delete($0) }
+        let notes = (try? context.fetch(FetchDescriptor<NoteRecord>(
+            predicate: #Predicate { $0.profileID == profile }))) ?? []
+        notes.forEach { context.delete($0) }
         save()
     }
 
