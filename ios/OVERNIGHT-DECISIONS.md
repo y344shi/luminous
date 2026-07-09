@@ -189,3 +189,23 @@ oversight. Added a cross-platform `v(Double,Double,Double)→SCNVector3` helper
 since computed vector components are Float on iOS / CGFloat on macOS (literal
 vectors compiled, computed ones would not). Count-free throughout. No Play scene
 (CP-D). 83 tests + iOS build green. Next: W4 CP-D (Play today ~10s scene).
+
+**D17 · W4 CP-D shipped — 播放今天 (the Play scene).** The day-object plays a
+gentle ~10s scene. DECISION: to animate on demand, refactored DayObjectStage
+from a stateless makeScene()-per-body into a PERSISTENT scene — @State scene +
+camera + craft nodes, built once in onAppear and rebuilt only on parts.count /
+reduceMotion change. Play is triggered by a `playSignal: Int` prop (bumped by the
+button) via .onChange, running SCNActions on the persisted nodes: the sky
+background tints (SCNTransaction) to the hour's DayGrade.colors horizon (softened
+to the top stop in rain/snow/fog via a `soften` flag), the camera drifts out and
+back (5s ease each way), the craft rises and arcs and returns, then after 9.5s
+the sky settles back to tokens.background. Gentle throughout — no race. Passing
+`pointOfView: camera` to SceneView so the camera dolly reads. BuildTodayView adds
+a 播放今天 capsule button shown only when the object has parts AND motion is on;
+tapping it also sets a soft scene line by DayGrade.phase (garden path / through
+clouds / over water / under the night sky), with a rain addendum. Reduce Motion →
+button hidden, scene stays a still hero pose. All colors from theme tokens +
+DayGrade → skin-aware; count-free. NOTE: SceneKit Play verifies best on device;
+in the Simulator it builds + renders but on-device is the real test (logged for
+morning). 83 tests + iOS build green. Next: W4 CP-E (save the assembled object +
+a rendered snapshot into the Daily Trace keepsake).

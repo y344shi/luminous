@@ -88,8 +88,12 @@ Today every skin shows the orbiting planetarium. Split the Home layout by skin:
   around the pedestal — geometry by material, scale/glow/motor from the felt
   rating (working parts spin, quiet parts breathe), colors from theme tokens.
   Reduce Motion → still. Count-free. (aware 40)
-- ⏳ **CP-D** Play today (~10s scene) · **CP-E** keepsake (snapshot → Daily
-  Trace) · **CP-F** art/skins/a11y. (Full plan: `ios/BUILD-TODAY-PLAN.md`.)
+- ✅ **CP-D — 播放今天 (~10s scene):** persistent SCNScene; a `playSignal`
+  bump tints the sky to the hour (DayGrade.colors, softened in rain/snow/fog),
+  drifts the camera, and arcs the craft, then settles. Button + soft scene line
+  in BuildTodayView (only when grown & motion on). Reduce Motion → still. (aware 41)
+- ⏳ **CP-E** keepsake (assembled object + snapshot → Daily Trace) ·
+  **CP-F** art/skins/a11y (per-kind shapes). (Full plan: `ios/BUILD-TODAY-PLAN.md`.)
 
 ## Housekeeping / done recently
 - ✅ **Traces write-first** (aware 27) — 痕迹 records your words first; auto-
