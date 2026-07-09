@@ -195,6 +195,16 @@ struct HomeView: View {
                         wishListField
                     }
 
+                    // Late night and out, on ocean/paper → the same get-home care
+                    // as a compact top strip (the orbit is a glass-only affordance).
+                    if showLateNightCare && skin != .glass {
+                        LateNightCareStrip()
+                            .padding(.horizontal, Spacing.md)
+                            .padding(.top, 84)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                            .transition(.opacity)
+                    }
+
                     topOverlay
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     bottomOverlay
@@ -464,8 +474,19 @@ struct HomeView: View {
         }
         .padding(Spacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(theme.surface.opacity(0.6))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(theme.surface.opacity(wish.primary ? 0.96 : 0.82))
+                // A ruled notebook margin down the left edge.
+                Rectangle().fill(theme.accentSoft)
+                    .frame(width: 3).padding(.vertical, 9)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        )
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+            .strokeBorder(theme.border.opacity(0.7), lineWidth: 1))
+        .shadow(color: theme.textPrimary.opacity(0.05), radius: 5, y: 2)
     }
 
     // MARK: Wishes

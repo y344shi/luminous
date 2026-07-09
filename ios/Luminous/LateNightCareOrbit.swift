@@ -182,20 +182,10 @@ struct LateNightCareOrbit: View {
 
     private func openRouteHome() {
         guard let h = homeCoord else { return }
-        let item = MKMapItem(placemark: MKPlacemark(
-            coordinate: CLLocationCoordinate2D(latitude: h.lat, longitude: h.lon)))
-        item.name = "家"
-        item.openInMaps(launchOptions: [
-            MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeTransit])
+        LateNightActions.openRouteHome(lat: h.lat, lon: h.lon)
     }
 
     private func openCab() {
-        #if os(iOS)
-        var s = "https://m.uber.com/ul/?action=setPickup&pickup=my_location"
-        if let h = homeCoord {
-            s += "&dropoff[latitude]=\(h.lat)&dropoff[longitude]=\(h.lon)&dropoff[nickname]=家"
-        }
-        if let url = URL(string: s) { UIApplication.shared.open(url) }
-        #endif
+        LateNightActions.openCab(homeLat: homeCoord?.lat, homeLon: homeCoord?.lon)
     }
 }
