@@ -2,13 +2,15 @@
 //  DayObjectStage.swift
 //  Luminous — 今天的小机器: the SceneKit stage the day-object lives on.
 //
-//  CP-C: today's parts attach onto the stage. Each completed wish's DayPart
-//  becomes a small node — geometry by its material, size/glow/motor from how the
-//  wish felt — arranged evenly around the slowly turning pedestal. An empty
-//  stage still shows one faint glass seed ("something will grow here").
-//  Skin-aware: every color comes from the theme tokens, so the stage re-skins
-//  with the app. Materials stay the app's vocabulary (wood / paper / glass /
-//  brass / cloth / light) — never chrome, never plastic. Count-free by design.
+//  CP-B: the empty stage. CP-C: today's parts attach — one node per DayPart,
+//  geometry by material, size/glow/motor from how the wish felt. CP-D: "Play
+//  today" — a gentle ~10s scene chosen by time-of-day + weather: the sky tints
+//  to the hour, the camera drifts, the little machine rises and arcs, then it
+//  all settles. Never a race. Reduce Motion → a still hero pose, no play.
+//
+//  Skin-aware: every color comes from the theme tokens (the sky from DayGrade).
+//  Materials stay the app's vocabulary (wood / paper / glass / brass / cloth /
+//  light) — never chrome, never plastic. Count-free by design.
 //
 
 import SwiftUI
@@ -26,15 +28,31 @@ struct DayObjectStage: View {
     let tokens: ThemeTokens
     var parts: [DayPart] = []
     var reduceMotion: Bool = false
+    /// Bump to play the ~10s scene once.
+    var playSignal: Int = 0
+    /// The hour's sky [top, horizon, ground] (DayGrade.colors) for the scene.
+    var skyColors: [Color] = []
+    /// Rain / snow / fog → a softer, gentler sky.
+    var soften: Bool = false
+
+    @State private var scene = SCNScene()
+    @State private var camera = SCNNode()
+    @State private var craft = SCNNode()
+    @State private var built = false
 
     var body: some View {
         SceneView(
-            scene: makeScene(),
+            scene: scene,
+            pointOfView: camera,
             options: reduceMotion ? [] : [.rendersContinuously]
         )
         .accessibilityLabel(parts.isEmpty
             ? "今天的小机器，一个还空着的台子"
             : "今天的小机器，上面已经长出了零件")
+        .onAppear { if !built { build(); built = true } }
+        .onChange(of: parts.count) { _, _ in build() }
+        .onChange(of: reduceMotion) { _, _ in build() }
+        .onChange(of: playSignal) { _, _ in runPlay() }
     }
 
     private func c(_ color: Color) -> StageColor { StageColor(color) }
@@ -49,18 +67,20 @@ struct DayObjectStage: View {
         #endif
     }
 
-    private func makeScene() -> SCNScene {
-        let scene = SCNScene()
+    // MARK: build the (persistent) scene graph
+
+    private func build() {
+        scene.rootNode.childNodes.forEach { $0.removeFromParentNode() }
         scene.background.contents = c(tokens.background)
 
         // Camera — a gentle three-quarter look down onto the stage.
-        let cam = SCNNode()
-        cam.camera = SCNCamera()
-        cam.camera?.fieldOfView = 42
-        cam.camera?.wantsHDR = false
-        cam.position = v(0, 1.6, 6.2)
-        cam.eulerAngles = v(-0.22, 0, 0)
-        scene.rootNode.addChildNode(cam)
+        camera.camera = camera.camera ?? SCNCamera()
+        camera.camera?.fieldOfView = 42
+        camera.camera?.wantsHDR = false
+        camera.removeAllActions()
+        camera.position = v(0, 1.6, 6.2)
+        camera.eulerAngles = v(-0.22, 0, 0)
+        scene.rootNode.addChildNode(camera)
 
         // Soft ambient fill from the surface color, plus one warm key light.
         let ambient = SCNNode()
@@ -78,8 +98,11 @@ struct DayObjectStage: View {
         key.position = v(-3, 4.5, 4)
         scene.rootNode.addChildNode(key)
 
-        // The turning group: pedestal + the parts (or a seed when empty).
-        let group = SCNNode()
+        // The turning craft: pedestal + parts (or a seed when empty).
+        craft.childNodes.forEach { $0.removeFromParentNode() }
+        craft.removeAllActions()
+        craft.position = v(0, 0, 0)
+        craft.eulerAngles = v(0, 0, 0)
 
         let base = SCNNode(geometry: SCNCylinder(radius: 1.15, height: 0.26))
         if let m = base.geometry?.firstMaterial {
@@ -88,9 +111,8 @@ struct DayObjectStage: View {
             m.lightingModel = .physicallyBased
         }
         base.position = v(0, 0, 0)
-        group.addChildNode(base)
+        craft.addChildNode(base)
 
-        // A thin brass rim, catching the key light — a little craft, not a plinth.
         let rim = SCNNode(geometry: SCNTorus(ringRadius: 1.15, pipeRadius: 0.04))
         if let m = rim.geometry?.firstMaterial {
             m.diffuse.contents = c(tokens.accentText)
@@ -98,10 +120,9 @@ struct DayObjectStage: View {
             m.lightingModel = .physicallyBased
         }
         rim.position = v(0, 0.13, 0)
-        group.addChildNode(rim)
+        craft.addChildNode(rim)
 
         if parts.isEmpty {
-            // The empty seed — a soft glass sphere hovering, lit from within.
             let seed = SCNNode(geometry: SCNSphere(radius: 0.32))
             if let m = seed.geometry?.firstMaterial {
                 m.diffuse.contents = c(tokens.accent)
@@ -110,28 +131,65 @@ struct DayObjectStage: View {
                 m.lightingModel = .physicallyBased
             }
             seed.position = v(0, 0.95, 0)
-            group.addChildNode(seed)
+            craft.addChildNode(seed)
             if !reduceMotion {
                 let up = SCNAction.moveBy(x: 0, y: 0.06, z: 0, duration: 2.2)
                 up.timingMode = .easeInEaseOut
                 seed.runAction(.repeatForever(.sequence([up, up.reversed()])))
             }
         } else {
-            // Today's parts, arranged evenly around the pedestal.
             for (i, part) in parts.enumerated() {
-                group.addChildNode(partNode(part, index: i, count: parts.count))
+                craft.addChildNode(partNode(part, index: i, count: parts.count))
             }
         }
 
-        scene.rootNode.addChildNode(group)
+        scene.rootNode.addChildNode(craft)
 
         if !reduceMotion {
-            // The whole little machine turns slowly.
-            group.runAction(.repeatForever(
-                .rotateBy(x: 0, y: CGFloat.pi * 2, z: 0, duration: 26)))
+            craft.runAction(.repeatForever(
+                .rotateBy(x: 0, y: CGFloat.pi * 2, z: 0, duration: 26)), forKey: "spin")
         }
+    }
 
-        return scene
+    // MARK: Play today — a gentle ~10s scene
+
+    private func runPlay() {
+        guard !reduceMotion, !parts.isEmpty else { return }
+
+        // The sky tints to the hour (softened in rain/snow/fog), then settles.
+        let horizon: Color = {
+            if soften { return skyColors.first ?? tokens.surfaceSoft }
+            return skyColors.count > 1 ? skyColors[1] : tokens.accentSoft
+        }()
+        let sky = c(horizon)
+        let home = c(tokens.background)
+
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = 2.2
+        scene.background.contents = sky
+        SCNTransaction.commit()
+
+        // Camera drifts out and back — a slow look-around, never a swoop.
+        camera.removeAction(forKey: "play")
+        let camOut = SCNAction.moveBy(x: 1.1, y: 0.35, z: -0.5, duration: 5)
+        camOut.timingMode = .easeInEaseOut
+        camera.runAction(.sequence([camOut, camOut.reversed()]), forKey: "play")
+
+        // The little machine rises and arcs, then comes home.
+        craft.removeAction(forKey: "drift")
+        let rise = SCNAction.moveBy(x: -0.45, y: 0.28, z: 0, duration: 5)
+        rise.timingMode = .easeInEaseOut
+        craft.runAction(.sequence([rise, rise.reversed()]), forKey: "drift")
+
+        // After the scene, let the sky settle back.
+        scene.rootNode.removeAction(forKey: "settle")
+        let restore = SCNAction.run { _ in
+            SCNTransaction.begin()
+            SCNTransaction.animationDuration = 2.2
+            scene.background.contents = home
+            SCNTransaction.commit()
+        }
+        scene.rootNode.runAction(.sequence([.wait(duration: 9.5), restore]), forKey: "settle")
     }
 
     // MARK: one part → one node
@@ -161,21 +219,16 @@ struct DayObjectStage: View {
         let s = part.scale                                    // 0.6 … 1.3
         node.scale = v(s, s, s)
 
-        // Evenly around a ring on top of the pedestal, front-first.
         let ang = 2 * Double.pi * Double(index) / Double(max(count, 1)) - Double.pi / 2
         let r = 0.66
         node.position = v(cos(ang) * r, 0.5 + s * 0.08, sin(ang) * r)
 
-        if reduceMotion {
-            return node
-        }
+        if reduceMotion { return node }
         if part.motor > 0 {
-            // A working part turns — stronger feeling, livelier motor.
             let dur = 6.0 - 3.2 * part.motor
             node.runAction(.repeatForever(
                 .rotateBy(x: 0, y: CGFloat.pi * 2, z: 0, duration: dur)))
         } else {
-            // A quiet part (tinyButReal) doesn't spin — it just breathes.
             let up = SCNAction.moveBy(x: 0, y: 0.03, z: 0, duration: 2.6)
             up.timingMode = .easeInEaseOut
             node.runAction(.repeatForever(.sequence([up, up.reversed()])))
@@ -183,7 +236,6 @@ struct DayObjectStage: View {
         return node
     }
 
-    /// Geometry per material — the app's own vocabulary, never chrome/plastic.
     private func geometry(for mat: PartMaterial) -> SCNGeometry {
         let d: CGFloat = 0.30
         switch mat {
