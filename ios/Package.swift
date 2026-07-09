@@ -22,6 +22,7 @@ let package = Package(
                 "LateNightCare.swift",
                 "Mentality.swift",
                 "Nudge.swift",
+                "PlanetPhysics.swift",
                 "PlanKit.swift",
                 "Places.swift",
                 "Recurrence.swift",
