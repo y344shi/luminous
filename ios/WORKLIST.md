@@ -34,8 +34,10 @@ Extends `OrbitSim` into a real planetary-mechanics module. Sub-steps:
   (`OrbitSim.homeRadius` pulls the ring radius inward by importance, floored at
   88 so nothing crosses the photon ring); importance = normalized opp score.
   Tilt + rest-pose baseline + ring-spring preserved. (aware 31)
-- ⏳ **W2c — Capture fly-in:** important sleeping/off-schedule wishes flee in and
-  are captured (spawn at edge with sub-escape velocity → settle into orbit).
+- ✅ **W2c — Capture fly-in:** an important off-schedule (sleeping, importance>0.5)
+  wish spawns far out via PlanetPhysics.captureSpawn (sub-escape → bound) and
+  arcs in; the ring-spring settles it. First-spawn only; off under Reduce
+  Motion. (aware 32)
 - ⏳ **W2d — Moons via shooting stars:** related wishes fling by as shooting
   stars; tap one → choose **become a moon** of a related orbiting wish, **or**
   keep as a separate shooting star / its own planet. (A `PursuitMerge`-style

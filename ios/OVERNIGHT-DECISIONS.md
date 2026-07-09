@@ -69,3 +69,11 @@ PlanetPhysics helpers. Conservative: only the home-radius (spring target) and
 render diameter changed; the integrator, tilt, rest-pose baseline and ring
 spring are untouched. Radius floored at 88 so important planets never dive into
 the photon ring. 78 tests + iOS build green. Next: W2c (capture fly-in).
+
+**D8 · W2c shipped (capture fly-in).** An important wish you'd set aside
+(sleeping, importance>0.5) now flees in from ~2.2× its home radius at a
+sub-escape prograde velocity and is gravitationally captured — the ring-spring
+settles it onto its orbit. Only a body's FIRST spawn is affected; existing
+planets never re-fly. Off under Reduce Motion. captureSpawn's boundedness is
+already unit-tested (ε<0). 78 tests + iOS build green. Next: W2d (moons via
+shooting stars).

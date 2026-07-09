@@ -77,13 +77,15 @@ final class OrbitSim {
     /// ring; vanished ones are dropped. Existing bodies keep their evolved
     /// state — and when a re-rank moves a wish to another ring, only its HOME
     /// ring changes: the spring walks it over smoothly (~12 s), it never jumps.
-    func sync(_ places: [(id: String, ring: Int, idx: Int, count: Int, importance: Double)]) {
+    func sync(_ places: [(id: String, ring: Int, idx: Int, count: Int,
+                          importance: Double, capture: Bool)]) {
         let ids = Set(places.map { $0.id })
         bodies = bodies.filter { ids.contains($0.key) }
         for pl in places {
             if var b = bodies[pl.id] {
                 // A re-rank changes only the HOME radius; the ring-spring walks
-                // the planet there smoothly (~12 s) — it never jumps.
+                // the planet there smoothly (~12 s) — it never jumps. `capture`
+                // only affects a body's FIRST spawn, never an existing one.
                 var changed = false
                 if b.ring != pl.ring { b.ring = pl.ring; changed = true }
                 if abs(b.importance - pl.importance) > 0.001 { b.importance = pl.importance; changed = true }
@@ -97,11 +99,20 @@ final class OrbitSim {
             let a = Double.pi / 2
                   + 2 * Double.pi / Double(max(pl.count, 1)) * Double(pl.idx)
                   + Double(pl.ring) * 0.6
-            let v = circularSpeed(hr)
-            bodies[pl.id] = Body(
-                x: cos(a) * hr, y: sin(a) * hr,
-                vx: -sin(a) * v, vy: cos(a) * v,   // counter-clockwise tangent
-                ring: pl.ring, importance: pl.importance, homeR: hr)
+            if pl.capture {
+                // An important, off-schedule wish flees in from far out and is
+                // gravitationally captured (sub-escape → bound); the ring-spring
+                // then settles it onto its home orbit.
+                let s = PlanetPhysics.captureSpawn(angle: a, spawnRadius: hr * 2.2, mu: mu)
+                bodies[pl.id] = Body(x: s.x, y: s.y, vx: s.vx, vy: s.vy,
+                                     ring: pl.ring, importance: pl.importance, homeR: hr)
+            } else {
+                let v = circularSpeed(hr)
+                bodies[pl.id] = Body(
+                    x: cos(a) * hr, y: sin(a) * hr,
+                    vx: -sin(a) * v, vy: cos(a) * v,   // counter-clockwise tangent
+                    ring: pl.ring, importance: pl.importance, homeR: hr)
+            }
         }
     }
 

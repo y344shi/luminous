@@ -487,9 +487,17 @@ struct HomeView: View {
         // freshly minted opportunity ids each rebuild; keying by them made a
         // re-ranked wish teleport to a newly-seeded slot.)
         sim.sync(places.map {
-            ($0.wish.seed.id, $0.ring, $0.idx, $0.count, importance(of: $0.wish))
+            ($0.wish.seed.id, $0.ring, $0.idx, $0.count,
+             importance(of: $0.wish), captureFlag(for: $0.wish))
         })
         sim.step(to: t, tilt: sensed.gravity, paused: reduceMotion)
+    }
+
+    /// An important wish you'd set aside (sleeping) flees back in and is captured
+    /// into orbit on its first appearance. Gentle & occasional; off when Reduce
+    /// Motion is on.
+    private func captureFlag(for wish: Wish) -> Bool {
+        !reduceMotion && wish.seed.status == .sleeping && importance(of: wish) > 0.5
     }
 
     /// A wish's importance ∈ [0,1] — its recommendation score normalized across
