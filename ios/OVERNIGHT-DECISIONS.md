@@ -136,3 +136,20 @@ bubbles over a water gradient; HomeView's ocean branch uses it (paper still the
 list). Tap a bubble → the wish sheet. 83 tests + iOS build green. TRADEOFF still
 open (from D12): late-night care remains glass-only — to add to ocean/paper in
 W5c. Next: W5c.
+
+**D14 · W5c shipped — W5 COMPLETE (skin split done).** Two finishing touches.
+(1) Paper reads as paper: wishRow is now a warm note-card — theme.surface fill
+(fuller for primaries), a 3pt ruled notebook margin down the left edge, a
+hairline border, and a soft shadow. Calm, legible, no physics. (2) Late-night
+care re-added to the NON-glass skins (clears the D12/D13 tradeoff): a compact
+LateNightCareStrip renders at the top of the ocean/paper home when showLateNight-
+Care && skin != glass — the day-line, then a horizontal row of the same care
+chips (车站·距离 / 回家的路 / 叫一辆车 / 喝口温水 / 就地歇一会, or 帮我看路 when
+sensing is off), built from the SituationSense line + intents (deterministic
+fallback). It does not orbit — a tappable strip fits a list/liquid home; the
+glass skin keeps the orbiting-stars version. DECISION: factored the three openers
+(maps route home / transit / cab) into a shared LateNightActions enum so the
+orbit and the strip share one code-owned implementation — refactored
+LateNightCareOrbit to call it too (small, safe, build-verified). Late-night gate
+(showLateNightCare) + all safety copy stay in code, never in a prompt. 83 tests +
+iOS build green. Next: W4 CP-B (SceneKit day-object, per BUILD-TODAY-PLAN.md).

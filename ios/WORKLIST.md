@@ -57,7 +57,7 @@ Extends `OrbitSim` into a real planetary-mechanics module. Sub-steps:
   stars (intents ⊂ goHome/transit/cab/water/rest). Deterministic fallback,
   ForbiddenWords, cached ≤1h; the model only phrases + selects safe actions. (aware 35)
 
-### W5 · Skin-specific home behaviors (big — only glass stays "planetary")
+### W5 · Skin-specific home behaviors ✅ COMPLETE — only glass stays "planetary"
 Today every skin shows the orbiting planetarium. Split the Home layout by skin:
 - ✅ **W5a — glass = planetary mode:** Home now branches by skin — glass keeps
   the full planetarium (orbits, black hole, constellation, moons, birth,
@@ -68,8 +68,11 @@ Today every skin shows the orbiting planetarium. Split the Home layout by skin:
   wishes, gyro sloshes them, pairwise separation, bob, clamped to the water.
   OceanField renders floating bubbles over a water gradient; the ocean skin
   uses it. Small wishes stay reachable. Reduce Motion → still. (aware 37)
-- ⏳ **W5c — paper = a plain list:** wishes as a simple list ordered by the
-  recommendation score (no physics) — calm and legible.
+- ✅ **W5c — paper reads as paper + late-night care for ocean/paper:** wishRow
+  is now a warm note-card (ruled left margin, hairline border, soft shadow), no
+  physics. Late-night get-home care re-added to ocean/paper as a compact
+  LateNightCareStrip (same actions as the glass orbit; openers shared via a new
+  LateNightActions helper). Clears the D12/D13 tradeoff. (aware 38)
 
 ### W4 · Build Today — 今天的小机器 (CP-A … CP-F)
 - ✅ **CP-A groundwork:** `DayToy` model committed (aware 28).
