@@ -25,7 +25,7 @@ struct BuildTodayView: View {
                     .font(.system(size: 22, weight: .semibold))
                     .foregroundStyle(theme.textPrimary)
 
-                DayObjectStage(tokens: theme, reduceMotion: reduceMotion)
+                DayObjectStage(tokens: theme, parts: obj.parts, reduceMotion: reduceMotion)
                     .frame(maxWidth: .infinity)
                     .frame(height: 380)
                     .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
