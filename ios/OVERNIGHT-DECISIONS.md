@@ -40,6 +40,23 @@ Your note that only glass should be "planetary", ocean should be literal liquid
 worklist as **W5** (a large, multi-part home refactor). Sequenced after the
 planetary work (W2), since W2 defines the "planetary/glass" behavior W5 isolates.
 
+**D6 · Deferred W2b (planet↔Home integration) to a fresh cycle.**
+W2b edits the beloved core (OrbitSim + HomeView orbit rendering). Rather than
+rush delicate surgery at the tail of a very long turn, I stopped at the clean
+consolidation checkpoint (green + pushed) and scheduled the next ~10-min cycle
+to do W2b with fresh context — one narrow, careful phase. Disciplined over fast.
+
+## Cycle plan (each ~10 min, one phase, committed + pushed, green-gated)
+1. ✅ Consolidate the three agent branches (done, pushed).
+2. ⏭ **W2b** — size planets by importance (`PlanetPhysics.diameter`); important
+   wishes closer (`PlanetPhysics.homeRadius`); importance = normalized opp score.
+3. **W2c** capture fly-in · **W2d** moons via shooting stars.
+4. **W3a** late-night orbiting stars · **W3b** LLM situational sensing.
+5. **W5** skin split (glass planetary / ocean liquid / paper list) — big; may
+   take several cycles.
+6. **W4 CP-B+** SceneKit day-object.
+Revert any phase that can't go green; log it here; continue.
+
 ## Open judgement I'll exercise tonight (will log each here as it happens)
 - Integrating PlanetPhysics into the live planetarium (W2b–d) **conservatively**:
   if any sub-feature risks destabilizing the beloved home, I ship the safe
