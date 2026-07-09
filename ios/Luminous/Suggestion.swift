@@ -21,6 +21,11 @@ struct Suggestion: Identifiable, Hashable {
     var seedId: String? = nil
     /// A soft place hint like "转角图书馆 · 200m".
     var place: String? = nil
+    /// When set, this fly-by is a RELATED wish (an existing seed) that can become
+    /// a moon of the orbiting wish `moonParentId` ("X"). Tapping offers the
+    /// choice: moon of X, or a separate star.
+    var moonParentId: String? = nil
+    var moonParentTitle: String? = nil
 
     /// Turn a caught suggestion into a real Seed.
     func toSeed() -> Seed {

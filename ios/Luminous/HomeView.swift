@@ -78,6 +78,10 @@ struct HomeView: View {
     @State private var aiMomentsAt: Date?
     @State private var birth: StarBirth?
     @State private var canvasSize: CGSize = .zero
+    /// Moons: seedId → parent seedId (transient this session; not persisted yet).
+    @State private var moonOf: [String: String] = [:]
+    /// A related fly-by awaiting the user's choice (moon of X, or separate).
+    @State private var moonChoice: MoonChoice?
     @State private var aiLoading = false
     @State private var aiVocab: [VocabItem] = []
     @State private var aiError: String?
@@ -146,6 +150,19 @@ struct HomeView: View {
                                         }
                                 )
                         }
+                        // Moons: small satellites orbiting their parent planet.
+                        ForEach(activeMoonSeeds, id: \.id) { seed in
+                            let mp = moonPosition(seed.id, center: center, size: size)
+                            Button {
+                                picked = wishes.first { $0.seed.id == seed.id }
+                                    ?? Wish(id: "moon_\(seed.id)", seed: seed, opp: nil, primary: false)
+                            } label: {
+                                planet(glyph(for: seed), diameter: 26, iconSize: 11, glow: false)
+                                    .opacity(0.9)
+                            }
+                            .buttonStyle(.plain)
+                            .position(mp)
+                        }
                     }
 
                     shootingStars(size: size)
@@ -195,6 +212,32 @@ struct HomeView: View {
             }
             .onChange(of: picked?.id) { _, _ in
                 aiVocab = []; aiError = nil; aiLoading = false
+            }
+            // A related fly-by: let it become a moon of X, or a separate star.
+            .confirmationDialog(
+                moonChoice.map { "「\(store.findSeed($0.seedId)?.title ?? "")」" } ?? "",
+                isPresented: Binding(get: { moonChoice != nil },
+                                     set: { if !$0 { moonChoice = nil } }),
+                titleVisibility: .visible
+            ) {
+                if let c = moonChoice {
+                    Button("成为「\(c.parentTitle)」的卫星") {
+                        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                            moonOf[c.seedId] = c.parentId
+                        }
+                        caughtIds.insert(c.sugId)
+                        moonChoice = nil
+                    }
+                    Button("做一颗独立的星") {
+                        store.setSeedStatus(c.seedId, .active)   // its own planet
+                        caughtIds.insert(c.sugId)
+                        moonChoice = nil
+                        rebuild()
+                    }
+                    Button("再看看", role: .cancel) { moonChoice = nil }
+                }
+            } message: {
+                Text("它和你正在做的事有关。想让它跟着那颗星转，还是自己成为一颗星？")
             }
             // After a wish is done: one soft question that grows today's machine.
             .sheet(item: $ratingSeed) { seed in
@@ -490,7 +533,52 @@ struct HomeView: View {
             ($0.wish.seed.id, $0.ring, $0.idx, $0.count,
              importance(of: $0.wish), captureFlag(for: $0.wish))
         })
+        sim.syncMoons(moonOf.map { (id: $0.key, parentId: $0.value) })
         sim.step(to: t, tilt: sensed.gravity, paused: reduceMotion)
+    }
+
+    /// A related fly-by the user is choosing about.
+    private struct MoonChoice {
+        let seedId: String, parentId: String, parentTitle: String, sugId: String
+    }
+
+    /// The seeds currently orbiting as moons whose parent is still a planet.
+    private var activeMoonSeeds: [Seed] {
+        moonOf.keys.compactMap { store.findSeed($0) }
+            .filter { sim.isPlanet(moonOf[$0.id] ?? "") }
+    }
+
+    /// A moon's clamped screen position (read from the sim each frame).
+    private func moonPosition(_ seedId: String, center: CGPoint, size: CGSize) -> CGPoint {
+        let p = sim.screenPos(seedId, center: center) ?? center
+        return CGPoint(x: clamp(p.x, 30, size.width - 30),
+                       y: clamp(p.y, 90, size.height - 110))
+    }
+
+    /// Up to 2 related wishes (a sleeping seed sharing a category with a
+    /// displayed primary, not already shown or a moon) to fling by as stars.
+    private func relatedFlyBys() -> [Suggestion] {
+        guard !isLateNight else { return [] }
+        let shownIds = Set(displayed.map { $0.seed.id })
+        let primaries = displayed.filter { $0.primary }
+        var out: [Suggestion] = []
+        for seed in store.seeds where seed.status == .sleeping
+            && !shownIds.contains(seed.id) && moonOf[seed.id] == nil {
+            guard let parent = primaries.first(where: {
+                !Set($0.seed.categories).isDisjoint(with: Set(seed.categories))
+            }) else { continue }
+            out.append(Suggestion(
+                id: "moon_\(seed.id)",
+                emoji: Meta.category[seed.categories.first ?? .recovery]?.emoji ?? "🌙",
+                title: seed.title,
+                action: seed.minimumAction,
+                category: seed.categories.first ?? .recovery,
+                seedId: seed.id,
+                moonParentId: parent.seed.id,
+                moonParentTitle: parent.seed.title))
+            if out.count == 2 { break }
+        }
+        return out
     }
 
     /// An important wish you'd set aside (sleeping) flees back in and is captured
@@ -593,9 +681,11 @@ struct HomeView: View {
         if !scouted.isEmpty {
             base.removeAll { $0.id == "s_cafe" || $0.id == "s_errand" }
         }
-        // scout finds > model's moments > the static floor
+        // scout finds > related-moon fly-bys > model's moments > the static floor
         let ai = isLateNight ? [] : aiMoments
-        return Array((scouted + ai + base).filter { !caughtIds.contains($0.id) }.prefix(3))
+        let moons = relatedFlyBys()
+        return Array((scouted + moons + ai + base)
+            .filter { !caughtIds.contains($0.id) }.prefix(3))
     }
 
     /// Ask the model for fresh moment suggestions at most every 30 minutes.
@@ -850,6 +940,12 @@ struct HomeView: View {
 
     private func catchSuggestion(_ s: Suggestion) {
         Feedback.completion(.partial)   // a soft "caught" tap
+        // A related fly-by → offer: become a moon of X, or a separate star.
+        if let sid = s.seedId, let pid = s.moonParentId {
+            moonChoice = MoonChoice(seedId: sid, parentId: pid,
+                                    parentTitle: s.moonParentTitle ?? "", sugId: s.id)
+            return
+        }
         // A scouted star carries an existing wish to a nearby place — open it.
         if let seedId = s.seedId, let seed = store.findSeed(seedId) {
             picked = wishes.first { $0.seed.id == seedId }

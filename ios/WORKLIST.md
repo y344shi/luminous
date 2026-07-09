@@ -38,10 +38,11 @@ Extends `OrbitSim` into a real planetary-mechanics module. Sub-steps:
   wish spawns far out via PlanetPhysics.captureSpawn (sub-escape → bound) and
   arcs in; the ring-spring settles it. First-spawn only; off under Reduce
   Motion. (aware 32)
-- ⏳ **W2d — Moons via shooting stars:** related wishes fling by as shooting
-  stars; tap one → choose **become a moon** of a related orbiting wish, **or**
-  keep as a separate shooting star / its own planet. (A `PursuitMerge`-style
-  relatedness read can pick "related".)
+- ✅ **W2d — Moons via shooting stars:** OrbitSim gained kinematic moon bodies
+  (a body with a parentId orbits its parent's live position, excluded from the
+  central integration). Related sleeping wishes (sharing a category with a
+  displayed primary) fling by as stars; tapping → 成为「X」的卫星 or 做一颗独立的星.
+  Moon map is transient this session (not persisted — logged). (aware 33)
 
 ### W3 · Late-night get-home care — rework
 - ⏸ Shipped as a **banner** (aware 29). Rework to fit the planetarium & be

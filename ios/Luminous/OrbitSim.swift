@@ -29,6 +29,13 @@ final class OrbitSim {
         var ring: Int
         var importance: Double = 0.5  // ∈[0,1] — pulls the home radius inward
         var homeR: Double = OrbitSim.refRadius  // the ring radius, pulled in by importance
+        // Moons: a body with a parentId is a kinematic satellite — it is NOT
+        // integrated in the central field; each frame it is placed on a small
+        // local orbit around its parent's live position.
+        var parentId: String? = nil
+        var moonR: Double = 0
+        var moonPeriod: Double = 0
+        var moonPhase: Double = 0
     }
 
     /// Nothing orbits closer than this — keeps important planets clear of the
@@ -80,7 +87,8 @@ final class OrbitSim {
     func sync(_ places: [(id: String, ring: Int, idx: Int, count: Int,
                           importance: Double, capture: Bool)]) {
         let ids = Set(places.map { $0.id })
-        bodies = bodies.filter { ids.contains($0.key) }
+        // Keep moon bodies (managed by syncMoons); drop vanished planets.
+        bodies = bodies.filter { $0.value.parentId != nil || ids.contains($0.key) }
         for pl in places {
             if var b = bodies[pl.id] {
                 // A re-rank changes only the HOME radius; the ring-spring walks
@@ -115,6 +123,34 @@ final class OrbitSim {
             }
         }
     }
+
+    /// Reconcile the set of moons: `moons` maps a moon's id to its parent id.
+    /// New moons get a small deterministic local orbit; departed ones are
+    /// dropped; a moon whose parent isn't currently a planet is dropped too.
+    func syncMoons(_ moons: [(id: String, parentId: String)]) {
+        let live = moons.filter { m in
+            bodies[m.parentId]?.parentId == nil && bodies[m.parentId] != nil
+        }
+        let keep = Set(live.map { $0.id })
+        for k in bodies.keys where bodies[k]?.parentId != nil && !keep.contains(k) {
+            bodies[k] = nil
+        }
+        for m in live {
+            if var b = bodies[m.id], b.parentId != nil {
+                if b.parentId != m.parentId { b.parentId = m.parentId; bodies[m.id] = b }
+                continue
+            }
+            var h: UInt64 = 5381
+            for c in m.id.utf8 { h = h &* 33 &+ UInt64(c) }
+            let phase = Double(h % 628) / 100.0            // 0..2π-ish
+            bodies[m.id] = Body(x: 0, y: 0, vx: 0, vy: 0, ring: 0,
+                                parentId: m.parentId,
+                                moonR: 26, moonPeriod: 6, moonPhase: phase)
+        }
+    }
+
+    /// Whether a body currently exists as an orbiting planet (not a moon).
+    func isPlanet(_ id: String) -> Bool { bodies[id].map { $0.parentId == nil } ?? false }
 
     /// Weak radial spring toward each body's home ring: a perturbed orbit always
     /// finds its ring again (correction timescale ~12 s), so no phantom force or
@@ -165,7 +201,7 @@ final class OrbitSim {
         let sub = 4
         let h = dt / Double(sub)
         for _ in 0..<sub {
-            for k in bodies.keys {
+            for k in bodies.keys where bodies[k]!.parentId == nil {   // planets only
                 var b = bodies[k]!
                 let (ax0, ay0) = accel(x: b.x, y: b.y, homeR: b.homeR, tx: tx, ty: ty)
                 b.x += b.vx * h + 0.5 * ax0 * h * h
@@ -175,6 +211,17 @@ final class OrbitSim {
                 b.vy += 0.5 * (ay0 + ay1) * h
                 bodies[k] = b
             }
+        }
+        // Place moons on their local orbit around each parent's live position.
+        // In disk-plane coords (ellipse: 1); screenPos applies the inclination.
+        for k in bodies.keys where bodies[k]!.parentId != nil {
+            var b = bodies[k]!
+            guard let p = bodies[b.parentId!] else { continue }   // parent gone → hold
+            let ang = PlanetPhysics.moonAngle(t: t, period: b.moonPeriod, phase: b.moonPhase)
+            let off = PlanetPhysics.moonOffset(radius: b.moonR, angle: ang, ellipse: 1)
+            b.x = p.x + off.dx
+            b.y = p.y + off.dy
+            bodies[k] = b
         }
     }
 

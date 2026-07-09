@@ -77,3 +77,16 @@ settles it onto its orbit. Only a body's FIRST spawn is affected; existing
 planets never re-fly. Off under Reduce Motion. captureSpawn's boundedness is
 already unit-tested (ε<0). 78 tests + iOS build green. Next: W2d (moons via
 shooting stars).
+
+**D9 · W2d shipped (moons via shooting stars) — completes W2.** OrbitSim now
+supports kinematic moons: a body with a parentId is placed each frame on a small
+local orbit around its parent's live position (PlanetPhysics.moon* — tested),
+excluded from the central integration; sync keeps moons, syncMoons reconciles
+them, isPlanet guards. HomeView surfaces up to 2 related sleeping wishes (share a
+category with a displayed primary) as fly-by stars; tapping opens a
+confirmationDialog: become a moon of X, or a separate star (which wakes it to its
+own planet). **Tradeoff logged:** the moon map is transient @State this session —
+NOT persisted across launches. A future phase can persist it (a small
+[seedId:parentId] store) if the interaction proves loved. 78 tests + iOS green.
+All of W2 (the planetary science module) is done. Next: W3a (late-night orbiting
+guiding stars).
