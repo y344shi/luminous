@@ -174,13 +174,10 @@ struct HomeView: View {
                         }
                     }
 
-                    // Late night and out → the app's oldest promise: help you
-                    // get home safely, above everything else.
+                    // Late night and out → the app's oldest promise: help you get
+                    // home safely, as guiding stars orbiting the glass.
                     if showLateNightCare {
-                        LateNightCareView()
-                            .padding(.horizontal, Spacing.lg)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                            .offset(y: size.height * 0.12)
+                        LateNightCareOrbit(center: center, size: size)
                             .transition(.opacity)
                     }
 

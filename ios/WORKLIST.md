@@ -47,9 +47,10 @@ Extends `OrbitSim` into a real planetary-mechanics module. Sub-steps:
 ### W3 · Late-night get-home care — rework
 - ⏸ Shipped as a **banner** (aware 29). Rework to fit the planetarium & be
   sensing-driven:
-- ⏳ **W3a — Orbiting guiding stars:** replace the banner with bubbles that
-  shoot in and **orbit** the glass (station carries the direction arrow; tap →
-  Maps / cab / route home). Reuses W2's richer star/orbit system.
+- ✅ **W3a — Orbiting guiding stars:** the banner is gone; care actions (station
+  with a pointing arrow, 回家的路, 叫一辆车, 喝口温水, or enable-sensing) shoot in and
+  gently orbit the glass as tappable stars (LateNightCareOrbit). Reduce Motion →
+  static ring. Reuses the pure LateNightCare helpers. (aware 34)
 - ⏳ **W3b — LLM situational sensing:** the on-device model reads the **type of
   place + surroundings** (reverse-geocoded label + nearby kinds + distance from
   home + time) and chooses the warm line and which guiding stars appear.

@@ -90,3 +90,14 @@ NOT persisted across launches. A future phase can persist it (a small
 [seedId:parentId] store) if the interaction proves loved. 78 tests + iOS green.
 All of W2 (the planetary science module) is done. Next: W3a (late-night orbiting
 guiding stars).
+
+**D10 · W3a shipped (late-night care → orbiting guiding stars).** Replaced the
+rounded banner card (LateNightCareView, deleted) with LateNightCareOrbit: a few
+care bubbles that shoot in from the edge and slowly orbit the glass, each
+tappable — the station one carries a north-arrow rotated by
+LateNightCare.arrowAngle(bearing, heading). Self-contained circular layout
+(its own TimelineView, NOT the wish OrbitSim). Reduce Motion → static ring, no
+shoot-in. All the openers (Maps station, transit route home, Uber, enable
+沿-sensing) moved over; the code-owned safety copy and showLateNightCare gate
+kept. 78 tests + iOS build green. Next: W3b (the model chooses the warm line +
+which guiding stars from place type + surroundings).
