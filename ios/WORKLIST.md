@@ -63,10 +63,11 @@ Today every skin shows the orbiting planetarium. Split the Home layout by skin:
   the full planetarium (orbits, black hole, constellation, moons, birth,
   late-night orbit), unchanged; ocean & paper get a calm recommendation-ordered
   list (wishListField). Only glass has orbital behavior. (aware 36)
-- ⏳ **W5b — ocean = a literal liquid ocean:** water that responds to the **gyro**
-  (device tilt) with liquid physics; wishes **float with volume ∝ relevance**
-  (more relevant = larger = floats higher/more buoyant); smaller wishes still
-  reachable. A real fluid/buoyancy feel, not the orbit sim.
+- ✅ **W5b — ocean = a literal liquid ocean:** OceanSim (pure, 5 tests) — a 2D
+  buoyancy field: bubble size ∝ relevance, float depth shallower for relevant
+  wishes, gyro sloshes them, pairwise separation, bob, clamped to the water.
+  OceanField renders floating bubbles over a water gradient; the ocean skin
+  uses it. Small wishes stay reachable. Reduce Motion → still. (aware 37)
 - ⏳ **W5c — paper = a plain list:** wishes as a simple list ordered by the
   recommendation score (no physics) — calm and legible.
 

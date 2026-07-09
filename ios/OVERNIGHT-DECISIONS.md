@@ -124,3 +124,15 @@ TRADEOFF LOGGED: the late-night get-home orbit currently lives inside the glass
 branch, so on ocean/paper there is no late-night care yet — re-add it (skin-
 agnostic, or a list-friendly variant) during W5b/W5c. 78 tests + iOS green.
 Next: W5b (ocean liquid buoyancy — big).
+
+**D13 · W5b shipped (ocean = literal liquid).** OceanSim.swift (pure, Foundation-
+only, 5 invariant tests): a 2D buoyancy field — each wish is a bubble whose
+radius grows with relevance and which floats toward a rest depth that is
+shallower the more relevant it is (relevant = bigger = higher); the raw gyro
+(rest-pose learned internally, like OrbitSim) sloshes them sideways; a gentle bob
+keeps it alive; pairwise separation prevents overlap; everything clamps to the
+visible water so small wishes never sink off-screen. OceanField.swift renders the
+bubbles over a water gradient; HomeView's ocean branch uses it (paper still the
+list). Tap a bubble → the wish sheet. 83 tests + iOS build green. TRADEOFF still
+open (from D12): late-night care remains glass-only — to add to ocean/paper in
+W5c. Next: W5c.

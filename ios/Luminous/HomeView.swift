@@ -179,9 +179,19 @@ struct HomeView: View {
                         LateNightCareOrbit(center: center, size: size)
                             .transition(.opacity)
                     }
+                    } else if skin == .ocean {
+                        // A literal liquid ocean — wishes float, bigger = more
+                        // relevant, and the water sloshes with the gyro.
+                        OceanField(
+                            items: shown.map {
+                                OceanField.Item(id: $0.seed.id, seed: $0.seed,
+                                                importance: importance(of: $0))
+                            },
+                            size: size, tilt: sensed.gravity,
+                            onTap: { id in picked = wishes.first { $0.seed.id == id } },
+                            glyph: glyph(for:))
                     } else {
-                        // Ocean & paper: a calm recommendation-ordered list.
-                        // (Ocean becomes a liquid field in W5b; this is paper's home.)
+                        // Paper: a calm recommendation-ordered list.
                         wishListField
                     }
 
