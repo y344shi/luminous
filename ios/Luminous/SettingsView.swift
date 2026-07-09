@@ -16,6 +16,7 @@ struct SettingsView: View {
     @State private var confirmingReset = false
     @State private var namingGarden = false
     @State private var newGardenName = ""
+    @State private var showingCalendar = false
 
     var body: some View {
         NavigationStack {
@@ -25,6 +26,7 @@ struct SettingsView: View {
 
                     skinSection
                     senseSection
+                    calendarSection
                     themeSection
                     nudgeSection
                     gardenSection
@@ -52,6 +54,49 @@ struct SettingsView: View {
             } message: {
                 Text(Copy.SettingsCopy.resetConfirm)
             }
+            .sheet(isPresented: $showingCalendar) {
+                WishCalendarView()
+                    .environment(store)
+                    .environment(\.theme, theme)
+            }
+        }
+    }
+
+    // MARK: 愿望日历 — a calendar-stack look-back at every wish caught this week.
+
+    private var calendarSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("愿望日历")
+                .font(.system(size: 14))
+                .foregroundStyle(theme.textMuted)
+            Button { showingCalendar = true } label: {
+                HStack(spacing: Spacing.md) {
+                    Image(systemName: "square.stack.3d.up")
+                        .font(.system(size: 18))
+                        .foregroundStyle(theme.accent)
+                        .frame(width: 36, height: 36)
+                        .background(theme.surfaceSoft)
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("看看这一周的愿望")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(theme.textPrimary)
+                        Text("按接住的那天，堆成七叠小卡片")
+                            .font(.system(size: 12))
+                            .foregroundStyle(theme.textSecondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13))
+                        .foregroundStyle(theme.textMuted)
+                }
+                .padding(Spacing.md)
+                .background(theme.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(theme.border, lineWidth: 1))
+            }
+            .buttonStyle(.plain)
         }
     }
 
