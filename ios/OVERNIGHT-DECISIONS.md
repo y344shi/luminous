@@ -153,3 +153,22 @@ orbit and the strip share one code-owned implementation — refactored
 LateNightCareOrbit to call it too (small, safe, build-verified). Late-night gate
 (showLateNightCare) + all safety copy stay in code, never in a prompt. 83 tests +
 iOS build green. Next: W4 CP-B (SceneKit day-object, per BUILD-TODAY-PLAN.md).
+
+**D15 · W4 CP-B shipped — the SceneKit stage exists.** The day-object (今天的
+小机器) now has a real center-stage surface. DECISION: went with SceneKit (the
+plan's recommended renderer) via SwiftUI's SceneView — genuine 3D, ships with
+iOS/macOS, no dependency. Confirmed it builds green on iOS with a StageColor
+typealias (UIColor/NSColor) so the scene is cross-platform. CP-B ships the EMPTY
+stage only (per the conservative "smallest green slice" rule): DayObjectStage
+builds an SCNScene — a pedestal cylinder + thin brass torus rim under one warm
+omni key light + surface-tinted ambient, a translucent emissive "seed" sphere
+hovering, the whole group slowly rotating (26s) with the seed breathing; Reduce
+Motion drops both animations. All colors read from the passed ThemeTokens →
+re-skins with the app. BuildTodayView hosts it with a count-free caption (never
+"N parts", never "incomplete"). Reachable from Home via a new cube.transparent
+button in bottomOverlay → Route.buildToday; added the case to BOTH
+navigationDestination switches (HomeView + GardenView — the exhaustive-switch
+build error caught the second one). No parts yet (CP-C). New files are UI-only
+(SwiftUI/SceneKit) so they auto-join the app target and correctly stay OUT of the
+pure test package and the watch target. 83 tests + iOS build green. Next: W4 CP-C
+(parts attach from today's DayObject onto the stage).

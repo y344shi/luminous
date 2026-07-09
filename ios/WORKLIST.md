@@ -76,12 +76,16 @@ Today every skin shows the orbiting planetarium. Split the Home layout by skin:
 
 ### W4 · Build Today — 今天的小机器 (CP-A … CP-F)
 - ✅ **CP-A groundwork:** `DayToy` model committed (aware 28).
-- ⏳ **CP-A — felt rating + wiring:** *刚才那件事，感觉怎么样?* (很小但真的 /
+- ✅ **CP-A — felt rating + wiring:** *刚才那件事，感觉怎么样?* (很小但真的 /
   挺好的 / 今天因此不一样了) in the completion flow → `store.addPart`; SwiftData
   `DayObjectRecord`.
-- ⏳ **CP-B** empty craft on stage (SceneKit) · **CP-C** parts attach ·
-  **CP-D** Play today · **CP-E** keepsake · **CP-F** art/skins/a11y.
-  (Full plan: `ios/BUILD-TODAY-PLAN.md`.)
+- ✅ **CP-B — empty craft on stage (SceneKit):** `DayObjectStage` (SCNScene —
+  pedestal + brass rim + hovering glass seed, warm key light, slow idle spin;
+  Reduce Motion → still; all colors from theme tokens). `BuildTodayView` hosts
+  it, reachable from Home via a cube.transparent button → `Route.buildToday`.
+  Count-free copy. (aware 39)
+- ⏳ **CP-C** parts attach · **CP-D** Play today · **CP-E** keepsake ·
+  **CP-F** art/skins/a11y. (Full plan: `ios/BUILD-TODAY-PLAN.md`.)
 
 ## Housekeeping / done recently
 - ✅ **Traces write-first** (aware 27) — 痕迹 records your words first; auto-
