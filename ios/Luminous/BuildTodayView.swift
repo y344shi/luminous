@@ -71,6 +71,8 @@ struct BuildTodayView: View {
                                 pill("play.circle", "播放今天")
                             }
                             .buttonStyle(.plain)
+                            .accessibilityLabel("播放今天")
+                            .accessibilityHint("看它在一个安静的小场景里动一会儿")
                         }
                         // Keep today into 痕迹 — a rendered keepsake.
                         Button {
@@ -83,6 +85,8 @@ struct BuildTodayView: View {
                             pill("tray.and.arrow.down", "收进今天的痕迹")
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("收进今天的痕迹")
+                        .accessibilityHint("把今天的小机器收好，留在你的痕迹里")
                     }
                 }
 

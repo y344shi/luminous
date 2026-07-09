@@ -103,25 +103,9 @@ enum DayObjectSnapshot {
 
     private static func partNode(_ part: DayPart, index: Int, count: Int,
                                  tokens: ThemeTokens) -> SCNNode {
-        let node = SCNNode(geometry: geometry(for: part.kind.material))
+        let node = SCNNode(geometry: DayCraftArt.geometry(for: part.kind))
         if let m = node.geometry?.firstMaterial {
-            m.diffuse.contents = c(materialColor(part.kind.material, tokens))
-            m.lightingModel = .physicallyBased
-            switch part.kind.material {
-            case .glass:
-                m.transparency = 0.5
-            case .brass:
-                m.metalness.contents = 0.7
-                m.roughness.contents = 0.3
-            case .light:
-                m.metalness.contents = 0.0
-            case .cloth, .wood, .paper:
-                m.roughness.contents = 0.9
-            }
-            if part.glow > 0 {
-                m.emission.contents = c(tokens.accentSoft)
-                m.emission.intensity = CGFloat(part.glow)
-            }
+            DayCraftArt.apply(m, kind: part.kind, glow: part.glow, tokens: tokens)
         }
         let s = part.scale
         node.scale = v(s, s, s)
@@ -129,30 +113,5 @@ enum DayObjectSnapshot {
         let r = 0.66
         node.position = v(cos(ang) * r, 0.5 + s * 0.08, sin(ang) * r)
         return node
-    }
-
-    private static func geometry(for mat: PartMaterial) -> SCNGeometry {
-        let d: CGFloat = 0.30
-        switch mat {
-        case .glass, .light:
-            return SCNSphere(radius: d * 0.6)
-        case .brass:
-            return SCNTorus(ringRadius: d * 0.5, pipeRadius: d * 0.16)
-        case .cloth:
-            return SCNBox(width: d, height: d * 0.7, length: d, chamferRadius: d * 0.3)
-        case .wood, .paper:
-            return SCNBox(width: d, height: d * 0.5, length: d, chamferRadius: d * 0.06)
-        }
-    }
-
-    private static func materialColor(_ mat: PartMaterial, _ tokens: ThemeTokens) -> Color {
-        switch mat {
-        case .glass:  return tokens.accent
-        case .brass:  return tokens.accentText
-        case .light:  return tokens.accentSoft
-        case .cloth:  return tokens.surfaceSoft
-        case .wood:   return tokens.textMuted
-        case .paper:  return tokens.surface
-        }
     }
 }

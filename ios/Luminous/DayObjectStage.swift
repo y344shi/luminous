@@ -195,25 +195,9 @@ struct DayObjectStage: View {
     // MARK: one part → one node
 
     private func partNode(_ part: DayPart, index: Int, count: Int) -> SCNNode {
-        let node = SCNNode(geometry: geometry(for: part.kind.material))
+        let node = SCNNode(geometry: DayCraftArt.geometry(for: part.kind))
         if let m = node.geometry?.firstMaterial {
-            m.diffuse.contents = c(materialColor(part.kind.material))
-            m.lightingModel = .physicallyBased
-            switch part.kind.material {
-            case .glass:
-                m.transparency = 0.5
-            case .brass:
-                m.metalness.contents = 0.7
-                m.roughness.contents = 0.3
-            case .light:
-                m.metalness.contents = 0.0
-            case .cloth, .wood, .paper:
-                m.roughness.contents = 0.9
-            }
-            if part.glow > 0 {
-                m.emission.contents = c(tokens.accentSoft)
-                m.emission.intensity = CGFloat(part.glow)
-            }
+            DayCraftArt.apply(m, kind: part.kind, glow: part.glow, tokens: tokens)
         }
 
         let s = part.scale                                    // 0.6 … 1.3
@@ -234,30 +218,5 @@ struct DayObjectStage: View {
             node.runAction(.repeatForever(.sequence([up, up.reversed()])))
         }
         return node
-    }
-
-    private func geometry(for mat: PartMaterial) -> SCNGeometry {
-        let d: CGFloat = 0.30
-        switch mat {
-        case .glass, .light:
-            return SCNSphere(radius: d * 0.6)
-        case .brass:
-            return SCNTorus(ringRadius: d * 0.5, pipeRadius: d * 0.16)
-        case .cloth:
-            return SCNBox(width: d, height: d * 0.7, length: d, chamferRadius: d * 0.3)
-        case .wood, .paper:
-            return SCNBox(width: d, height: d * 0.5, length: d, chamferRadius: d * 0.06)
-        }
-    }
-
-    private func materialColor(_ mat: PartMaterial) -> Color {
-        switch mat {
-        case .glass:  return tokens.accent
-        case .brass:  return tokens.accentText
-        case .light:  return tokens.accentSoft
-        case .cloth:  return tokens.surfaceSoft
-        case .wood:   return tokens.textMuted
-        case .paper:  return tokens.surface
-        }
     }
 }
