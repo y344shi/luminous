@@ -9,12 +9,13 @@ Legend: ✅ done · 🔄 in progress · ⏳ queued · ⏸ paused
 
 ---
 
-## Parallel (independent, running now)
-- 🔄 **W1 · Wish calendar-stack view** — a side agent is building it on branch
-  `ios-calendar` (worktree `wt-calendar`): seven day-stacks, cards flying in in
-  parallel, finger-in-a-book hover-split, heaviness by count, and a
-  `DemoRGBColor` / `contrastingTextColor` readability utility. Backed by the
-  existing SwiftData store. **Next action: review + merge when it reports.**
+## Done tonight (consolidated on the trunk)
+- ✅ **W1 · Wish calendar-stack view** (设置 → 愿望日历) — merged.
+- ✅ **W2a · PlanetPhysics core** (pure, 14 tests) — merged.
+- ✅ **W4 CP-A · Build Today felt rating** — merged.
+  All three built by agents, recovered after a build-thrash watchdog kill,
+  verified (78 tests + iOS green), and merged onto `ios-aware`. See
+  `ios/OVERNIGHT-DECISIONS.md`.
 
 ## Sequence (do in this order)
 
@@ -48,6 +49,17 @@ Extends `OrbitSim` into a real planetary-mechanics module. Sub-steps:
   place + surroundings** (reverse-geocoded label + nearby kinds + distance from
   home + time) and chooses the warm line and which guiding stars appear.
   Deterministic fallback; late-night gate stays code-owned; `ForbiddenWords`.
+
+### W5 · Skin-specific home behaviors (big — only glass stays "planetary")
+Today every skin shows the orbiting planetarium. Split the Home layout by skin:
+- ⏳ **W5a — glass = "planetary mode":** keep the planetarium (black hole,
+  orbits, the W2 physics). Only glass has orbital behavior.
+- ⏳ **W5b — ocean = a literal liquid ocean:** water that responds to the **gyro**
+  (device tilt) with liquid physics; wishes **float with volume ∝ relevance**
+  (more relevant = larger = floats higher/more buoyant); smaller wishes still
+  reachable. A real fluid/buoyancy feel, not the orbit sim.
+- ⏳ **W5c — paper = a plain list:** wishes as a simple list ordered by the
+  recommendation score (no physics) — calm and legible.
 
 ### W4 · Build Today — 今天的小机器 (CP-A … CP-F)
 - ✅ **CP-A groundwork:** `DayToy` model committed (aware 28).
