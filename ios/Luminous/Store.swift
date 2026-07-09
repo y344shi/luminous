@@ -324,6 +324,31 @@ final class AppStore {
     /// Bumped on note changes so views re-read (notes aren't mirrored in memory).
     private(set) var noteBump = 0
 
+    // MARK: - 今天的小机器 (the day-object; iOS/macOS only)
+
+    /// Today's little machine — the stored one, or a fresh empty craft. Not held
+    /// in memory (like notes); read on demand so it stays a light touch.
+    func todayObject() -> DayObject {
+        let key = DomainUtil.localDateKey()
+        return persistence?.loadDayObject(dateKey: key, profile: activeProfileID)
+            ?? DayObject(dateKey: key)
+    }
+
+    /// A completed wish grows ONE part on today's machine, shaped by how it felt.
+    /// Re-completing the same wish replaces its part (never piles up). A machine
+    /// with one part is already whole — no counts, no progress.
+    func addPart(from seed: Seed, feel: PartFeel) {
+        guard let p = persistence else { return }
+        var obj = todayObject()
+        obj.add(DayPart(seed: seed, feel: feel))
+        p.saveDayObject(obj, profile: activeProfileID)
+        logEvent(kind: "toy.part", payload: seed.id)
+        toyBump += 1
+    }
+
+    /// Bumped when a part lands, so a surface watching the machine re-reads.
+    private(set) var toyBump = 0
+
     /// Home/work grid cells learned from the last 90 days of coarse fixes.
     func learnedPlaceCells() -> (home: String?, work: String?) {
         guard let p = persistence else { return (nil, nil) }

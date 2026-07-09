@@ -61,6 +61,15 @@ import SwiftData
     init() {}
 }
 
+/// Today's little machine (今天的小机器) — one per (profile, dateKey). Reborn each
+/// morning; holds just today's assembled parts as a JSON payload of DayObject.
+@Model final class DayObjectRecord {
+    var dateKey: String = ""
+    var profileID: String = ""
+    var payload: String = ""     // JSON of DayObject
+    init() {}
+}
+
 /// Append-only life-event log: outcomes and sensed transitions, each with the
 /// coarse context snapshot of its moment. The substrate for rhythm/recurrence.
 @Model final class EventRecord {
@@ -144,7 +153,8 @@ final class Persistence {
     ///  4. Settings → iCloud 同步 on each device; relaunch.
     private init?() {
         let schema = Schema([ProfileRecord.self, SeedRecord.self, TraceRecord.self,
-                             LearningRecord.self, EventRecord.self, NoteRecord.self])
+                             LearningRecord.self, EventRecord.self, NoteRecord.self,
+                             DayObjectRecord.self])
         let url = Self.storeURL()
 
         #if CLOUDKIT_ENABLED
@@ -310,6 +320,31 @@ final class Persistence {
         save()
     }
 
+    // MARK: Day-object (今天的小机器 — one per profile+day)
+
+    func loadDayObject(dateKey: String, profile: String) -> DayObject? {
+        var d = FetchDescriptor<DayObjectRecord>(
+            predicate: #Predicate { $0.profileID == profile && $0.dateKey == dateKey })
+        d.fetchLimit = 1
+        guard let rec = (try? context.fetch(d))?.first else { return nil }
+        return Self.decode(DayObject.self, rec.payload)
+    }
+
+    func saveDayObject(_ obj: DayObject, profile: String) {
+        let key = obj.dateKey
+        var d = FetchDescriptor<DayObjectRecord>(
+            predicate: #Predicate { $0.profileID == profile && $0.dateKey == key })
+        d.fetchLimit = 1
+        let rec = (try? context.fetch(d))?.first ?? {
+            let r = DayObjectRecord()
+            r.dateKey = obj.dateKey; r.profileID = profile
+            context.insert(r)
+            return r
+        }()
+        rec.payload = Self.encode(obj)
+        save()
+    }
+
     // MARK: Events (append-only)
 
     func appendEvent(kind: String, payload: String, context ctx: ContextSnapshot?, profile: String) {
@@ -354,6 +389,9 @@ final class Persistence {
         let notes = (try? context.fetch(FetchDescriptor<NoteRecord>(
             predicate: #Predicate { $0.profileID == profile }))) ?? []
         notes.forEach { context.delete($0) }
+        let days = (try? context.fetch(FetchDescriptor<DayObjectRecord>(
+            predicate: #Predicate { $0.profileID == profile }))) ?? []
+        days.forEach { context.delete($0) }
         save()
     }
 

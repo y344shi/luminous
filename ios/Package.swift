@@ -18,6 +18,7 @@ let package = Package(
             path: "Luminous",
             sources: [
                 "Copy.swift",
+                "DayToy.swift",
                 "Domain.swift",
                 "LateNightCare.swift",
                 "Mentality.swift",

@@ -42,6 +42,8 @@ struct NowView: View {
     @State private var savedTraceId: String?
     @State private var editing = false
     @State private var draftText = ""
+    /// The just-completed wish's seed, awaiting its gentle 感觉怎么样? rating.
+    @State private var ratingSeed: Seed?
     /// The app's gentle default line — offered as a fallback, never the default.
     @State private var suggestedLine = ""
 
@@ -68,6 +70,19 @@ struct NowView: View {
         .onAppear {
             if mood == nil { mood = store.lastPick.mood }
             if energy == nil { energy = store.lastPick.energy }
+        }
+        // After a wish is done: one soft question that grows today's machine.
+        .sheet(item: $ratingSeed) { seed in
+            FeltRatingView { feel in
+                store.addPart(from: seed, feel: feel)
+                ratingSeed = nil
+            }
+            #if os(iOS)
+            .presentationDetents([.height(360)])
+            .presentationBackground(.regularMaterial)
+            #else
+            .frame(minWidth: 360, minHeight: 340)
+            #endif
         }
     }
 
@@ -239,6 +254,9 @@ struct NowView: View {
         }
         traceText = trace.text
         savedTraceId = trace.id
+        // A completed/partial wish grows one part on today's little machine —
+        // ask how it felt (skipped never reaches here). A light touch, not a gate.
+        if let seed { ratingSeed = seed }
         // Write-first: land on an invitation to record what YOU did; the gentle
         // generated line is kept as a fallback the person can tap to use.
         suggestedLine = trace.text
