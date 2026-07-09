@@ -17,7 +17,9 @@ Legend: ✅ done · 🔄 in progress · ⏳ queued · ⏸ paused
   verified (78 tests + iOS green), and merged onto `ios-aware`. See
   `ios/OVERNIGHT-DECISIONS.md`.
 
-## Sequence (do in this order)
+## Sequence (do in this order) — ✅ ALL COMPLETE (2026-07-09, aware 36→43)
+W2, W3, W5, and W4 (CP-A→F) all shipped green and pushed. See the morning
+summary at the end of `ios/OVERNIGHT-DECISIONS.md`.
 
 ### W2 · Planetary science computing module (the big physics upgrade)
 Extends `OrbitSim` into a real planetary-mechanics module. Sub-steps:
@@ -74,7 +76,7 @@ Today every skin shows the orbiting planetarium. Split the Home layout by skin:
   LateNightCareStrip (same actions as the glass orbit; openers shared via a new
   LateNightActions helper). Clears the D12/D13 tradeoff. (aware 38)
 
-### W4 · Build Today — 今天的小机器 (CP-A … CP-F)
+### W4 · Build Today — 今天的小机器 ✅ COMPLETE (CP-A … CP-F)
 - ✅ **CP-A groundwork:** `DayToy` model committed (aware 28).
 - ✅ **CP-A — felt rating + wiring:** *刚才那件事，感觉怎么样?* (很小但真的 /
   挺好的 / 今天因此不一样了) in the completion flow → `store.addPart`; SwiftData
@@ -96,9 +98,11 @@ Today every skin shows the orbiting planetarium. Split the Home layout by skin:
   keptAt + snapshot; store.keepToday persists them + one soft trace line;
   DayObjectSnapshot renders a still PNG via SCNRenderer (nil-safe). 收进今天的
   痕迹 button + confirmation in BuildTodayView. (aware 42)
-- ⏳ **CP-F** art/skins/a11y — per-kind part shapes (not just per-material),
-  per-skin craft styling, accessibility + Reduce Motion audit. LAST item.
-  (Full plan: `ios/BUILD-TODAY-PLAN.md`.)
+- ✅ **CP-F — art/a11y:** `DayCraftArt` = one source of truth for part
+  shape+look; per-KIND geometry (14 kinds), double-sided materials, shared by
+  stage + snapshot (retires the D18 duplication). A11y labels/hints on the
+  play/keep buttons; Reduce Motion fully stills. Per-skin hull restyle deferred
+  (craft re-skins via tokens already). (aware 43)
 
 ## Housekeeping / done recently
 - ✅ **Traces write-first** (aware 27) — 痕迹 records your words first; auto-

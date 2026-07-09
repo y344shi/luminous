@@ -230,3 +230,77 @@ adds a 收进今天的痕迹 button beside 播放今天 + a soft confirmation. C
 NOTE (device): the Play scene + the snapshot render are best verified on device;
 they build and render in the Simulator. 83 tests + iOS build green. Next: W4 CP-F
 (final art/skins/a11y polish) — the LAST worklist item.
+
+**D19 · W4 CP-F shipped — W4 COMPLETE, whole worklist done.** Final polish.
+DECISION: extracted all part look/shape into a single DayCraftArt enum (geometry
+for:kind, color, apply-material) and pointed BOTH DayObjectStage and
+DayObjectSnapshot at it — this simultaneously delivered CP-F's per-KIND shapes
+(14 kinds, each a distinct simple soft geometry) AND retired the D18 duplication
+(stage + keepsake can no longer drift). Materials are now double-sided (safe for
+thin sail/fin shapes seen from behind while rotating). Accessibility: added
+label + hint to the 播放今天 and 收进今天的痕迹 buttons; confirmed Reduce Motion
+already fully stills the scene and hides Play. SCOPE DECISION (logged): did NOT
+do per-skin craft restyling (glass sky-craft / ocean raft / paper folded toy) —
+the craft already re-skins via theme-token colors, and distinct hull shapes per
+skin risked the green gate on the last cycle; left as a future art pass. Ran the
+macOS milestone build too — green. 83 tests + iOS + macOS all green.
+
+---
+
+## ☀️ Morning summary (2026-07-09) — the whole worklist is done
+
+Good morning. Everything on the worklist shipped green and is pushed to
+`ios-aware` → `ios-glass` + `macos`. Nine feature commits (aware 35→43) plus
+per-cycle doc commits. The live Xcode copy was never touched; all work happened
+in the `wt-aware` worktree.
+
+### What shipped tonight
+- **W2 · Planetary science module** (aware ≤34): PlanetPhysics (pure, tested) —
+  importance→mass/size, heavier/important planets closer to the glass, gravity
+  capture of important off-schedule wishes (fly-in), like-type attraction,
+  shooting-star related fly-bys you can tap to make a moon or a separate star.
+- **W3 · Late-night care** (aware ≤34): guiding stars that orbit the glass (not
+  a banner) to help you get home — station arrow + distance, 回家的路, 叫一辆车,
+  温水 — powered by situational sensing (place kind + surroundings) with an
+  on-device LLM read and a deterministic fallback.
+- **W5 · Skin split** (aware 36–38): Home now branches by skin — **glass** =
+  the full planetarium (unchanged), **ocean** = a literal liquid you can slosh
+  (OceanSim buoyancy), **paper** = a calm note-card list. Late-night care rides
+  every skin (orbit on glass, a compact strip on ocean/paper; openers shared via
+  LateNightActions).
+- **W4 · 今天的小机器 / Build Today** (aware 39–43): the SceneKit day-object, end
+  to end — an empty stage (CP-B) → today's completions attach as parts, shaped
+  by how each felt (CP-C) → 播放今天, a gentle ~10s scene by hour+weather (CP-D)
+  → 收进今天的痕迹, a rendered PNG keepsake into 痕迹 (CP-E) → per-kind part
+  shapes + shared craft art + a11y (CP-F). Reachable from Home via the
+  cube.transparent button. Count-free, no productivity framing, throughout.
+
+### Key decisions (full detail D1–D19 above)
+- D12/D13 → **D14**: late-night care re-added to ocean/paper (tradeoff cleared).
+- **D15**: SceneKit chosen (SwiftUI SceneView), shipped smallest green slices.
+- **D17**: DayObjectStage made a persistent scene so Play can animate on it.
+- **D18**: keepsake stored schema-free on the DayObject payload (no @Model
+  migration); snapshot via offscreen SCNRenderer, nil-safe without Metal.
+- **D19**: DayCraftArt unified the part look → per-kind shapes AND retired the
+  stage/snapshot duplication in one move.
+
+### ⚠️ Verify ON DEVICE (Simulator can't fully exercise these)
+- **FoundationModels LLM paths** (situational care read, seed parsing, etc.) —
+  unavailable in the Simulator by design; they run the deterministic fallback
+  there. Confirm the on-device model paths on a real iPhone.
+- **SceneKit Play scene + snapshot render** — they build and render in the
+  Simulator, but the ~10s Play motion and the keepsake PNG are best confirmed on
+  device (Metal, real GPU, real timing).
+- **Late-night care sensing** — location/transit/compass need a real device out
+  in the world (the uOttawa-at-23:48 scenario that started W3).
+
+### Best next steps
+- **Paid Apple Developer Program ($99/yr)** unlocks the deferred trio: CloudKit
+  sync (schema is already sync-ready), HealthKit signals, and TestFlight.
+- **Per-skin craft hulls** (glass sky-craft / ocean raft / paper folded toy) —
+  the one CP-F piece I deferred to stay green; a pure art pass in DayCraftArt.
+- **Persist the moon map** (D9), **per-word spaced repetition**, **watch App
+  Group sync** — all previously logged.
+
+The loop is stopping now — no more scheduled wakes. Rest well; it's all on the
+branches, green, and pushed.
