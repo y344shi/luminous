@@ -172,3 +172,20 @@ build error caught the second one). No parts yet (CP-C). New files are UI-only
 (SwiftUI/SceneKit) so they auto-join the app target and correctly stay OUT of the
 pure test package and the watch target. 83 tests + iOS build green. Next: W4 CP-C
 (parts attach from today's DayObject onto the stage).
+
+**D16 · W4 CP-C shipped — parts attach onto the stage.** DayObjectStage now
+takes `parts: [DayPart]` and, when non-empty, renders one node per part instead
+of the empty seed. Each node is driven entirely by the pure model: geometry by
+PartMaterial (glass/light → sphere, light emissive; brass → metallic torus;
+cloth → soft chamfered box; wood/paper → matte box), node scale = DayPart.scale
+(0.6…1.3), emission intensity = DayPart.glow, and idle motion by DayPart.motor —
+a working part spins (faster the stronger the feeling), a quiet tinyButReal part
+(motor 0) only breathes; Reduce Motion stills everything. Parts sit evenly on a
+ring atop the pedestal (angle = 2π·i/count). Colors all from theme tokens →
+skin-aware. DECISION: kept per-material geometry (not per-kind) for CP-C — it's
+the smallest honest slice that already looks distinct, and per-kind shapes are a
+CP-F art-pass concern; logged so it's an intentional simplification, not an
+oversight. Added a cross-platform `v(Double,Double,Double)→SCNVector3` helper
+since computed vector components are Float on iOS / CGFloat on macOS (literal
+vectors compiled, computed ones would not). Count-free throughout. No Play scene
+(CP-D). 83 tests + iOS build green. Next: W4 CP-D (Play today ~10s scene).

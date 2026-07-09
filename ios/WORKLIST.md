@@ -84,8 +84,12 @@ Today every skin shows the orbiting planetarium. Split the Home layout by skin:
   Reduce Motion → still; all colors from theme tokens). `BuildTodayView` hosts
   it, reachable from Home via a cube.transparent button → `Route.buildToday`.
   Count-free copy. (aware 39)
-- ⏳ **CP-C** parts attach · **CP-D** Play today · **CP-E** keepsake ·
-  **CP-F** art/skins/a11y. (Full plan: `ios/BUILD-TODAY-PLAN.md`.)
+- ✅ **CP-C — parts attach:** `DayObjectStage` renders one node per DayPart
+  around the pedestal — geometry by material, scale/glow/motor from the felt
+  rating (working parts spin, quiet parts breathe), colors from theme tokens.
+  Reduce Motion → still. Count-free. (aware 40)
+- ⏳ **CP-D** Play today (~10s scene) · **CP-E** keepsake (snapshot → Daily
+  Trace) · **CP-F** art/skins/a11y. (Full plan: `ios/BUILD-TODAY-PLAN.md`.)
 
 ## Housekeeping / done recently
 - ✅ **Traces write-first** (aware 27) — 痕迹 records your words first; auto-
