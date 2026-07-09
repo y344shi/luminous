@@ -64,6 +64,8 @@ struct HomeView: View {
 
     @State private var wishes: [Wish] = []
     @State private var picked: Wish?
+    /// The just-completed wish's seed, awaiting its gentle 感觉怎么样? rating.
+    @State private var ratingSeed: Seed?
     @State private var doneIds: Set<String> = []
     @State private var justTrace = ""
     @State private var breathe = false
@@ -193,6 +195,20 @@ struct HomeView: View {
             }
             .onChange(of: picked?.id) { _, _ in
                 aiVocab = []; aiError = nil; aiLoading = false
+            }
+            // After a wish is done: one soft question that grows today's machine.
+            .sheet(item: $ratingSeed) { seed in
+                FeltRatingView { feel in
+                    store.addPart(from: seed, feel: feel)
+                    ratingSeed = nil
+                    withAnimation { justTrace = "今天的小机器，多了一个零件" }
+                }
+                #if os(iOS)
+                .presentationDetents([.height(360)])
+                .presentationBackground(.regularMaterial)
+                #else
+                .frame(minWidth: 360, minHeight: 340)
+                #endif
             }
             .sheet(isPresented: $showTranslate) {
                 TranslateView()
@@ -992,6 +1008,16 @@ struct HomeView: View {
         withAnimation { justTrace = trace.text }
         doneIds.insert(wish.id)
         picked = nil
+
+        // A completed/partial wish grows one part on today's little machine —
+        // ask how it felt once the wish sheet has stepped aside. Skipped adds
+        // nothing (and takes nothing).
+        if kind != .skipped {
+            let doneSeed = seed
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                ratingSeed = doneSeed
+            }
+        }
 
         // 记忆星座: the wish falls into the black hole and is reborn as a
         // permanent star in the sky. Partial counts exactly the same — every
