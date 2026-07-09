@@ -19,6 +19,7 @@ struct BuildTodayView: View {
 
     @State private var playSignal = 0
     @State private var sceneLine: String?
+    @State private var keptLine: String?
 
     private var hour: Int { Calendar.current.component(.hour, from: Date()) }
     private var soften: Bool {
@@ -59,24 +60,37 @@ struct BuildTodayView: View {
                     .frame(maxWidth: 300)
                     .transition(.opacity)
 
-                // Play today — only when it has grown, and only if motion is on.
-                if !obj.isEmpty && !reduceMotion {
-                    Button {
-                        playSignal += 1
-                        withAnimation(.easeInOut) { sceneLine = playLine() }
-                    } label: {
-                        HStack(spacing: 7) {
-                            Image(systemName: "play.circle")
-                                .font(.system(size: 17, weight: .light))
-                            Text("播放今天")
-                                .font(.system(size: 15, weight: .medium))
+                if !obj.isEmpty {
+                    HStack(spacing: Spacing.md) {
+                        // Play today — a gentle scene (only if motion is on).
+                        if !reduceMotion {
+                            Button {
+                                playSignal += 1
+                                withAnimation(.easeInOut) { sceneLine = playLine() }
+                            } label: {
+                                pill("play.circle", "播放今天")
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .foregroundStyle(theme.accentText)
-                        .padding(.horizontal, Spacing.lg).padding(.vertical, 10)
-                        .background(theme.accentSoft)
-                        .clipShape(Capsule())
+                        // Keep today into 痕迹 — a rendered keepsake.
+                        Button {
+                            let png = DayObjectSnapshot.png(tokens: theme, parts: obj.parts)
+                            store.keepToday(snapshot: png)
+                            withAnimation(.easeInOut) {
+                                keptLine = "今天收好了。它会留在你的痕迹里。"
+                            }
+                        } label: {
+                            pill("tray.and.arrow.down", "收进今天的痕迹")
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
+                }
+
+                if let keptLine {
+                    Text(keptLine)
+                        .font(.system(size: 13))
+                        .foregroundStyle(theme.textMuted)
+                        .transition(.opacity)
                 }
 
                 Spacer()
@@ -84,6 +98,17 @@ struct BuildTodayView: View {
             .padding(.top, Spacing.xl)
         }
         .hiddenNavBar()
+    }
+
+    private func pill(_ icon: String, _ label: String) -> some View {
+        HStack(spacing: 7) {
+            Image(systemName: icon).font(.system(size: 16, weight: .light))
+            Text(label).font(.system(size: 14, weight: .medium))
+        }
+        .foregroundStyle(theme.accentText)
+        .padding(.horizontal, Spacing.md).padding(.vertical, 10)
+        .background(theme.accentSoft)
+        .clipShape(Capsule())
     }
 
     /// Warm, count-free. Empty stage invites the first small thing; once it has

@@ -124,11 +124,21 @@ struct DayObject: Codable, Hashable {
     var dateKey: String
     var parts: [DayPart]
     var playedAt: String?
+    /// When the day was kept into 痕迹 (the keepsake). nil until collected.
+    var keptAt: String?
+    /// A rendered PNG of the machine at the moment it was kept (base64 in JSON;
+    /// optional — the keepsake still works if rendering isn't available).
+    var snapshot: Data?
 
     init(dateKey: String = DomainUtil.localDateKey(),
-         parts: [DayPart] = [], playedAt: String? = nil) {
+         parts: [DayPart] = [], playedAt: String? = nil,
+         keptAt: String? = nil, snapshot: Data? = nil) {
         self.dateKey = dateKey; self.parts = parts; self.playedAt = playedAt
+        self.keptAt = keptAt; self.snapshot = snapshot
     }
+
+    /// True once the day has been collected into 痕迹.
+    var kept: Bool { keptAt != nil }
 
     /// A calm number of visible parts. Beyond it, the oldest quietly drop off
     /// the render — the wishes still counted, the machine just stays legible.

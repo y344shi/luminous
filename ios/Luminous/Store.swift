@@ -346,6 +346,32 @@ final class AppStore {
         toyBump += 1
     }
 
+    /// Keep today's machine into 痕迹 — persist a kept-marker (and an optional
+    /// rendered snapshot) on the day-object, and leave one soft line in the
+    /// traces so the day is collected there too. Re-keeping updates the snapshot
+    /// without adding another trace line. No-op on an empty machine.
+    @discardableResult
+    func keepToday(snapshot: Data?) -> Bool {
+        guard let p = persistence else { return false }
+        var obj = todayObject()
+        guard !obj.isEmpty else { return false }
+        let firstKeep = obj.keptAt == nil
+        obj.keptAt = DomainUtil.nowIso()
+        if let snapshot { obj.snapshot = snapshot }
+        p.saveDayObject(obj, profile: activeProfileID)
+        if firstKeep {
+            addTrace(DailyTrace(id: DomainUtil.uid("trace"),
+                                date: DomainUtil.localDateKey(),
+                                seedId: nil, opportunityId: nil,
+                                text: "今天的小机器，收好了。",
+                                category: nil, partial: nil,
+                                createdAt: DomainUtil.nowIso()))
+        }
+        logEvent(kind: "toy.kept", payload: obj.dateKey)
+        toyBump += 1
+        return true
+    }
+
     /// Bumped when a part lands, so a surface watching the machine re-reads.
     private(set) var toyBump = 0
 
