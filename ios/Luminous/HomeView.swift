@@ -372,10 +372,13 @@ struct HomeView: View {
 
     @ViewBuilder private func bubble(_ wish: Wish) -> some View {
         let symbol = glyph(for: wish.seed)
+        // Size by importance: a more relevant, heavier wish is a bigger planet.
+        let d = CGFloat(PlanetPhysics.diameter(importance: importance(of: wish),
+                                               primary: wish.primary))
         if wish.primary {
             Button { picked = wish } label: {
                 VStack(spacing: 6) {
-                    planet(symbol, diameter: 54, iconSize: 22, glow: true)
+                    planet(symbol, diameter: d, iconSize: d * 0.4, glow: true)
                     Text(wish.seed.title)
                         .font(.system(size: 12, weight: .medium))
                         .multilineTextAlignment(.center)
@@ -392,7 +395,7 @@ struct HomeView: View {
             .buttonStyle(.plain)
         } else {
             Button { picked = wish } label: {
-                planet(symbol, diameter: 38, iconSize: 15, glow: false).opacity(0.85)
+                planet(symbol, diameter: d, iconSize: d * 0.4, glow: false).opacity(0.85)
             }
             .buttonStyle(.plain)
         }
@@ -483,8 +486,22 @@ struct HomeView: View {
         // Bodies are keyed by SEED id — stable across re-ranks. (Wish ids are
         // freshly minted opportunity ids each rebuild; keying by them made a
         // re-ranked wish teleport to a newly-seeded slot.)
-        sim.sync(places.map { ($0.wish.seed.id, $0.ring, $0.idx, $0.count) })
+        sim.sync(places.map {
+            ($0.wish.seed.id, $0.ring, $0.idx, $0.count, importance(of: $0.wish))
+        })
         sim.step(to: t, tilt: sensed.gravity, paused: reduceMotion)
+    }
+
+    /// A wish's importance ∈ [0,1] — its recommendation score normalized across
+    /// the displayed set. Drives planet size (bigger) and orbit radius (closer
+    /// to the glass). Ambient wishes (no live opportunity) sit low.
+    private func importance(of wish: Wish) -> Double {
+        let scores = displayed.compactMap { $0.opp?.score }
+        guard let lo = scores.min(), let hi = scores.max() else {
+            return wish.primary ? 0.6 : 0.2
+        }
+        guard let s = wish.opp?.score else { return 0.15 }
+        return PlanetPhysics.normalizedImportance(score: s, min: lo, max: hi)
     }
 
     /// Read a body's simulated screen position (clamped on-screen). Falls back to

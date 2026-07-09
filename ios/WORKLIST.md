@@ -29,9 +29,11 @@ Extends `OrbitSim` into a real planetary-mechanics module. Sub-steps:
   and is gravitationally captured into orbit); **moons** (a wish can be a
   satellite of another — hierarchical local orbit). Unit tests for mass/radius
   mapping, capture energy < 0, attraction clamp, moon placement.
-- ⏳ **W2b — Home integration:** render planet **size by mass**; important wishes
-  sit **closer to the glass**; wire importance from `Scoring`. Keep the tilt +
-  ring-spring behaviour intact.
+- ✅ **W2b — Home integration:** planets **sized by importance**
+  (`PlanetPhysics.diameter`); important wishes sit **closer to the glass**
+  (`OrbitSim.homeRadius` pulls the ring radius inward by importance, floored at
+  88 so nothing crosses the photon ring); importance = normalized opp score.
+  Tilt + rest-pose baseline + ring-spring preserved. (aware 31)
 - ⏳ **W2c — Capture fly-in:** important sleeping/off-schedule wishes flee in and
   are captured (spawn at edge with sub-escape velocity → settle into orbit).
 - ⏳ **W2d — Moons via shooting stars:** related wishes fling by as shooting

@@ -62,3 +62,10 @@ Revert any phase that can't go green; log it here; continue.
   if any sub-feature risks destabilizing the beloved home, I ship the safe
   version and log the tradeoff rather than gamble on the trunk overnight.
 - Anything that can't reach a green gate in one phase → reverted, logged, moved on.
+
+**D7 · W2b shipped (importance → size + radius).** Planets now render sized by
+importance and orbit closer to the glass when important, via the tested
+PlanetPhysics helpers. Conservative: only the home-radius (spring target) and
+render diameter changed; the integrator, tilt, rest-pose baseline and ring
+spring are untouched. Radius floored at 88 so important planets never dive into
+the photon ring. 78 tests + iOS build green. Next: W2c (capture fly-in).

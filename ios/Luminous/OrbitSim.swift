@@ -27,6 +27,19 @@ final class OrbitSim {
         var x: Double, y: Double      // disk-plane position, relative to centre (points)
         var vx: Double, vy: Double    // disk-plane velocity (points/s)
         var ring: Int
+        var importance: Double = 0.5  // ∈[0,1] — pulls the home radius inward
+        var homeR: Double = OrbitSim.refRadius  // the ring radius, pulled in by importance
+    }
+
+    /// Nothing orbits closer than this — keeps important planets clear of the
+    /// photon ring / event-horizon shadow at the centre.
+    static let radiusFloor: Double = 88
+
+    /// A body's home orbital radius: its ring radius pulled inward by importance
+    /// (important wishes sit closer to the glass), floored. Keeping the circular
+    /// speed sqrt(mu/homeR) then makes them orbit a touch faster, too.
+    func homeRadius(ring: Int, importance i: Double) -> Double {
+        PlanetPhysics.homeRadius(ringRadius: radius(for: ring), importance: i, floor: Self.radiusFloor)
     }
 
     private(set) var bodies: [String: Body] = [:]
@@ -64,26 +77,31 @@ final class OrbitSim {
     /// ring; vanished ones are dropped. Existing bodies keep their evolved
     /// state — and when a re-rank moves a wish to another ring, only its HOME
     /// ring changes: the spring walks it over smoothly (~12 s), it never jumps.
-    func sync(_ places: [(id: String, ring: Int, idx: Int, count: Int)]) {
+    func sync(_ places: [(id: String, ring: Int, idx: Int, count: Int, importance: Double)]) {
         let ids = Set(places.map { $0.id })
         bodies = bodies.filter { ids.contains($0.key) }
         for pl in places {
             if var b = bodies[pl.id] {
-                if b.ring != pl.ring {
-                    b.ring = pl.ring
+                // A re-rank changes only the HOME radius; the ring-spring walks
+                // the planet there smoothly (~12 s) — it never jumps.
+                var changed = false
+                if b.ring != pl.ring { b.ring = pl.ring; changed = true }
+                if abs(b.importance - pl.importance) > 0.001 { b.importance = pl.importance; changed = true }
+                if changed {
+                    b.homeR = homeRadius(ring: b.ring, importance: b.importance)
                     bodies[pl.id] = b
                 }
                 continue
             }
-            let r = radius(for: pl.ring)
+            let hr = homeRadius(ring: pl.ring, importance: pl.importance)
             let a = Double.pi / 2
                   + 2 * Double.pi / Double(max(pl.count, 1)) * Double(pl.idx)
                   + Double(pl.ring) * 0.6
-            let v = circularSpeed(r)
+            let v = circularSpeed(hr)
             bodies[pl.id] = Body(
-                x: cos(a) * r, y: sin(a) * r,
+                x: cos(a) * hr, y: sin(a) * hr,
                 vx: -sin(a) * v, vy: cos(a) * v,   // counter-clockwise tangent
-                ring: pl.ring)
+                ring: pl.ring, importance: pl.importance, homeR: hr)
         }
     }
 
@@ -101,12 +119,12 @@ final class OrbitSim {
     private var baseline = CGSize.zero
     private var baselineSeeded = false
 
-    private func accel(x: Double, y: Double, ring: Int,
+    private func accel(x: Double, y: Double, homeR: Double,
                        tx: Double, ty: Double) -> (Double, Double) {
         let r2 = x * x + y * y + soft * soft
         let r = r2.squareRoot()
         let invR3 = mu / (r2 * r)
-        let spring = -springK * (r - radius(for: ring)) / r
+        let spring = -springK * (r - homeR) / r
         return (-x * invR3 + spring * x + tx,
                 -y * invR3 + spring * y + ty)
     }
@@ -138,10 +156,10 @@ final class OrbitSim {
         for _ in 0..<sub {
             for k in bodies.keys {
                 var b = bodies[k]!
-                let (ax0, ay0) = accel(x: b.x, y: b.y, ring: b.ring, tx: tx, ty: ty)
+                let (ax0, ay0) = accel(x: b.x, y: b.y, homeR: b.homeR, tx: tx, ty: ty)
                 b.x += b.vx * h + 0.5 * ax0 * h * h
                 b.y += b.vy * h + 0.5 * ay0 * h * h
-                let (ax1, ay1) = accel(x: b.x, y: b.y, ring: b.ring, tx: tx, ty: ty)
+                let (ax1, ay1) = accel(x: b.x, y: b.y, homeR: b.homeR, tx: tx, ty: ty)
                 b.vx += 0.5 * (ax0 + ax1) * h
                 b.vy += 0.5 * (ay0 + ay1) * h
                 bodies[k] = b
