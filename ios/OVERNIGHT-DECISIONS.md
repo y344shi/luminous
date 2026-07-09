@@ -101,3 +101,14 @@ shoot-in. All the openers (Maps station, transit route home, Uber, enable
 沿-sensing) moved over; the code-owned safety copy and showLateNightCare gate
 kept. 78 tests + iOS build green. Next: W3b (the model chooses the warm line +
 which guiding stars from place type + surroundings).
+
+**D11 · W3b shipped (situational sensing) — completes W3.** Sensors gained
+reverse geocoding (placeLabel via areasOfInterest/name/subLocality/locality) and
+a `surroundings` line. SituationCare.swift: the on-device model reads the coarse
+place type + nearby kinds + station/home/weather/hour and returns a warm caption
+line + a set of intents (⊂ goHome/transit/cab/water/rest); LateNightCareOrbit
+shows the line and builds its guiding stars from the intents, never inventing an
+unavailable action. Deterministic fallback used immediately + whenever the model
+is away; ForbiddenWords on the line; cached ≤1h; the late-night gate stays
+code-owned. In the Simulator this uses the fallback by design. 78 tests + iOS
+green. Next: W5 (skin split — big).

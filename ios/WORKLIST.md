@@ -51,10 +51,11 @@ Extends `OrbitSim` into a real planetary-mechanics module. Sub-steps:
   with a pointing arrow, 回家的路, 叫一辆车, 喝口温水, or enable-sensing) shoot in and
   gently orbit the glass as tappable stars (LateNightCareOrbit). Reduce Motion →
   static ring. Reuses the pure LateNightCare helpers. (aware 34)
-- ⏳ **W3b — LLM situational sensing:** the on-device model reads the **type of
-  place + surroundings** (reverse-geocoded label + nearby kinds + distance from
-  home + time) and chooses the warm line and which guiding stars appear.
-  Deterministic fallback; late-night gate stays code-owned; `ForbiddenWords`.
+- ✅ **W3b — LLM situational sensing:** Sensors reverse-geocodes a coarse
+  placeLabel + surroundings; SituationCare (on-device model) reads place type +
+  nearby kinds + station/home/weather/hour → a warm caption line + which guiding
+  stars (intents ⊂ goHome/transit/cab/water/rest). Deterministic fallback,
+  ForbiddenWords, cached ≤1h; the model only phrases + selects safe actions. (aware 35)
 
 ### W5 · Skin-specific home behaviors (big — only glass stays "planetary")
 Today every skin shows the orbiting planetarium. Split the Home layout by skin:

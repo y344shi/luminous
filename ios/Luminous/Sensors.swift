@@ -70,6 +70,33 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
     /// can point the real-world way to the station. nil where unavailable (sim).
     var heading: Double?
 
+    /// A coarse name for where you are — an area / point of interest from reverse
+    /// geocoding (e.g. "University of Ottawa", "Downtown"). Feeds the on-device
+    /// model's read of what KIND of place this is. Only the label leaves the
+    /// geocoder into memory; nothing raw is stored or sent.
+    var placeLabel: String?
+
+    /// A short line describing the surroundings for the model: the place label
+    /// plus the kinds of places within a short walk.
+    var surroundings: String {
+        var bits: [String] = []
+        if let placeLabel, !placeLabel.isEmpty { bits.append(placeLabel) }
+        let kinds = Array(Set(nearby.compactMap { $0.kind })).prefix(5)
+        if !kinds.isEmpty {
+            bits.append("附近有" + kinds.map(Self.placeKindName).joined(separator: "、"))
+        }
+        return bits.joined(separator: "；")
+    }
+
+    static func placeKindName(_ k: PlaceKind) -> String {
+        switch k {
+        case .cafe: return "咖啡馆"; case .library: return "图书馆"; case .park: return "公园"
+        case .market: return "市场"; case .store: return "商店"; case .restaurant: return "餐馆"
+        case .gym: return "健身房"; case .museum: return "博物馆"
+        case .attraction: return "娱乐去处"; case .nature: return "山水"
+        }
+    }
+
     /// The coarse ~150m grid cell we're in right now (never a raw coordinate).
     var currentCell: String?
     /// Learned anchors (home = modal night cell, work = weekday-day cell),
@@ -95,6 +122,7 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
     }
 
     private let manager = CLLocationManager()
+    private let geocoder = CLGeocoder()
     private var enabled = false
     private var weatherFetchedAt: Date?
     private var refreshTimer: Timer?
@@ -200,8 +228,17 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
                 self.lastNearbyAt = Date()
                 await self.fetchNearby(center: coord)
                 await self.fetchNearestTransit(center: coord)
+                await self.reverseGeocode(loc)
             }
         }
+    }
+
+    /// A coarse name for this area (throttled with the nearby search). Keeps only
+    /// a short label; the raw placemark is discarded.
+    private func reverseGeocode(_ loc: CLLocation) async {
+        guard let marks = try? await geocoder.reverseGeocodeLocation(loc),
+              let p = marks.first else { return }
+        placeLabel = p.areasOfInterest?.first ?? p.name ?? p.subLocality ?? p.locality
     }
 
     nonisolated func locationManager(_ m: CLLocationManager, didFailWithError error: Error) {

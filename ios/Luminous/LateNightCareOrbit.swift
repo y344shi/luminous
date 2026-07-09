@@ -35,21 +35,43 @@ struct LateNightCareOrbit: View {
     }
 
     @State private var bornDate: Date?
+    @State private var sense = SituationSense()
 
     var body: some View {
         let actions = careActions
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion)) { tl in
-            let t = tl.date.timeIntervalSinceReferenceDate
-            let born = bornDate?.timeIntervalSinceReferenceDate ?? t
-            ZStack {
+        ZStack {
+            if let line = sense.read?.line {
+                Text(line)
+                    .font(.system(size: 13)).lineSpacing(3)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(theme.textSecondary)
+                    .frame(maxWidth: 260)
+                    .position(x: center.x, y: max(90, center.y - 168))
+            }
+            TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion)) { tl in
+                let t = tl.date.timeIntervalSinceReferenceDate
+                let born = bornDate?.timeIntervalSinceReferenceDate ?? t
                 ForEach(Array(actions.enumerated()), id: \.element.id) { i, a in
                     let p = position(i, count: actions.count, t: t, born: born)
                     careStar(a).position(p)
                 }
             }
         }
-        .onAppear { if bornDate == nil { bornDate = Date() } }
+        .onAppear {
+            if bornDate == nil { bornDate = Date() }
+            refreshSituation()
+        }
         .onDisappear { bornDate = nil }
+    }
+
+    private func refreshSituation() {
+        sense.refreshIfStale(
+            hour: Calendar.current.component(.hour, from: Date()),
+            surroundings: sensed.surroundings,
+            hasStation: sensed.nearestTransit != nil,
+            stationDist: sensed.nearestTransit?.distanceLabel,
+            homeKnown: homeCoord != nil,
+            weather: sensed.weatherKind?.rawValue)
     }
 
     // MARK: layout — a slow ring around the glass, with a shoot-in
@@ -107,25 +129,40 @@ struct LateNightCareOrbit: View {
 
     // MARK: the actions
 
+    /// The guiding stars — built from the model's chosen intents (with a
+    /// deterministic fallback), never inventing an unavailable action.
     private var careActions: [Care] {
         if !store.senseAround {
             return [Care(id: "enable", emoji: "📍", title: "帮我看路", arrow: nil) {
                 store.setSenseAround(true); sensed.start(enabled: true)
             }]
         }
+        let intents = sense.read?.intents
+            ?? SituationCare.fallback(hasStation: sensed.nearestTransit != nil,
+                                      homeKnown: homeCoord != nil).intents
         var out: [Care] = []
-        if let station = sensed.nearestTransit {
-            out.append(Care(id: "station", emoji: "🚇",
-                            title: "车站 · \(station.distanceLabel)", arrow: arrowAngle(to: station)) {
-                station.mapItem.openInMaps()
-            })
+        for intent in intents {
+            switch intent {
+            case .transit:
+                if let station = sensed.nearestTransit {
+                    out.append(Care(id: "station", emoji: "🚇",
+                                    title: "车站 · \(station.distanceLabel)",
+                                    arrow: arrowAngle(to: station)) { station.mapItem.openInMaps() })
+                }
+            case .goHome:
+                if homeCoord != nil {
+                    out.append(Care(id: "home", emoji: "🏠", title: "回家的路", arrow: nil) { openRouteHome() })
+                }
+            case .cab:
+                out.append(Care(id: "cab", emoji: "🚕", title: "叫一辆车", arrow: nil) { openCab() })
+            case .water:
+                out.append(Care(id: "water", emoji: "💧", title: "喝口温水", arrow: nil) {})
+            case .rest:
+                out.append(Care(id: "rest", emoji: "🌙", title: "就地歇一会", arrow: nil) {})
+            }
         }
-        if homeCoord != nil {
-            out.append(Care(id: "home", emoji: "🏠", title: "回家的路", arrow: nil) { openRouteHome() })
-        }
-        out.append(Care(id: "cab", emoji: "🚕", title: "叫一辆车", arrow: nil) { openCab() })
-        out.append(Care(id: "water", emoji: "💧", title: "喝口温水", arrow: nil) {})
-        return out
+        var seen = Set<String>()
+        return out.filter { seen.insert($0.id).inserted }   // dedupe, keep order
     }
 
     // MARK: geometry + openers (reuse the pure helpers)
