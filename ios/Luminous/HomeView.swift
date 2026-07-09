@@ -91,6 +91,14 @@ struct HomeView: View {
     private var hour: Int { Calendar.current.component(.hour, from: Date()) }
     private var isLateNight: Bool { TimeOfDay.isLateNight(hour: hour) }
 
+    /// Late night AND we can tell you're out (or sensing is off, so we offer to
+    /// turn it on). At home late → the gentle water/sleep stop-loss is enough.
+    private var showLateNightCare: Bool {
+        guard isLateNight else { return false }
+        if !store.senseAround { return true }
+        return sensed.locationHint != .home
+    }
+
     var body: some View {
         NavigationStack(path: $path) {
             GeometryReader { geo in
@@ -145,6 +153,16 @@ struct HomeView: View {
                         BirthOverlay(birth: birth, center: center) {
                             self.birth = nil
                         }
+                    }
+
+                    // Late night and out → the app's oldest promise: help you
+                    // get home safely, above everything else.
+                    if showLateNightCare {
+                        LateNightCareView()
+                            .padding(.horizontal, Spacing.lg)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                            .offset(y: size.height * 0.12)
+                            .transition(.opacity)
                     }
 
                     topOverlay

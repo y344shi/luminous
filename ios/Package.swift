@@ -19,6 +19,7 @@ let package = Package(
             sources: [
                 "Copy.swift",
                 "Domain.swift",
+                "LateNightCare.swift",
                 "Mentality.swift",
                 "Nudge.swift",
                 "PlanKit.swift",

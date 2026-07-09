@@ -62,6 +62,14 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
     /// Nearby cafes / stores / markets for the Home "附近" row.
     var nearby: [NearbyPlace] = []
 
+    /// The nearest transit station (subway / bus / rail) — for the late-night
+    /// "get home" care. Kept apart from `nearby` (a safety place, not a wish place).
+    var nearestTransit: NearbyPlace?
+
+    /// Compass heading in degrees (magnetic, 0 = north), so the on-screen arrow
+    /// can point the real-world way to the station. nil where unavailable (sim).
+    var heading: Double?
+
     /// The coarse ~150m grid cell we're in right now (never a raw coordinate).
     var currentCell: String?
     /// Learned anchors (home = modal night cell, work = weekday-day cell),
@@ -120,6 +128,9 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
         #endif
         manager.requestLocation()
         lastFixAt = Date()
+        #if os(iOS)
+        if CLLocationManager.headingAvailable() { manager.startUpdatingHeading() }
+        #endif
         refreshTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.refresh() }
         }
@@ -188,12 +199,19 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
                 self.lastNearbyLoc = loc
                 self.lastNearbyAt = Date()
                 await self.fetchNearby(center: coord)
+                await self.fetchNearestTransit(center: coord)
             }
         }
     }
 
     nonisolated func locationManager(_ m: CLLocationManager, didFailWithError error: Error) {
         // Silent: sensing degrades to nil, never nags.
+    }
+
+    nonisolated func locationManager(_ m: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
+        let deg = newHeading.magneticHeading
+        guard deg >= 0 else { return }   // negative = invalid
+        Task { @MainActor in self.heading = deg }
     }
 
     // MARK: Nearby places (MapKit local search)
@@ -236,7 +254,34 @@ final class SensedSignals: NSObject, CLLocationManagerDelegate {
         }
     }
 
+    /// The nearest transit station — its own search so it isn't crowded out by
+    /// the kind-diverse `nearby` retention. Feeds the late-night "get home" care.
+    private func fetchNearestTransit(center: CLLocationCoordinate2D) async {
+        let req = MKLocalPointsOfInterestRequest(center: center, radius: 2500)
+        req.pointOfInterestFilter = MKPointOfInterestFilter(including: [.publicTransport])
+        do {
+            let resp = try await MKLocalSearch(request: req).start()
+            let here = CLLocation(latitude: center.latitude, longitude: center.longitude)
+            self.nearestTransit = resp.mapItems.compactMap { item -> NearbyPlace? in
+                guard let loc = item.placemark.location, let name = item.name else { return nil }
+                return NearbyPlace(name: name, emoji: "🚇",
+                                   distanceM: loc.distance(from: here), mapItem: item)
+            }
+            .min { $0.distanceM < $1.distanceM }
+        } catch {
+            // leave as-is on failure
+        }
+    }
+
     static func emoji(for cat: MKPointOfInterestCategory?) -> String {
+        switch cat {
+        case .some(.publicTransport): return "🚇"
+        default: break
+        }
+        return emojiPlace(for: cat)
+    }
+
+    private static func emojiPlace(for cat: MKPointOfInterestCategory?) -> String {
         switch cat {
         case .some(.cafe):         return "☕"
         case .some(.restaurant):   return "🍴"

@@ -127,3 +127,40 @@ final class SeedTagsCodableTests: XCTestCase {
         XCTAssertEqual(back.title, seed.title)
     }
 }
+
+final class LateNightCareTests: XCTestCase {
+
+    func testBearingCardinalDirections() {
+        // due north: destination at higher latitude, same longitude → ~0 rad
+        let n = LateNightCare.bearing(fromLat: 45.0, lon: -75.0, toLat: 45.1, lon: -75.0)
+        XCTAssertEqual(n, 0, accuracy: 0.02)
+        // due east: same latitude, higher longitude → ~π/2
+        let e = LateNightCare.bearing(fromLat: 45.0, lon: -75.0, toLat: 45.0, lon: -74.9)
+        XCTAssertEqual(e, .pi / 2, accuracy: 0.02)
+    }
+
+    func testArrowAngleSubtractsHeading() {
+        // facing east (heading 90°) toward a station due north (bearing 0) →
+        // the arrow should point to the viewer's left (−π/2)
+        let a = LateNightCare.arrowAngle(bearingRadians: 0, headingDegrees: 90)
+        XCTAssertEqual(a, -.pi / 2, accuracy: 0.001)
+        // no heading → map-up (unchanged)
+        XCTAssertEqual(LateNightCare.arrowAngle(bearingRadians: 1.2, headingDegrees: nil), 1.2)
+    }
+
+    func testShouldOfferGettingHomeOnlyWhenLateAndOut() {
+        XCTAssertFalse(LateNightCare.shouldOfferGettingHome(isLateNight: false, locationHint: .outdoor))
+        XCTAssertFalse(LateNightCare.shouldOfferGettingHome(isLateNight: true, locationHint: .home))
+        XCTAssertFalse(LateNightCare.shouldOfferGettingHome(isLateNight: true, locationHint: nil),
+                       "never presume 'out' with no location")
+        XCTAssertTrue(LateNightCare.shouldOfferGettingHome(isLateNight: true, locationHint: .outdoor))
+        XCTAssertTrue(LateNightCare.shouldOfferGettingHome(isLateNight: true, locationHint: .work))
+    }
+
+    func testCoordinateParsesCellKey() {
+        let c = LateNightCare.coordinate(fromCellKey: "45.4215,-75.6972")
+        XCTAssertEqual(c?.lat ?? 0, 45.4215, accuracy: 0.0001)
+        XCTAssertEqual(c?.lon ?? 0, -75.6972, accuracy: 0.0001)
+        XCTAssertNil(LateNightCare.coordinate(fromCellKey: "garbage"))
+    }
+}
