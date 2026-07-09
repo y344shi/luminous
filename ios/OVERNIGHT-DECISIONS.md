@@ -209,3 +209,24 @@ DayGrade → skin-aware; count-free. NOTE: SceneKit Play verifies best on device
 in the Simulator it builds + renders but on-device is the real test (logged for
 morning). 83 tests + iOS build green. Next: W4 CP-E (save the assembled object +
 a rendered snapshot into the Daily Trace keepsake).
+
+**D18 · W4 CP-E shipped — 收进今天的痕迹 (the keepsake).** The assembled machine
+can be kept into 痕迹 with a rendered snapshot. DECISION on storage: reused the
+existing persistence seam rather than a new schema — added `keptAt: String?` and
+`snapshot: Data?` to the DayObject STRUCT, which rides the DayObjectRecord.payload
+JSON (hybrid payload design); no @Model migration, and old payloads decode
+loss-free because both are Optional. store.keepToday(snapshot:) sets the marker +
+optional PNG and leaves exactly ONE soft trace line (今天的小机器，收好了) on the
+first keep (re-keep updates the image only); no-op on an empty machine.
+DECISION on rendering: DayObjectSnapshot renders a STILL, animation-free copy of
+the scene offscreen via SCNRenderer → PNG, nil-safe when Metal is unavailable
+(the keepsake still works from the marker + trace line). It deliberately
+DUPLICATES the small node-mapping (geometry/material/placement) instead of
+coupling to the animated DayObjectStage — keeps the live stage untouched; the
+tradeoff is that CP-F's per-kind shapes must update both places (logged). Snapshot
+PNG is stored base64 in the day's JSON — heavy-ish but one per day, acceptable for
+a keepsake; could move to a dedicated Data column later if it bloats. BuildTodayView
+adds a 收进今天的痕迹 button beside 播放今天 + a soft confirmation. Count-free.
+NOTE (device): the Play scene + the snapshot render are best verified on device;
+they build and render in the Simulator. 83 tests + iOS build green. Next: W4 CP-F
+(final art/skins/a11y polish) — the LAST worklist item.

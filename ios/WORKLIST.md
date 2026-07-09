@@ -92,8 +92,13 @@ Today every skin shows the orbiting planetarium. Split the Home layout by skin:
   bump tints the sky to the hour (DayGrade.colors, softened in rain/snow/fog),
   drifts the camera, and arcs the craft, then settles. Button + soft scene line
   in BuildTodayView (only when grown & motion on). Reduce Motion → still. (aware 41)
-- ⏳ **CP-E** keepsake (assembled object + snapshot → Daily Trace) ·
-  **CP-F** art/skins/a11y (per-kind shapes). (Full plan: `ios/BUILD-TODAY-PLAN.md`.)
+- ✅ **CP-E — keepsake (snapshot → 痕迹):** DayObject gains schema-free
+  keptAt + snapshot; store.keepToday persists them + one soft trace line;
+  DayObjectSnapshot renders a still PNG via SCNRenderer (nil-safe). 收进今天的
+  痕迹 button + confirmation in BuildTodayView. (aware 42)
+- ⏳ **CP-F** art/skins/a11y — per-kind part shapes (not just per-material),
+  per-skin craft styling, accessibility + Reduce Motion audit. LAST item.
+  (Full plan: `ios/BUILD-TODAY-PLAN.md`.)
 
 ## Housekeeping / done recently
 - ✅ **Traces write-first** (aware 27) — 痕迹 records your words first; auto-
