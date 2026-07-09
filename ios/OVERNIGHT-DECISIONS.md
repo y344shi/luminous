@@ -112,3 +112,15 @@ unavailable action. Deterministic fallback used immediately + whenever the model
 is away; ForbiddenWords on the line; cached ≤1h; the late-night gate stays
 code-owned. In the Simulator this uses the fallback by design. 78 tests + iOS
 green. Next: W5 (skin split — big).
+
+**D12 · W5a shipped (Home splits by skin).** HomeView body now branches:
+skin == glass renders the full planetarium exactly as before (orbits, black
+hole, constellation, moons, birth ceremony, late-night orbiting care); ocean &
+paper render wishListField — a calm scroll of the shown wishes in recommendation
+order (primaries first), each a tappable row (glyph + title + minimum action +
+place badge), with a compact tappable orb at top for 现在别消失. This IS paper's
+final home (W5c) and a placeholder for ocean until W5b builds the liquid field.
+TRADEOFF LOGGED: the late-night get-home orbit currently lives inside the glass
+branch, so on ocean/paper there is no late-night care yet — re-add it (skin-
+agnostic, or a list-friendly variant) during W5b/W5c. 78 tests + iOS green.
+Next: W5b (ocean liquid buoyancy — big).

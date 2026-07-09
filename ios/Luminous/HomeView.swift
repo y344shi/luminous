@@ -116,12 +116,11 @@ struct HomeView: View {
                         .ignoresSafeArea()
                         .simultaneousGesture(revealGesture)
 
-                    // 记忆星座 — every trace is a permanent star in YOUR sky.
                     if skin == .glass {
-                        ConstellationSkyView(traces: store.traces, size: size,
-                                             bornBeingHidden: birth?.traceId)
-                            .ignoresSafeArea()
-                    }
+                    // 记忆星座 — every trace is a permanent star in YOUR sky.
+                    ConstellationSkyView(traces: store.traces, size: size,
+                                         bornBeingHidden: birth?.traceId)
+                        .ignoresSafeArea()
 
                     bloom.position(center)
                     orb.position(center)
@@ -179,6 +178,11 @@ struct HomeView: View {
                     if showLateNightCare {
                         LateNightCareOrbit(center: center, size: size)
                             .transition(.opacity)
+                    }
+                    } else {
+                        // Ocean & paper: a calm recommendation-ordered list.
+                        // (Ocean becomes a liquid field in W5b; this is paper's home.)
+                        wishListField
                     }
 
                     topOverlay
@@ -406,6 +410,52 @@ struct HomeView: View {
                                    startPoint: .leading, endPoint: .trailing),
                     style: StrokeStyle(lineWidth: rs * 0.34, lineCap: .round))
             .frame(width: rs * 2.1, height: rs * 2.1)
+    }
+
+    // MARK: Non-glass home — a calm list (paper's home; ocean's until W5b)
+
+    private var wishListField: some View {
+        ScrollView {
+            VStack(spacing: Spacing.md) {
+                // The skin's orb, compact, still the tap into 现在别消失.
+                orb.scaleEffect(0.66).frame(height: 96).padding(.top, 86)
+                ForEach(shown, id: \.id) { wish in
+                    Button { picked = wish } label: { wishRow(wish) }
+                        .buttonStyle(.plain)
+                }
+                if shown.isEmpty {
+                    Text("今天还很空。捞一个小小的念头吧。")
+                        .font(.system(size: 14))
+                        .foregroundStyle(theme.textSecondary)
+                        .padding(.top, 40)
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
+            .padding(.bottom, 150)
+        }
+    }
+
+    private func wishRow(_ wish: Wish) -> some View {
+        HStack(spacing: Spacing.md) {
+            planet(glyph(for: wish.seed), diameter: 40, iconSize: 16, glow: wish.primary)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(wish.seed.title)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(theme.textPrimary).lineLimit(1)
+                Text(wish.opp?.suggestedAction ?? wish.seed.minimumAction)
+                    .font(.system(size: 13))
+                    .foregroundStyle(theme.textSecondary).lineLimit(1)
+            }
+            Spacer(minLength: 0)
+            if let place = matchedPlace(for: wish.seed) {
+                Text("\(place.emoji)\(place.distanceLabel)")
+                    .font(.system(size: 11)).foregroundStyle(theme.textMuted)
+            }
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(theme.surface.opacity(0.6))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     // MARK: Wishes

@@ -59,8 +59,10 @@ Extends `OrbitSim` into a real planetary-mechanics module. Sub-steps:
 
 ### W5 · Skin-specific home behaviors (big — only glass stays "planetary")
 Today every skin shows the orbiting planetarium. Split the Home layout by skin:
-- ⏳ **W5a — glass = "planetary mode":** keep the planetarium (black hole,
-  orbits, the W2 physics). Only glass has orbital behavior.
+- ✅ **W5a — glass = planetary mode:** Home now branches by skin — glass keeps
+  the full planetarium (orbits, black hole, constellation, moons, birth,
+  late-night orbit), unchanged; ocean & paper get a calm recommendation-ordered
+  list (wishListField). Only glass has orbital behavior. (aware 36)
 - ⏳ **W5b — ocean = a literal liquid ocean:** water that responds to the **gyro**
   (device tilt) with liquid physics; wishes **float with volume ∝ relevance**
   (more relevant = larger = floats higher/more buoyant); smaller wishes still
