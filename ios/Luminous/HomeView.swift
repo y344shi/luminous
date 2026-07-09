@@ -16,6 +16,7 @@ enum Route: Hashable {
     case now
     case add
     case seedDetail(String)
+    case buildToday
 }
 
 /// A small row of category / duration / energy descriptors shared by cards.
@@ -220,6 +221,7 @@ struct HomeView: View {
                 case .now: NowView(path: $path)
                 case .add: AddSeedView(path: $path)
                 case .seedDetail(let id): SeedDetailView(seedId: id)
+                case .buildToday: BuildTodayView()
                 }
             }
             .sheet(item: $picked) { wish in
@@ -1072,6 +1074,19 @@ struct HomeView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(Copy.Home.addSeed)
+
+                Button { path.append(Route.buildToday) } label: {
+                    ZStack {
+                        Circle().fill(.ultraThinMaterial)
+                        Circle().strokeBorder(.white.opacity(0.3), lineWidth: 1)
+                        Image(systemName: "cube.transparent")
+                            .font(.system(size: 18, weight: .light))
+                            .foregroundStyle(theme.textSecondary)
+                    }
+                    .frame(width: 46, height: 46)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("今天的小机器")
             }
         }
         .padding(.bottom, 14)

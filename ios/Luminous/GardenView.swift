@@ -58,6 +58,7 @@ struct GardenView: View {
                 case .add: AddSeedView(path: $path)
                 case .seedDetail(let id): SeedDetailView(seedId: id)
                 case .now: EmptyView()
+                case .buildToday: BuildTodayView()
                 }
             }
         }
