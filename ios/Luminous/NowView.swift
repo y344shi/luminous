@@ -42,6 +42,8 @@ struct NowView: View {
     @State private var savedTraceId: String?
     @State private var editing = false
     @State private var draftText = ""
+    /// The app's gentle default line — offered as a fallback, never the default.
+    @State private var suggestedLine = ""
 
     private var isLateNight: Bool {
         TimeOfDay.isLateNight(hour: Calendar.current.component(.hour, from: Date()))
@@ -237,6 +239,11 @@ struct NowView: View {
         }
         traceText = trace.text
         savedTraceId = trace.id
+        // Write-first: land on an invitation to record what YOU did; the gentle
+        // generated line is kept as a fallback the person can tap to use.
+        suggestedLine = trace.text
+        draftText = ""
+        editing = true
         step = .trace
     }
 
@@ -246,19 +253,37 @@ struct NowView: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             if editing {
                 BreathingCard {
-                    VStack(spacing: Spacing.sm) {
-                        TextEditor(text: $draftText)
-                            .font(.system(size: 16))
-                            .frame(minHeight: 110)
-                            .scrollContentBackground(.hidden)
-                            .padding(8)
-                            .background(theme.surfaceSoft)
-                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                        HStack(spacing: Spacing.sm) {
-                            SoftButton(title: Copy.Traces.editSave, enabled: !draftText.trimmed.isEmpty) {
-                                saveEdited()
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        Text("刚才你做了什么？写一句给自己")
+                            .font(.system(size: 13))
+                            .foregroundStyle(theme.textMuted)
+                        ZStack(alignment: .topLeading) {
+                            if draftText.isEmpty {
+                                Text("小小一件也算…（可留空）")
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(theme.textMuted)
+                                    .padding(.horizontal, 13).padding(.vertical, 16)
                             }
-                            SoftButton(title: "取消", variant: .ghost) { editing = false }
+                            TextEditor(text: $draftText)
+                                .font(.system(size: 16))
+                                .frame(minHeight: 100)
+                                .scrollContentBackground(.hidden)
+                                .padding(8)
+                        }
+                        .background(theme.surfaceSoft)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        if !suggestedLine.isEmpty {
+                            Button { draftText = suggestedLine } label: {
+                                Text("或者用这句：\(suggestedLine)")
+                                    .font(.system(size: 12)).lineSpacing(2)
+                                    .foregroundStyle(theme.textMuted)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        HStack(spacing: Spacing.sm) {
+                            SoftButton(title: "记下") { saveEdited() }
+                            SoftButton(title: "就这样", variant: .ghost) { editing = false }
                         }
                     }
                 }

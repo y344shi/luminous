@@ -68,17 +68,44 @@ struct TracesView: View {
         }
     }
 
+    /// A trace still carrying only the app's gentle default line (not the
+    /// person's own words). Detected by the warm prefix the generator uses, so
+    /// no schema flag is needed and old traces are handled too.
+    private func isGenerated(_ t: DailyTrace) -> Bool {
+        t.text.hasPrefix(Copy.tracePrefix) || t.text == Copy.Completion.skippedMsg
+    }
+
     private func traceCard(_ trace: DailyTrace) -> some View {
         BreathingCard {
             if editingId == trace.id {
                 VStack(spacing: Spacing.sm) {
-                    TextEditor(text: $draftText)
-                        .font(.system(size: 16))
-                        .frame(minHeight: 90)
-                        .scrollContentBackground(.hidden)
-                        .padding(8)
-                        .background(theme.surfaceSoft)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    ZStack(alignment: .topLeading) {
+                        if draftText.isEmpty {
+                            Text("写一句你自己做了什么…")
+                                .font(.system(size: 16))
+                                .foregroundStyle(theme.textMuted)
+                                .padding(.horizontal, 13).padding(.vertical, 16)
+                        }
+                        TextEditor(text: $draftText)
+                            .font(.system(size: 16))
+                            .frame(minHeight: 90)
+                            .scrollContentBackground(.hidden)
+                            .padding(8)
+                    }
+                    .background(theme.surfaceSoft)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    // Offer the app's gentle line as a fallback, never as the default.
+                    if isGenerated(trace) {
+                        Button {
+                            draftText = trace.text
+                        } label: {
+                            Text("或者用这句：\(trace.text)")
+                                .font(.system(size: 12)).lineSpacing(2)
+                                .foregroundStyle(theme.textMuted)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.plain)
+                    }
                     HStack(spacing: Spacing.sm) {
                         SoftButton(title: Copy.Traces.editSave, enabled: !draftText.trimmed.isEmpty) {
                             store.updateTrace(trace.id, text: draftText.trimmed)
@@ -88,17 +115,22 @@ struct TracesView: View {
                     }
                 }
             } else {
+                let generated = isGenerated(trace)
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     Text(trace.text)
                         .font(.system(size: 16)).lineSpacing(4)
-                        .foregroundStyle(theme.textPrimary)
+                        // The app's default line reads as a soft suggestion;
+                        // the person's own words read as the record.
+                        .foregroundStyle(generated ? theme.textSecondary : theme.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                     HStack(spacing: Spacing.md) {
-                        Button(Copy.Traces.edit) {
-                            draftText = trace.text; editingId = trace.id
+                        Button(generated ? "写一句你自己的" : Copy.Traces.edit) {
+                            // Generated → invite fresh words (empty); own words → edit them.
+                            draftText = generated ? "" : trace.text
+                            editingId = trace.id
                         }
-                        .font(.system(size: 13))
-                        .tint(theme.textSecondary)
+                        .font(.system(size: 13, weight: generated ? .medium : .regular))
+                        .tint(generated ? theme.accentText : theme.textSecondary)
                         Spacer()
                         Button {
                             pendingDelete = trace
