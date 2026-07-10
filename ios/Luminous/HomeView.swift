@@ -74,6 +74,7 @@ struct HomeView: View {
     @State private var caughtIds: Set<String> = []
     @State private var revealExtra = 0
     @State private var showTranslate = false
+    @State private var showCalendar = false
     @State private var sim = OrbitSim()
     @State private var aiMoments: [Suggestion] = []
     @State private var aiMomentsAt: Date?
@@ -282,6 +283,12 @@ struct HomeView: View {
                     .presentationBackground(.regularMaterial)
                 #else
                     .frame(minWidth: 420, minHeight: 560)
+                #endif
+            }
+            .sheet(isPresented: $showCalendar) {
+                WishCalendarView()
+                #if os(macOS)
+                    .frame(minWidth: 520, minHeight: 520)
                 #endif
             }
             .onAppear {
@@ -1114,6 +1121,19 @@ struct HomeView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("今天的小机器")
+
+                Button { showCalendar = true } label: {
+                    ZStack {
+                        Circle().fill(.ultraThinMaterial)
+                        Circle().strokeBorder(.white.opacity(0.3), lineWidth: 1)
+                        Image(systemName: "calendar")
+                            .font(.system(size: 17, weight: .light))
+                            .foregroundStyle(theme.textSecondary)
+                    }
+                    .frame(width: 46, height: 46)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("愿望日历")
             }
         }
         .padding(.bottom, 14)

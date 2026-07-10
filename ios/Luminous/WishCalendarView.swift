@@ -118,6 +118,11 @@ private enum WishCalendar {
         return (wd + 5) % 7
     }
 
+    /// Monday-first weekday index for today.
+    static var todayIndex: Int {
+        (Calendar.current.component(.weekday, from: Date()) + 5) % 7
+    }
+
     /// Group all wishes into the seven weekday piles, newest-caught last so the
     /// pile builds bottom→top like placing cards.
     static func buckets(from seeds: [Seed]) -> [DayBucket] {
@@ -155,6 +160,7 @@ struct WishCalendarView: View {
                             DayStackColumn(bucket: bucket,
                                            maxCount: maxCount,
                                            available: geo.size.height - 120,
+                                           isToday: bucket.id == WishCalendar.todayIndex,
                                            onSelect: { selected = $0 })
                         }
                     }
@@ -214,6 +220,7 @@ private struct DayStackColumn: View {
     let bucket: DayBucket
     let maxCount: Int
     let available: CGFloat
+    var isToday: Bool = false
     let onSelect: (Seed) -> Void
 
     @State private var isOpen = false
@@ -258,7 +265,14 @@ private struct DayStackColumn: View {
         HStack(spacing: Spacing.xs) {
             Text(bucket.label)
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(theme.textPrimary)
+                .foregroundStyle(isToday ? theme.accentText : theme.textPrimary)
+            if isToday {
+                Text("今天")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(theme.accentText)
+                    .padding(.horizontal, 6).padding(.vertical, 2)
+                    .background(theme.accentSoft, in: Capsule())
+            }
             Spacer()
             CountBadge(count: bucket.count, weight: weight)
         }
