@@ -9,7 +9,7 @@ Legend: ✅ done · 🔄 in progress · ⏳ queued
   (cycle 玻璃 / 海面 / 纸页) so switching is immediate. Answers the complaint.
 - ✅ **P2 · Notes → click-through card deck** — `PursuitPage` notes become cards
   you page through; an add card. Calm, count-free.
-- ⏳ **P3 · Apple Pencil notes** — `PursuitNote.Kind = .sketch` (PencilKit data);
+- ✅ **P3 · Apple Pencil notes** — `PursuitNote.Kind = .sketch` (PencilKit data);
   a canvas card to draw; sketch cards render inline. iPad-first, degrades.
 - ⏳ **P4 · Calendar update** — improve `WishCalendarView` + make it reachable/
   linked from Home; polish.

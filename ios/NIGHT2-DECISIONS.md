@@ -36,3 +36,19 @@ freshly added note (acceptable; the add card is always last). The empty state is
 just the add card itself (invites the first thought), so dropped the old
 empty-text line. Count-free, calm. 83 tests + iOS green. Next: P3 (Apple Pencil
 sketch notes into the same deck).
+
+**N3 · P3 shipped — Apple Pencil handwritten notes (aware 46).** Sketch notes
+slot into the same deck. DECISION (storage): new PursuitNote.Kind = .sketch keeps
+its PKDrawing as base64 in the note's `text` field — zero Persistence @Model
+change, loss-free, and it flows through the existing addNote/removeNote/loadNotes
+path untouched (mirrors D18). Only noteGlyph needed the new case; no other
+exhaustive switch on Kind exists. DECISION (platform): all PencilKit code lives in
+PencilNote.swift behind `#if canImport(PencilKit) && os(iOS)` — SketchCanvas
+(PKCanvasView + PKToolPicker, drawingPolicy .anyInput so finger works without a
+Pencil) and SketchComposerSheet (compose → base64 on 记下). PursuitPage gates the
+画一张 button and the .sheet the same way; SketchNote.image(from:) returns nil
+off-iOS so a sketch note renders a 一张手写的便签 placeholder rather than crashing.
+Verified the macOS build stays green with the degrade. Tool-picker setup guarded
+on !isFirstResponder to avoid update loops. Pencil is iPad-centric → handwriting
+itself needs on-device verification (Simulator compiles + won't crash). 83 tests +
+iOS + macOS green. Next: P4 (calendar update + make it reachable/linked from Home).
