@@ -54,8 +54,7 @@ struct PursuitPageView: View {
                 .foregroundStyle(theme.textMuted)
 
             journeyLine
-            notesList
-            addRow
+            notesDeck
             growthSection
         }
     }
@@ -80,75 +79,111 @@ struct PursuitPageView: View {
         return "一路上：" + bits.joined(separator: " · ")
     }
 
-    // MARK: notes
+    // MARK: notes — a click-through card deck (each thought is a card)
 
-    @ViewBuilder private var notesList: some View {
+    @ViewBuilder private var notesDeck: some View {
         let _ = store.noteBump   // re-read when notes change
         let notes = store.notes(for: seed.id)
-        if notes.isEmpty {
-            Text("还没有想法。路过时想到什么，就放一句在这里。")
-                .font(.system(size: 13))
-                .foregroundStyle(theme.textMuted)
-        } else {
+        #if os(iOS)
+        TabView {
             ForEach(notes) { note in
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Image(systemName: note.kind == .aiIdea ? "sparkles" : "leaf")
-                        .font(.system(size: 11))
-                        .foregroundStyle(theme.accent)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(note.text)
-                            .font(.system(size: 14)).lineSpacing(3)
-                            .foregroundStyle(theme.textPrimary)
-                            .fixedSize(horizontal: false, vertical: true)
-                        Text(DomainUtil.friendlyDate(note.dateKey))
-                            .font(.system(size: 11))
-                            .foregroundStyle(theme.textMuted)
-                    }
-                    Spacer(minLength: 0)
-                    Button {
-                        withAnimation(.easeOut(duration: 0.2)) {
-                            store.removeNote(note.id)
-                        }
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 16))
-                            .foregroundStyle(theme.textMuted.opacity(0.7))
-                            .frame(width: 40, height: 40)   // a real finger target
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("删除这条想法")
-                }
-                .padding(Spacing.sm)
-                .background(theme.surfaceSoft)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                noteCard(note).padding(.horizontal, 4).padding(.bottom, 26)
             }
+            addCard.padding(.horizontal, 4).padding(.bottom, 26)
+        }
+        .tabViewStyle(.page(indexDisplayMode: notes.isEmpty ? .never : .automatic))
+        .indexViewStyle(.page(backgroundDisplayMode: .interactive))
+        .frame(height: 224)
+        #else
+        // macOS has no .page style — a horizontal deck of the same cards.
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.md) {
+                ForEach(notes) { note in noteCard(note).frame(width: 300) }
+                addCard.frame(width: 300)
+            }
+            .padding(.horizontal, 2)
+        }
+        .frame(height: 200)
+        #endif
+    }
+
+    private func noteGlyph(_ kind: PursuitNote.Kind) -> String {
+        switch kind {
+        case .aiIdea: return "sparkles"
+        case .idea:   return "lightbulb"
+        case .note:   return "leaf"
         }
     }
 
-    private var addRow: some View {
-        HStack(spacing: Spacing.sm) {
-            TextField("放一句想法…", text: $draft, axis: .vertical)
-                .font(.system(size: 14))
-                .padding(.horizontal, 12).padding(.vertical, 9)
-                .background(theme.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(theme.border, lineWidth: 1))
+    private func noteCard(_ note: PursuitNote) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack {
+                Image(systemName: noteGlyph(note.kind))
+                    .font(.system(size: 13))
+                    .foregroundStyle(theme.accent)
+                Spacer()
+                Button {
+                    withAnimation(.easeOut(duration: 0.2)) { store.removeNote(note.id) }
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(theme.textMuted.opacity(0.7))
+                        .frame(width: 40, height: 40)   // a real finger target
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("删除这条想法")
+            }
+            Text(note.text)
+                .font(.system(size: 17)).lineSpacing(5)
+                .foregroundStyle(theme.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+            Text(DomainUtil.friendlyDate(note.dateKey))
+                .font(.system(size: 11))
+                .foregroundStyle(theme.textMuted)
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(theme.surfaceSoft)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .strokeBorder(theme.border.opacity(0.6), lineWidth: 1))
+    }
+
+    private var addCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(spacing: 6) {
+                Image(systemName: "square.and.pencil")
+                    .font(.system(size: 13)).foregroundStyle(theme.accent)
+                Text("放一句想法")
+                    .font(.system(size: 13)).foregroundStyle(theme.textMuted)
+            }
+            TextField("路过时想到什么…", text: $draft, axis: .vertical)
+                .font(.system(size: 16)).lineSpacing(4)
+                .foregroundStyle(theme.textPrimary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             Button {
                 store.addNote(draft, to: seed.id, kind: .idea)
                 draft = ""
             } label: {
                 Text("记下")
                     .font(.system(size: 13, weight: .medium))
-                    .padding(.horizontal, 14).padding(.vertical, 9)
+                    .padding(.horizontal, 16).padding(.vertical, 9)
                     .background(theme.accentSoft)
                     .foregroundStyle(theme.accentText)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .clipShape(Capsule())
             }
             .buttonStyle(.plain)
             .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(theme.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .strokeBorder(theme.border, lineWidth: 1))
     }
 
     // MARK: growth — the model reads the page and suggests where to grow
