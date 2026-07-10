@@ -66,3 +66,65 @@ small 今天 pill. Left the rest of the calendar-stack (pile split, heaviness, c
 the gate). Count-free, no schedule/overdue language. 83 tests + iOS green. Next:
 P5 (organize & link — a hub tying calendar · notes · 今天的小机器 · 痕迹 together;
 LAST Night-2 phase, then morning summary + stop).
+
+**N5 · P5 shipped — 去处 hub, Night 2 COMPLETE (aware 48).** New LinkHubView: a
+calm sheet of four soft cards (愿望日历 · 手帐/想法 · 今天的小机器 · 痕迹), each
+icon + name + one-line feeling, tap → that surface. DECISION (declutter): folded
+the two newest scattered Home buttons (小机器 cube + 日历) into ONE
+square.grid.2x2 hub entry; translate + add stay as Home quick-access. DECISION
+(routing): reused existing reach rather than new plumbing — machine =
+path.append(Route.buildToday); 痕迹 & 手帐 = AppRouter tab switch (.traces /
+.seeds, since notes are per-pursuit and live under 愿望); calendar = its existing
+sheet, opened via a 0.35s asyncAfter once the hub sheet dismisses (two sheets
+can't share an anchor simultaneously). HomeView gained @Environment(AppRouter).
+Count-free, skin-aware. 83 tests + iOS + macOS green.
+
+---
+
+## ☀️ Morning summary — Night 2 (2026-07-10), P1→P5 all shipped
+
+Good morning. Night 2 is complete — five green phases (aware 44→48), all pushed
+to `ios-aware` → `ios-glass` + `macos`. The live Xcode copy was never touched.
+
+### ⚠️ FIRST — you must run an up-to-date build to see ANY of this
+The "modes don't switch" report was the tell: your live Xcode copy
+(`net/luminous`) was 42+ commits behind and predated the whole skin split, so it
+only ever showed the planetarium. **Close Xcode on the live copy and open the
+worktree project instead** —
+`/Users/y344shi/Desktop/luminous/wt-aware/ios/Luminous.xcodeproj` (clean, on
+`ios-aware`, has everything). Or, with Xcode closed and a clean tree,
+fast-forward local `ios-glass` to `origin/ios-glass`. Until then none of Night 1
+(skins, day-object) or Night 2 is in your build.
+
+### What shipped (P1→P5)
+- **P1 · Skins apparent (aware 44):** an always-visible skin switcher in the Home
+  top bar — tap 玻璃/海面/纸页, immediate crossfade. Answers the complaint.
+- **P2 · Notes as a card deck (aware 45):** the 手帐 notes are a click-through
+  paged deck (add card at the end); macOS degrades to a horizontal deck.
+- **P3 · Apple Pencil notes (aware 46):** a `.sketch` note kind holding a base64
+  PKDrawing; a 画一张 canvas card (finger or Pencil); sketch cards render inline;
+  degrades cleanly off-iOS.
+- **P4 · Calendar apparent (aware 47):** 愿望日历 reachable from Home; today's
+  column highlighted with a 今天 pill.
+- **P5 · 去处 hub (aware 48):** one hub links calendar · 手帐 · 小机器 · 痕迹; the
+  scattered Home buttons fold into it.
+
+### Verify ON DEVICE (after syncing the build)
+1. The Home **skin switcher** genuinely swaps glass ↔ ocean ↔ paper (the ocean
+   sloshes with the gyro; paper is the note-card list).
+2. **Apple Pencil** handwriting on an iPad (画一张 → draw → 记下 → the sketch card
+   shows your drawing). Finger works too; Pencil is the real test.
+3. The **notes card deck** paging, the **calendar** from Home, and the **去处** hub
+   routing (each card lands on its surface).
+
+### Best next steps
+- **Per-skin craft hulls** for 今天的小机器 (glass sky-craft / ocean raft / paper
+  folded toy) — the CP-F piece deferred on Night 1.
+- **Notes polish:** let a sketch note be reopened/edited in the canvas; pinch-zoom
+  a sketch card; optional per-note color.
+- **Paid Apple Developer Program:** CloudKit sync (schema ready), HealthKit,
+  TestFlight — so the calendar/notes/machine sync across your devices.
+- **Hub as home:** consider making 去处 a light home for the paper skin too.
+
+Loop stopping now — no more scheduled wakes. Rest well; it's all committed,
+green, and pushed.

@@ -1,4 +1,4 @@
-# Night 2 worklist — organize · link · apparent (2026-07-10)
+# Night 2 worklist ✅ COMPLETE — organize · link · apparent (2026-07-10)
 
 Sequenced tracker. Branch `ios-aware` (worktree `wt-aware`); push trio each
 cycle. See `NIGHT2-PLAN.md` for the plan and the ⚠️ sync note.
@@ -13,6 +13,6 @@ Legend: ✅ done · 🔄 in progress · ⏳ queued
   a canvas card to draw; sketch cards render inline. iPad-first, degrades.
 - ✅ **P4 · Calendar update** — improve `WishCalendarView` + make it reachable/
   linked from Home; polish.
-- ⏳ **P5 · Organize & link** — a hub linking calendar · notes · 小机器 · 痕迹.
+- ✅ **P5 · Organize & link** — a hub linking calendar · notes · 小机器 · 痕迹.
 
 Then: morning summary + stop.
