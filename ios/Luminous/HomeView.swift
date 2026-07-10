@@ -721,6 +721,8 @@ struct HomeView: View {
                 .font(.system(size: 12))
                 .italic()
                 .foregroundStyle(theme.textSecondary)
+            skinSwitcher
+                .padding(.top, 3)
             if isLateNight {
                 Text(Copy.LateNight.title)
                     .font(.system(size: 12))
@@ -730,6 +732,31 @@ struct HomeView: View {
             }
         }
         .padding(.top, 8)
+    }
+
+    /// The three skins, always in reach on Home — tap to switch immediately, so
+    /// 玻璃 / 海面 / 纸页 are apparent, not buried in Settings.
+    private var skinSwitcher: some View {
+        HStack(spacing: 4) {
+            ForEach(Aesthetic.allCases) { s in
+                let active = skin == s
+                Button {
+                    withAnimation(.easeInOut(duration: 0.35)) { store.setAesthetic(s) }
+                } label: {
+                    Image(systemName: s.symbol)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(active ? theme.accentText : theme.textMuted)
+                        .frame(width: 40, height: 26)
+                        .background(active ? theme.accentSoft : Color.clear, in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(s.label)
+                .accessibilityAddTraits(active ? [.isSelected] : [])
+            }
+        }
+        .padding(3)
+        .background(.ultraThinMaterial, in: Capsule())
+        .overlay(Capsule().strokeBorder(theme.border.opacity(0.5), lineWidth: 1))
     }
 
     /// Context-born suggestions, shown as shooting stars. The scout's finds
