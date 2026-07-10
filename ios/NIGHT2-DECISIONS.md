@@ -15,3 +15,11 @@ build): close Xcode on the live copy and open the `wt-aware` worktree project
 (hard rule: never touch the live copy while Xcode is open). Tonight I ALSO add a
 Home-level skin switcher (P1) so the modes are apparent once they're on a current
 build.
+
+**N1 · P1 shipped — skins apparent from Home (aware 44).** Added a small
+always-visible skin switcher to HomeView.topOverlay: a material capsule of the
+three skin SF Symbols (circle.hexagongrid / water.waves / doc.text), active one
+filled with accentSoft, tap → store.setAesthetic with a 0.35s crossfade. Shown
+on every skin. No new state (reads `skin`, writes via the existing seam). This
+answers "the three-mode switching isn't apparent" — now it's one tap on Home.
+83 tests + iOS green. Next: P2 (notes → click-through card deck).

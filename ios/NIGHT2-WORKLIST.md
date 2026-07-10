@@ -5,7 +5,7 @@ cycle. See `NIGHT2-PLAN.md` for the plan and the ⚠️ sync note.
 
 Legend: ✅ done · 🔄 in progress · ⏳ queued
 
-- 🔄 **P1 · Skins apparent from Home** — an always-visible skin control on Home
+- ✅ **P1 · Skins apparent from Home** — an always-visible skin control on Home
   (cycle 玻璃 / 海面 / 纸页) so switching is immediate. Answers the complaint.
 - ⏳ **P2 · Notes → click-through card deck** — `PursuitPage` notes become cards
   you page through; an add card. Calm, count-free.
