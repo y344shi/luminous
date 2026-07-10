@@ -142,7 +142,9 @@ struct Opportunity: Codable, Identifiable, Hashable {
 /// One thought kept on a pursuit's journal page (手帐) — an idea, a note, or a
 /// suggestion the AI made that was worth keeping. Never a subtask.
 struct PursuitNote: Codable, Identifiable, Hashable {
-    enum Kind: String, Codable { case note, idea, aiIdea }
+    /// `.sketch` is a handwritten note — its `text` holds a base64 PKDrawing
+    /// (no schema change; it persists like any note, decodes loss-free).
+    enum Kind: String, Codable { case note, idea, aiIdea, sketch }
     var id: String
     var seedId: String
     var dateKey: String   // YYYY-MM-DD

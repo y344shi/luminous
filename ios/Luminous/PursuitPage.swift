@@ -46,6 +46,7 @@ struct PursuitPageView: View {
     @State private var draft = ""
     @State private var growing = false
     @State private var growth: [(idea: String, why: String)] = []
+    @State private var showSketch = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
@@ -112,6 +113,27 @@ struct PursuitPageView: View {
         case .aiIdea: return "sparkles"
         case .idea:   return "lightbulb"
         case .note:   return "leaf"
+        case .sketch: return "hand.draw"
+        }
+    }
+
+    /// A note's body — text for written notes, the drawing for a handwritten one.
+    @ViewBuilder private func noteBody(_ note: PursuitNote) -> some View {
+        if note.kind == .sketch {
+            if let img = SketchNote.image(fromBase64: note.text) {
+                img.resizable().scaledToFit()
+                    .frame(maxWidth: .infinity, maxHeight: 130, alignment: .leading)
+            } else {
+                Text("一张手写的便签")
+                    .font(.system(size: 15))
+                    .foregroundStyle(theme.textSecondary)
+            }
+        } else {
+            Text(note.text)
+                .font(.system(size: 17)).lineSpacing(5)
+                .foregroundStyle(theme.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -134,11 +156,7 @@ struct PursuitPageView: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("删除这条想法")
             }
-            Text(note.text)
-                .font(.system(size: 17)).lineSpacing(5)
-                .foregroundStyle(theme.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .fixedSize(horizontal: false, vertical: true)
+            noteBody(note)
             Spacer(minLength: 0)
             Text(DomainUtil.friendlyDate(note.dateKey))
                 .font(.system(size: 11))
@@ -164,19 +182,37 @@ struct PursuitPageView: View {
                 .font(.system(size: 16)).lineSpacing(4)
                 .foregroundStyle(theme.textPrimary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            Button {
-                store.addNote(draft, to: seed.id, kind: .idea)
-                draft = ""
-            } label: {
-                Text("记下")
-                    .font(.system(size: 13, weight: .medium))
-                    .padding(.horizontal, 16).padding(.vertical, 9)
-                    .background(theme.accentSoft)
-                    .foregroundStyle(theme.accentText)
-                    .clipShape(Capsule())
+            HStack(spacing: Spacing.sm) {
+                Button {
+                    store.addNote(draft, to: seed.id, kind: .idea)
+                    draft = ""
+                } label: {
+                    Text("记下")
+                        .font(.system(size: 13, weight: .medium))
+                        .padding(.horizontal, 16).padding(.vertical, 9)
+                        .background(theme.accentSoft)
+                        .foregroundStyle(theme.accentText)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                #if canImport(PencilKit) && os(iOS)
+                if SketchNote.canDraw {
+                    Button { showSketch = true } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "hand.draw").font(.system(size: 13))
+                            Text("画一张").font(.system(size: 13, weight: .medium))
+                        }
+                        .padding(.horizontal, 14).padding(.vertical, 9)
+                        .foregroundStyle(theme.accentText)
+                        .overlay(Capsule().strokeBorder(theme.border, lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("手写一张便签")
+                }
+                #endif
             }
-            .buttonStyle(.plain)
-            .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
         .padding(Spacing.md)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -184,6 +220,13 @@ struct PursuitPageView: View {
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
             .strokeBorder(theme.border, lineWidth: 1))
+        #if canImport(PencilKit) && os(iOS)
+        .sheet(isPresented: $showSketch) {
+            SketchComposerSheet { base64 in
+                store.addNote(base64, to: seed.id, kind: .sketch)
+            }
+        }
+        #endif
     }
 
     // MARK: growth — the model reads the page and suggests where to grow
