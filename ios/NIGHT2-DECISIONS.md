@@ -23,3 +23,16 @@ filled with accentSoft, tap → store.setAesthetic with a 0.35s crossfade. Shown
 on every skin. No new state (reads `skin`, writes via the existing seam). This
 answers "the three-mode switching isn't apparent" — now it's one tap on Home.
 83 tests + iOS green. Next: P2 (notes → click-through card deck).
+
+**N2 · P2 shipped — notes as a click-through card deck (aware 45).** Replaced
+PursuitPage.notesList + addRow with `notesDeck`: on iOS a paged TabView
+(.tabViewStyle(.page)) of note cards + a trailing add card; each card shows the
+kind glyph (leaf/lightbulb/sparkles), the text in a 17pt legible face, the
+friendly date, and a 40pt delete target. macOS has no .page style → degrades to a
+horizontal ScrollView deck of the same 300pt-wide cards (#if os). DECISION: no
+selection binding on the TabView (lets it manage its own index) — avoids stale
+tag/out-of-range bugs when a note is deleted, at the cost of not auto-jumping to a
+freshly added note (acceptable; the add card is always last). The empty state is
+just the add card itself (invites the first thought), so dropped the old
+empty-text line. Count-free, calm. 83 tests + iOS green. Next: P3 (Apple Pencil
+sketch notes into the same deck).

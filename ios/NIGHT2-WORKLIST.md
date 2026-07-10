@@ -7,7 +7,7 @@ Legend: ✅ done · 🔄 in progress · ⏳ queued
 
 - ✅ **P1 · Skins apparent from Home** — an always-visible skin control on Home
   (cycle 玻璃 / 海面 / 纸页) so switching is immediate. Answers the complaint.
-- ⏳ **P2 · Notes → click-through card deck** — `PursuitPage` notes become cards
+- ✅ **P2 · Notes → click-through card deck** — `PursuitPage` notes become cards
   you page through; an add card. Calm, count-free.
 - ⏳ **P3 · Apple Pencil notes** — `PursuitNote.Kind = .sketch` (PencilKit data);
   a canvas card to draw; sketch cards render inline. iPad-first, degrades.
