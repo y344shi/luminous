@@ -11,7 +11,7 @@ Legend: ✅ done · 🔄 in progress · ⏳ queued
   you page through; an add card. Calm, count-free.
 - ✅ **P3 · Apple Pencil notes** — `PursuitNote.Kind = .sketch` (PencilKit data);
   a canvas card to draw; sketch cards render inline. iPad-first, degrades.
-- ⏳ **P4 · Calendar update** — improve `WishCalendarView` + make it reachable/
+- ✅ **P4 · Calendar update** — improve `WishCalendarView` + make it reachable/
   linked from Home; polish.
 - ⏳ **P5 · Organize & link** — a hub linking calendar · notes · 小机器 · 痕迹.
 

@@ -52,3 +52,17 @@ Verified the macOS build stays green with the degrade. Tool-picker setup guarded
 on !isFirstResponder to avoid update loops. Pencil is iPad-centric → handwriting
 itself needs on-device verification (Simulator compiles + won't crash). 83 tests +
 iOS + macOS green. Next: P4 (calendar update + make it reachable/linked from Home).
+
+**N4 · P4 shipped — calendar apparent + today highlighted (aware 47).** DECISION
+(reach): WishCalendarView is already a self-contained modal (own NavigationStack +
+完成 dismiss), so rather than convert it to a pushed Route I surfaced it from Home
+the same way Settings does — a calendar button in the bottomOverlay HStack →
+.sheet(isPresented: $showCalendar) { WishCalendarView() } (macOS gets a sized
+frame). Lowest-risk, mirrors the existing presentation exactly, and now it's one
+tap from Home instead of buried in Settings. POLISH: added WishCalendar.todayIndex
+and DayStackColumn.isToday — today's weekday column reads in accentText with a
+small 今天 pill. Left the rest of the calendar-stack (pile split, heaviness, card
+→ sheet, 不是日程 footnote) untouched (already good; a bigger refactor would risk
+the gate). Count-free, no schedule/overdue language. 83 tests + iOS green. Next:
+P5 (organize & link — a hub tying calendar · notes · 今天的小机器 · 痕迹 together;
+LAST Night-2 phase, then morning summary + stop).
