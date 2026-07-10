@@ -51,6 +51,7 @@ struct SeedMetaRow: View {
 
 struct HomeView: View {
     @Environment(AppStore.self) private var store
+    @Environment(AppRouter.self) private var router
     @Environment(\.theme) private var theme
     @Environment(SensedSignals.self) private var sensed
     @State private var path = NavigationPath()
@@ -75,6 +76,7 @@ struct HomeView: View {
     @State private var revealExtra = 0
     @State private var showTranslate = false
     @State private var showCalendar = false
+    @State private var showHub = false
     @State private var sim = OrbitSim()
     @State private var aiMoments: [Suggestion] = []
     @State private var aiMomentsAt: Date?
@@ -289,6 +291,12 @@ struct HomeView: View {
                 WishCalendarView()
                 #if os(macOS)
                     .frame(minWidth: 520, minHeight: 520)
+                #endif
+            }
+            .sheet(isPresented: $showHub) {
+                LinkHubView { dest in openHubDestination(dest) }
+                #if os(macOS)
+                    .frame(minWidth: 460, minHeight: 480)
                 #endif
             }
             .onAppear {
@@ -1072,6 +1080,19 @@ struct HomeView: View {
         rebuild()
     }
 
+    /// Route a hub tap to its surface — a pushed page, a tab, or another sheet.
+    /// (Calendar is a sheet too, so it opens just after the hub sheet dismisses.)
+    private func openHubDestination(_ dest: HubDestination) {
+        showHub = false
+        switch dest {
+        case .machine: path.append(Route.buildToday)
+        case .traces:  router.selectedTab = .traces
+        case .notes:   router.selectedTab = .seeds
+        case .calendar:
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showCalendar = true }
+        }
+    }
+
     private var bottomOverlay: some View {
         VStack(spacing: 12) {
             if !justTrace.isEmpty {
@@ -1109,31 +1130,18 @@ struct HomeView: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(Copy.Home.addSeed)
 
-                Button { path.append(Route.buildToday) } label: {
+                Button { showHub = true } label: {
                     ZStack {
                         Circle().fill(.ultraThinMaterial)
                         Circle().strokeBorder(.white.opacity(0.3), lineWidth: 1)
-                        Image(systemName: "cube.transparent")
-                            .font(.system(size: 18, weight: .light))
-                            .foregroundStyle(theme.textSecondary)
-                    }
-                    .frame(width: 46, height: 46)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("今天的小机器")
-
-                Button { showCalendar = true } label: {
-                    ZStack {
-                        Circle().fill(.ultraThinMaterial)
-                        Circle().strokeBorder(.white.opacity(0.3), lineWidth: 1)
-                        Image(systemName: "calendar")
+                        Image(systemName: "square.grid.2x2")
                             .font(.system(size: 17, weight: .light))
                             .foregroundStyle(theme.textSecondary)
                     }
                     .frame(width: 46, height: 46)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("愿望日历")
+                .accessibilityLabel("去处 · 日历、手帐、小机器、痕迹")
             }
         }
         .padding(.bottom, 14)
