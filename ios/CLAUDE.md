@@ -54,3 +54,52 @@ When the xcode-tools MCP server is connected, `BuildProject` /
   `ForbiddenWords.passes` on anything shown (the `LearningMerge` pattern).
 - FoundationModels is unavailable in the Simulator — LLM paths degrade there by
   design; verify them on a device.
+
+## ▶️ Next up — the TODO backlog (a fresh clone can start here)
+
+Onboarding: read `ARCHITECTURE.md`, then work in `wt-aware/` on `main` (never
+rewrite the live copy while Xcode is open). For EVERY item: keep the scorer the
+spine (one clamped term per signal), safety in code, each LLM feature
+`@Generable` + fallback + `ForbiddenWords`; run the green gate (`swift test` +
+iOS build; macOS at milestones); commit small (single-quoted `-m`, Co-Authored-By
+trailer); then mirror `git push origin main` + `git push origin main:ios-glass`.
+Mark an item done here in the same commit.
+
+### Ready to implement now (no external blockers)
+1. **Per-skin craft hulls for 今天的小机器** — glass sky-craft / ocean raft / paper
+   folded toy. Add a per-skin base geometry in `DayCraftArt.swift`; pass the skin
+   into `DayObjectStage` + `DayObjectSnapshot` (both share `DayCraftArt`). Keep it
+   calm, Reduce-Motion still. (The CP-F piece deferred on Night 1.)
+2. **Sketch-note editing** — reopen a `.sketch` note in the PencilKit canvas and
+   re-save; pinch-zoom a sketch card. Files: `PencilNote.swift`, `PursuitPage.swift`
+   (iOS-gated, degrade off-iOS).
+3. **Persist the moon map** — planetarium moon attachments are transient
+   (`HomeView.moonOf` `@State`). Persist per-profile via `Persistence` (a small
+   payload record or an `EventRecord` kind), rehydrate on load.
+4. **Distinct app icons** — `AppIcon-1024` / `-dark-1024` / `-tinted-1024` are
+   currently the SAME image. Replace with real light/dark/tinted art in
+   `Assets.xcassets/AppIcon.appiconset/` (Contents.json already wires the slots).
+5. **Per-word spaced repetition** — extend the existing `ReviewQuiz`
+   (`ExecutorViews.swift`) with per-word `nextReview` scheduling on `learnedVocab`
+   (surface 1 due review + 2 new); persist the dates. Keep it a gentle offer.
+6. **去处 hub as the paper skin's home** — consider surfacing `LinkHubView` as
+   paper's Home entry so the calm skin leads with the connected map.
+
+### Blocked — needs the paid Apple Developer Program ($99/yr)
+7. **CloudKit sync** — the SwiftData schema is already sync-shaped; wiring is
+   entitlement-gated (`Persistence.cloudActive`, `tdd.cloudSync`). Add the iCloud
+   container + entitlement, then verify cross-device.
+8. **HealthKit arousal** — the `Arousal` signal is stubbed (`Sensors.swift`). Wire
+   HealthKit heart-rate → `.calm`/`.elevated` → the existing clamped `sensorBonus`
+   term. Also un-stub mic loudness → `Ambient`.
+9. **Watch App Group sync** — the watch is UserDefaults-only; share seeds/traces
+   iPhone↔watch via an App Group + WatchConnectivity.
+10. **TestFlight** distribution.
+
+### Verify on a physical device before shipping (not code, but required)
+- FoundationModels LLM paths (parser, plans, `SituationCare`, `WeekReview`) — the
+  Simulator always falls back.
+- Apple Pencil handwriting on an iPad; SceneKit Play scene + PNG snapshot; skins
+  actually swapping; late-night sensing out in the real world.
+
+See `VISION-AUDIT.md` for the deeper product/architecture audit.
