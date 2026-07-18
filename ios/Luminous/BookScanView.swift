@@ -4,7 +4,7 @@
 //  itself (Apple's document scanner), and the pages collect here so you can
 //  translate / study them later (tap a page → 拍照翻译). Minimal on purpose;
 //  the deep word-by-word study card is a separate, richer surface (see
-//  docs/word-study-card.md). Rough first cut — a useful travel tool.
+//  WORD-STUDY-PLAN.md). Rough first cut — a useful travel tool.
 //
 
 import SwiftUI
