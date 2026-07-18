@@ -161,6 +161,14 @@ commit small, verify on device (FoundationModels + French voice are device-only)
 - Plus the standing Phase A remainder: **persistence** of cards (never lost) + the
   per-book **word database**, then B (two-axis deepening) → C (dwell) → E (review).
 
+- **Two-finger swipe to page while zoomed (asked 2026-07-12).** The page is now
+  pinch-zoomable (double-tap resets; one finger pans when zoomed) inside the TabView
+  pager. TabView can't distinguish touch counts, so a **two-finger swipe → next page
+  while zoomed** needs a custom UIKit pager / `UIPanGestureRecognizer(min/max
+  touches = 2)`. Also nice: **edge-drag** to change the reference font (A−/A+ shipped
+  for now). Done in this pass: pinch-zoom, 3 adjustable regions (page / 原文 /
+  explanation) with a dotted draggable divider, per-card font size, tidier handles.
+
 - **Book as a database + review + ask (asked 2026-07-12).** Each book already
   stores per-page OCR (.txt), translation (.trans), and notes (.notes) sidecars —
   treat that as the book's corpus. Build a **回顾/复习** surface:
