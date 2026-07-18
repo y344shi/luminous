@@ -122,8 +122,9 @@ enum BookStore {
 
     private static func clearCaches(for pageURL: URL) {
         let base = pageURL.deletingPathExtension()
-        try? FileManager.default.removeItem(at: base.appendingPathExtension("txt"))
-        try? FileManager.default.removeItem(at: base.appendingPathExtension("trans"))
+        for ext in ["txt", "trans", "notes"] {
+            try? FileManager.default.removeItem(at: base.appendingPathExtension(ext))
+        }
     }
 
     /// OCR text for a page, cached in a .txt sidecar (read once, reused after).
@@ -151,6 +152,17 @@ enum BookStore {
         let pt = PageTranslation(english: t.english, chinese: t.chinese)
         if let d = try? JSONEncoder().encode(pt) { try? d.write(to: sidecar) }
         return (t.english, t.chinese)
+    }
+
+    /// A few short reading notes for the page, cached in a .notes sidecar.
+    static func notes(for pageURL: URL) async -> [String]? {
+        let sidecar = pageURL.deletingPathExtension().appendingPathExtension("notes")
+        if let d = try? Data(contentsOf: sidecar),
+           let n = try? JSONDecoder().decode([String].self, from: d) { return n }
+        let text = await ocrText(for: pageURL)
+        guard let n = await WordStudy.notes(for: text), !n.isEmpty else { return nil }
+        if let d = try? JSONEncoder().encode(n) { try? d.write(to: sidecar) }
+        return n
     }
 }
 

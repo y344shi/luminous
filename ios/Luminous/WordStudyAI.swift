@@ -77,4 +77,37 @@ enum WordStudy {
         #endif
         return nil
     }
+
+    /// A few short, interesting reading notes for a whole page — so you can read
+    /// it without tapping every word. nil when the model is away.
+    static func notes(for text: String) async -> [String]? {
+        let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !t.isEmpty else { return nil }
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, macOS 26.0, *), AIHelper.isAvailable {
+            let instructions = """
+            你在帮一个人读一本外语书。给这一页挑几条简短、有趣、实用的读书笔记（简体中文，\
+            每条一句）：最有用或最有意思的词、搭配、语法或文化点，让他不用逐词查也能快速读懂、\
+            学到东西。不要评论，不要鼓励或催促的话。
+            """
+            if let r = try? await LanguageModelSession(instructions: instructions)
+                .respond(to: "这一页的原文：「\(t.prefix(600))」", generating: GenPageNotes.self) {
+                let notes = r.content.notes
+                    .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                    .filter { !$0.isEmpty && ForbiddenWords.passes($0) }
+                return notes.isEmpty ? nil : notes
+            }
+        }
+        #endif
+        return nil
+    }
 }
+
+#if canImport(FoundationModels)
+@available(iOS 26.0, macOS 26.0, *)
+@Generable
+private struct GenPageNotes {
+    @Guide(description: "三条简短有趣的读书笔记，简体中文，每条一句", .count(3))
+    var notes: [String]
+}
+#endif
