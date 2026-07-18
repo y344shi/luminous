@@ -161,6 +161,19 @@ commit small, verify on device (FoundationModels + French voice are device-only)
 - Plus the standing Phase A remainder: **persistence** of cards (never lost) + the
   per-book **word database**, then B (two-axis deepening) → C (dwell) → E (review).
 
+- **Book as a database + review + ask (asked 2026-07-12).** Each book already
+  stores per-page OCR (.txt), translation (.trans), and notes (.notes) sidecars —
+  treat that as the book's corpus. Build a **回顾/复习** surface:
+  - **Word-frequency list** — every word across the book, ranked by how often it
+    occurs (deterministic from the OCR text; tap → its word card). "Lists all words
+    in their occurring repetitiveness."
+  - **Ask the book** — a question box answered by the on-device model with the
+    book's text as context (grammar, context, plot, review). Use
+    `LanguageModelSession(instructions:).respond(to:).content` (plain text, like
+    Translate.plainTwoStep) + `ForbiddenWords`; truncate the corpus to the context
+    window (picture books fit; long books need chunking/summary later).
+  - Persist word cards per book so review reuses them (ties to the standing word DB).
+
 ## 7. Decisions (2026-07-12) + remaining questions
 
 **Decided:** ① **Any language → EN + 中文** (auto-detect the source, like 拍照翻译).
