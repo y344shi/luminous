@@ -140,6 +140,7 @@ enum Copy {
         static let maps = "地图"
         static let traces = "痕迹"
         static let settings = "设置"
+        static let scan = "扫书"
     }
 }
 

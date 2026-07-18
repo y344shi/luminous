@@ -72,6 +72,9 @@ struct RootView: View {
             SettingsView()
                 .tabItem { Label(Copy.Tab.settings, systemImage: "gearshape") }
                 .tag(AppTab.settings)
+            BookScanView()
+                .tabItem { Label(Copy.Tab.scan, systemImage: "doc.viewfinder") }
+                .tag(AppTab.scan)
         }
         .tint(tokens.accentText)
         .environment(store)

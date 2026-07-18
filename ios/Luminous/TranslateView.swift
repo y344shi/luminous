@@ -70,6 +70,10 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
 }
 
 struct TranslateView: View {
+    /// When opened from 扫书 (a scanned page), start with this image and read it
+    /// straight away. nil for the normal 拍照翻译 entry.
+    var initialImageData: Data? = nil
+
     @Environment(\.theme) private var theme
     @Environment(\.dismiss) private var dismiss
     @Environment(AppStore.self) private var store
@@ -130,6 +134,7 @@ struct TranslateView: View {
                 }
             }
             .onDisappear { speaker.stop() }
+            .task { if let initialImageData { await run(on: initialImageData) } }
             .onChange(of: pickerItem) { _, item in
                 guard let item else { return }
                 Task { await loadFromPicker(item) }
