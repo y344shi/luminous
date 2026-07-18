@@ -115,6 +115,10 @@ Companion to `BUILD-TODAY-PLAN.md`. Feeds off `扫书` (`BookScanView`) + the
   (fallback: whitespace/punctuation split) → highlighted tokens over the page. Tap a
   token → a **base card** (EN + 中文 + grammar/usage/examples), fallback gloss floor.
   Persist `StudyPage` + `WordEntry.base`.
+  **→ first slice SHIPPED (`StudyReaderView` + `WordStudyAI`):** open a 扫书 page →
+  Vision OCR → tappable words (whitespace split for now) → tap → a bottom base card
+  (EN/中文/语法/用法/例句) from the on-device model, session-cached. **Still to do in A:**
+  LLM *meaning*-segmentation (phrases; CJK), and **persistence** (currently in-memory).
 - **B · Two-axis deepening.** Scroll-down breadth layers + scroll-right depth layers
   (tenses / EN-comparison / 词根), each generated on demand and **persisted** (never lost).
 - **C · Dwell-adaptive length.** Track per-card dwell + rolling baseline; longer stay →
@@ -131,7 +135,14 @@ commit small, verify on device (FoundationModels + French voice are device-only)
 
 ---
 
-## 7. Open questions (confirm before building A)
+## 7. Decisions (2026-07-12) + remaining questions
+
+**Decided:** ① **Any language → EN + 中文** (auto-detect the source, like 拍照翻译).
+② **The reader opens from a 扫书 page** (tap a scanned page → 逐字读), no new tab.
+Defaults taken: custom bottom card; per-book word DB; card *text* persisted first,
+TTS audio caching later.
+
+Remaining to confirm as we go:
 
 1. **Language focus.** French source with English + Chinese glosses (given the French
    voice)? Or general multi-language?

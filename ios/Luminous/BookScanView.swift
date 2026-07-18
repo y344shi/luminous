@@ -20,10 +20,10 @@ struct BookScanView: View {
 
     @State private var pages: [URL] = []
     @State private var showScanner = false
-    @State private var translatePage: PageRef?
+    @State private var readerPage: PageRef?
     @State private var editing = false
 
-    /// A page to hand to 拍照翻译 (image data + a stable id for the sheet).
+    /// A page to open in 逐字读 (image data + a stable id for the sheet).
     private struct PageRef: Identifiable { let id: URL; let data: Data }
 
     var body: some View {
@@ -71,13 +71,8 @@ struct BookScanView: View {
             .ignoresSafeArea()
         }
         #endif
-        .sheet(item: $translatePage) { page in
-            TranslateView(initialImageData: page.data)
-            #if os(iOS)
-                .presentationBackground(.regularMaterial)
-            #else
-                .frame(minWidth: 420, minHeight: 560)
-            #endif
+        .sheet(item: $readerPage) { page in
+            StudyReaderView(imageData: page.data)
         }
     }
 
@@ -141,7 +136,7 @@ struct BookScanView: View {
                         .strokeBorder(theme.border, lineWidth: 1))
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        if !editing { translatePage = PageRef(id: url, data: data) }
+                        if !editing { readerPage = PageRef(id: url, data: data) }
                     }
             } else {
                 RoundedRectangle(cornerRadius: 12).fill(theme.surfaceSoft).frame(height: 150)
