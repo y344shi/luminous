@@ -137,6 +137,7 @@ enum Copy {
     enum Tab {
         static let today = "今天"
         static let seeds = "愿望"
+        static let maps = "地图"
         static let traces = "痕迹"
         static let settings = "设置"
     }

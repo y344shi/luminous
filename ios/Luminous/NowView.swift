@@ -15,7 +15,7 @@ final class AppRouter {
 }
 
 enum AppTab: Hashable {
-    case today, seeds, traces, settings
+    case today, seeds, maps, traces, settings
 }
 
 struct NowView: View {

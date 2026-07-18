@@ -63,6 +63,9 @@ struct RootView: View {
             GardenView()
                 .tabItem { Label(Copy.Tab.seeds, systemImage: "leaf") }
                 .tag(AppTab.seeds)
+            MapPinboardView()
+                .tabItem { Label(Copy.Tab.maps, systemImage: "map") }
+                .tag(AppTab.maps)
             TracesView()
                 .tabItem { Label(Copy.Tab.traces, systemImage: "book") }
                 .tag(AppTab.traces)
