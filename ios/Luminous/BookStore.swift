@@ -97,6 +97,35 @@ enum BookStore {
 
     static func data(for pageURL: URL) -> Data? { try? Data(contentsOf: pageURL) }
 
+    // MARK: rotation (the scanner doesn't always get orientation right)
+
+    /// Rotate one page by `quarterTurns` × 90° clockwise and re-save; clears its
+    /// OCR + translation caches (they no longer match).
+    static func rotatePage(_ pageURL: URL, quarterTurns: Int) {
+        #if canImport(UIKit)
+        guard let data = try? Data(contentsOf: pageURL),
+              let img = UIImage(data: data),
+              let out = img.rotated(quarterTurns: quarterTurns).jpegData(compressionQuality: 0.9)
+        else { return }
+        try? out.write(to: pageURL)
+        clearCaches(for: pageURL)
+        #endif
+    }
+
+    /// Apply the same rotation to every page of a book (optionally skipping one).
+    static func rotateAll(bookID: String, quarterTurns: Int, except: URL? = nil) {
+        let dir = root.appendingPathComponent(bookID, isDirectory: true)
+        for url in pageURLs(in: dir) where url != except {
+            rotatePage(url, quarterTurns: quarterTurns)
+        }
+    }
+
+    private static func clearCaches(for pageURL: URL) {
+        let base = pageURL.deletingPathExtension()
+        try? FileManager.default.removeItem(at: base.appendingPathExtension("txt"))
+        try? FileManager.default.removeItem(at: base.appendingPathExtension("trans"))
+    }
+
     /// OCR text for a page, cached in a .txt sidecar (read once, reused after).
     static func ocrText(for pageURL: URL) async -> String {
         let sidecar = pageURL.deletingPathExtension().appendingPathExtension("txt")
@@ -107,7 +136,25 @@ enum BookStore {
         try? text.write(to: sidecar, atomically: true, encoding: .utf8)
         return text
     }
+
+    /// The page's EN + 中文 translation, cached in a .trans sidecar. nil when the
+    /// model is away (Simulator) or there's no text.
+    static func translation(for pageURL: URL) async -> (english: String, chinese: String)? {
+        let sidecar = pageURL.deletingPathExtension().appendingPathExtension("trans")
+        if let d = try? Data(contentsOf: sidecar),
+           let t = try? JSONDecoder().decode(PageTranslation.self, from: d) {
+            return (t.english, t.chinese)
+        }
+        let text = await ocrText(for: pageURL)
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              let t = try? await Translator.translate(text) else { return nil }
+        let pt = PageTranslation(english: t.english, chinese: t.chinese)
+        if let d = try? JSONEncoder().encode(pt) { try? d.write(to: sidecar) }
+        return (t.english, t.chinese)
+    }
 }
+
+private struct PageTranslation: Codable { var english: String; var chinese: String }
 
 #if canImport(UIKit)
 extension UIImage {
@@ -118,6 +165,24 @@ extension UIImage {
         format.scale = scale
         return UIGraphicsImageRenderer(size: size, format: format).image { _ in
             draw(in: CGRect(origin: .zero, size: size))
+        }
+    }
+
+    /// Rotate by `quarterTurns` × 90° clockwise, redrawing pixels upright.
+    func rotated(quarterTurns: Int) -> UIImage {
+        let turns = ((quarterTurns % 4) + 4) % 4
+        guard turns != 0 else { return self }
+        let up = upright()
+        let radians = CGFloat(turns) * .pi / 2
+        let newSize = (turns % 2 == 0) ? up.size : CGSize(width: up.size.height, height: up.size.width)
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = up.scale
+        return UIGraphicsImageRenderer(size: newSize, format: format).image { ctx in
+            let c = ctx.cgContext
+            c.translateBy(x: newSize.width / 2, y: newSize.height / 2)
+            c.rotate(by: radians)
+            up.draw(in: CGRect(x: -up.size.width / 2, y: -up.size.height / 2,
+                               width: up.size.width, height: up.size.height))
         }
     }
 }
