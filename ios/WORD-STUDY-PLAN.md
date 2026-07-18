@@ -15,10 +15,20 @@ Companion to `BUILD-TODAY-PLAN.md`. Feeds off `扫书` (`BookScanView`) + the
 
 ## 1. The vision (as described — nothing dropped)
 
+**Books & pages**
+- Scanning **saves a book** (its **first page = cover**); pages are **auto-oriented**
+  and added as entries under the **book name**; more scans append to the book.
+- Opening a book is a **split reader**: the page **on top** (swipe page by page), a
+  **draggable divider**, the paragraph **below** as clickable tokens, and the
+  **explanation region in the lower half** (nothing shown up front — only on tap).
+
 **Reading & segmentation**
 - Local AI produces the explanations, in an **iterative** way (it deepens as you engage).
 - The **parsed original text is highlighted** (you see the tokens over the source).
 - Each **word or phrase is segmented by its meaning** (meaning-units, not just spaces).
+- **Words have meaning together:** a tap should explain the **most meaningful few words
+  as a phrase** (highlighting the whole group); tapping an **already-highlighted region
+  subdivides** it into smaller units (phrase → words → morphemes).
 - **Read aloud with a French voice** (for a French picture book).
 
 **The card (rises from the bottom when a word is pressed)**
@@ -134,6 +144,22 @@ fallback + `ForbiddenWords`, SwiftData hybrid records (no migrations), green gat
 commit small, verify on device (FoundationModels + French voice are device-only).
 
 ---
+
+## 6b. Queued for the NEXT update (asked 2026-07-12, not yet built)
+
+- **Phrase-aware tap + drill-down.** A tap explains the **most meaningful few words
+  together** (highlight the whole phrase); tapping an **already-highlighted region
+  subdivides** it (phrase → words → morphemes). Needs LLM meaning-segmentation of the
+  line into phrases + a per-selection granularity state.
+- **Preprocess pages.** OCR + tokenize **ahead of time** (right after a scan, and/or
+  background-preload all pages on open) so the sentence shows **instantly** — never a
+  wait on tap/page-turn. (Today OCR is cached lazily on first view.)
+- **Sentence pronunciation (Siri voice).** A play button per **sentence** (and the
+  page), reading it aloud in the line's **detected language** (French etc.) via the
+  existing `Speaker` (AVSpeechSynthesis) — reuse `speaker.toggle(id:text:language:)`
+  with an `NLLanguageRecognizer`-detected BCP-47 code.
+- Plus the standing Phase A remainder: **persistence** of cards (never lost) + the
+  per-book **word database**, then B (two-axis deepening) → C (dwell) → E (review).
 
 ## 7. Decisions (2026-07-12) + remaining questions
 
