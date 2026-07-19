@@ -55,6 +55,14 @@ When the xcode-tools MCP server is connected, `BuildProject` /
 - FoundationModels is unavailable in the Simulator — LLM paths degrade there by
   design; verify them on a device.
 
+## 📖 Reading & Study Suite (2026-07) — read the note first
+The 扫书 → 逐字读 → 批注 → 分享 arc (scan a picture book, read it word-by-word with
+on-device translation/notes/Siri TTS, annotate with Apple Pencil, AirDrop the
+annotated `.luminousbook`) is documented in **[`READING-SUITE-NOTES.md`](READING-SUITE-NOTES.md)**
+(progress + ideology + build/install gotchas) and **[`WORD-STUDY-PLAN.md`](WORD-STUDY-PLAN.md)**
+(design + queue). Next queued: register the `.luminousbook` UTI so AirDrop opens
+the app on tap (needs an Info.plist doc-type edit — **Xcode must be closed**).
+
 ## ▶️ Next up — the TODO backlog (a fresh clone can start here)
 
 Onboarding: read `ARCHITECTURE.md`, then work in `wt-aware/` on `main` (never
