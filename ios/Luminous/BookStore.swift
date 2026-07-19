@@ -97,6 +97,28 @@ enum BookStore {
 
     static func data(for pageURL: URL) -> Data? { try? Data(contentsOf: pageURL) }
 
+    // MARK: Apple Pencil annotations (per page)
+
+    /// The raw PKDrawing data for a page (editable source), or nil if none.
+    static func annotation(for pageURL: URL) -> Data? {
+        try? Data(contentsOf: pageURL.deletingPathExtension().appendingPathExtension("ann"))
+    }
+
+    /// A rendered transparent PNG of the annotation, for display over the page.
+    static func annotationPNG(for pageURL: URL) -> Data? {
+        try? Data(contentsOf: pageURL.deletingPathExtension().appendingPathExtension("annpng"))
+    }
+
+    /// Save (or clear, when both nil) a page's annotation: the editable drawing
+    /// data plus a rendered PNG overlay.
+    static func saveAnnotation(_ drawing: Data?, png: Data?, for pageURL: URL) {
+        let base = pageURL.deletingPathExtension()
+        let annURL = base.appendingPathExtension("ann")
+        let pngURL = base.appendingPathExtension("annpng")
+        if let drawing { try? drawing.write(to: annURL) } else { try? FileManager.default.removeItem(at: annURL) }
+        if let png { try? png.write(to: pngURL) } else { try? FileManager.default.removeItem(at: pngURL) }
+    }
+
     // MARK: rotation (the scanner doesn't always get orientation right)
 
     /// Rotate one page by `quarterTurns` × 90° clockwise and re-save; clears its
@@ -122,7 +144,9 @@ enum BookStore {
 
     private static func clearCaches(for pageURL: URL) {
         let base = pageURL.deletingPathExtension()
-        for ext in ["txt", "trans", "notes"] {
+        // A rotated page no longer aligns with its OCR/translation/notes OR its
+        // hand annotation, so all of them are cleared.
+        for ext in ["txt", "trans", "notes", "ann", "annpng"] {
             try? FileManager.default.removeItem(at: base.appendingPathExtension(ext))
         }
     }

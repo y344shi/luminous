@@ -43,6 +43,7 @@ struct BookReaderView: View {
     @State private var sessionTurns = 0
     @State private var version = 0
     @State private var showApplyAll = false
+    @State private var showAnnotator = false
     @State private var speaker = Speaker()
 
     private var pages: [URL] { book.pageURLs }
@@ -79,6 +80,17 @@ struct BookReaderView: View {
             }
             Button("取消", role: .cancel) {}
         } message: { Text("把这一页转过的方向应用到其他每一页。") }
+        #if canImport(PencilKit) && os(iOS)
+        .fullScreenCover(isPresented: $showAnnotator) {
+            if let url = pages[safe: pageIndex], let data = BookStore.data(for: url),
+               let ui = UIImage(data: data) {
+                PageAnnotator(pageURL: url, image: ui) {
+                    showAnnotator = false
+                    version += 1          // refresh the composited page overlay
+                }
+            }
+        }
+        #endif
     }
 
     // MARK: the page (pinch-zoomable)
@@ -109,12 +121,32 @@ struct BookReaderView: View {
     }
 
     @ViewBuilder private func pageImage(_ url: URL) -> some View {
+        #if canImport(UIKit)
+        if let ui = compositedUIImage(for: url) {
+            ZoomableImage(image: Image(uiImage: ui))
+                .id("\(url.lastPathComponent)-\(version)").padding(6)
+        } else { Color.clear }
+        #else
         if let data = BookStore.data(for: url), let img = platformImage(data) {
             ZoomableImage(image: img).id(url).padding(6)
-        } else {
-            Color.clear
+        } else { Color.clear }
+        #endif
+    }
+
+    #if canImport(UIKit)
+    /// The page with its hand annotation drawn on top (same aspect → aligned),
+    /// so the two zoom and pan together.
+    private func compositedUIImage(for url: URL) -> UIImage? {
+        guard let data = BookStore.data(for: url), let page = UIImage(data: data) else { return nil }
+        guard let pngData = BookStore.annotationPNG(for: url), let ann = UIImage(data: pngData)
+        else { return page }
+        let format = UIGraphicsImageRendererFormat.default(); format.scale = page.scale
+        return UIGraphicsImageRenderer(size: page.size, format: format).image { _ in
+            page.draw(in: CGRect(origin: .zero, size: page.size))
+            ann.draw(in: CGRect(origin: .zero, size: page.size))
         }
     }
+    #endif
 
     // MARK: handles
 
@@ -166,6 +198,12 @@ struct BookReaderView: View {
                     Button("应用到全书") { showApplyAll = true }
                         .font(.system(size: 13)).foregroundStyle(theme.accentText)
                 }
+                #if canImport(PencilKit) && os(iOS)
+                if SketchNote.canDraw {
+                    Button { showAnnotator = true } label: { Image(systemName: "pencil.tip.crop.circle") }
+                        .accessibilityLabel("用铅笔批注这一页")
+                }
+                #endif
                 Button { rotateCurrent() } label: { Image(systemName: "rotate.right") }
                     .accessibilityLabel("把这一页向右转 90°")
             }

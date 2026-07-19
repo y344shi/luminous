@@ -182,6 +182,22 @@ commit small, verify on device (FoundationModels + French voice are device-only)
     window (picture books fit; long books need chunking/summary later).
   - Persist word cards per book so review reuses them (ties to the standing word DB).
 
+## 6c. Apple Pencil annotation + shareable books (SHIPPED 2026-07-19)
+
+- **Per-page Pencil annotation** (`PageAnnotator`): a 批注 button in the reader opens
+  a full-screen PencilKit canvas laid exactly over the fitted page (finger or Pencil,
+  system tool picker). Saved as `page-NNNN.ann` (editable PKDrawing) + `.annpng`
+  (rendered overlay) in the book folder; the reader composites the overlay onto the
+  page so they pinch/pan together. Rotating a page clears its annotation (no longer
+  aligns). iOS/iPad only; degrades off-iOS.
+- **Shareable book file** (`BookArchive`, `.luminousbook`): a whole book — pages,
+  annotations, OCR/translation/notes caches — packed into ONE binary-plist Codable
+  file. **Export**: long-press a book → 分享/隔空投送 → the system share sheet
+  (AirDrop). **Import**: 导入一本书 → `.fileImporter` → unpack into a new book. No zip
+  lib, no document-type registration (so no Info.plist risk); round-trips losslessly.
+- **Queued next:** register the `.luminousbook` UTI so AirDrop'd files open Luminous
+  directly (needs Info.plist doc-types); sync annotations across devices live (CloudKit).
+
 ## 7. Decisions (2026-07-12) + remaining questions
 
 **Decided:** ① **Any language → EN + 中文** (auto-detect the source, like 拍照翻译).

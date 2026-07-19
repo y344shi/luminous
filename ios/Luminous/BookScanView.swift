@@ -9,6 +9,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 #if canImport(UIKit)
 import UIKit
@@ -26,6 +27,11 @@ struct BookScanView: View {
     @State private var draftName = ""
     @State private var openBook: Book?
     @State private var editing = false
+    @State private var shareURL: ShareItem?
+    @State private var showImporter = false
+    @State private var importMessage: String?
+
+    private struct ShareItem: Identifiable { let id = UUID(); let url: URL }
 
     var body: some View {
         NavigationStack {
@@ -35,8 +41,9 @@ struct BookScanView: View {
                         .font(.system(size: 13)).lineSpacing(3)
                         .foregroundStyle(theme.textSecondary)
                     scanButton
+                    importButton
                     if books.isEmpty {
-                        Text("书架还空着。扫一本书放上来。")
+                        Text("书架还空着。扫一本书放上来，或从别的设备隔空投送过来。")
                             .font(.system(size: 13)).foregroundStyle(theme.textMuted).padding(.top, 4)
                     } else {
                         shelf
@@ -87,6 +94,46 @@ struct BookScanView: View {
         } message: {
             Text("第一页会成为它的封面。")
         }
+        #if os(iOS)
+        .sheet(item: $shareURL) { item in
+            ActivityView(items: [item.url])
+        }
+        #endif
+        .fileImporter(isPresented: $showImporter,
+                      allowedContentTypes: [.data],
+                      allowsMultipleSelection: false) { result in
+            switch result {
+            case .success(let urls):
+                if let url = urls.first {
+                    if BookArchive.importArchive(from: url) != nil { reload() }
+                    else { importMessage = "这个文件读不出来，可能不是一本 Luminous 书。" }
+                }
+            case .failure:
+                importMessage = "没能导入这本书。"
+            }
+        }
+        .alert("导入", isPresented: Binding(get: { importMessage != nil },
+                                          set: { if !$0 { importMessage = nil } })) {
+            Button("好", role: .cancel) {}
+        } message: { Text(importMessage ?? "") }
+    }
+
+    private var importButton: some View {
+        Button { showImporter = true } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "square.and.arrow.down").font(.system(size: 15))
+                Text("导入一本书（隔空投送 / 文件）")
+                    .font(.system(size: 14, weight: .medium))
+                Spacer()
+            }
+            .foregroundStyle(theme.textSecondary)
+            .padding(Spacing.md).frame(maxWidth: .infinity, alignment: .leading)
+            .background(theme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(theme.border, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: scan entry
@@ -159,6 +206,14 @@ struct BookScanView: View {
                 .accessibilityLabel("删除这本书")
             }
         }
+        .contextMenu {
+            Button { if let url = BookArchive.export(book) { shareURL = ShareItem(url: url) } } label: {
+                Label("分享 / 隔空投送", systemImage: "square.and.arrow.up")
+            }
+            Button(role: .destructive) { BookStore.delete(book.id); reload() } label: {
+                Label("删除", systemImage: "trash")
+            }
+        }
     }
 
     @ViewBuilder private func cover(_ book: Book) -> some View {
@@ -185,3 +240,14 @@ struct BookScanView: View {
 
     private func reload() { books = BookStore.books() }
 }
+
+#if os(iOS)
+/// A share sheet (AirDrop, Files, Messages…) for the exported book file.
+private struct ActivityView: UIViewControllerRepresentable {
+    let items: [Any]
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+    func updateUIViewController(_ vc: UIActivityViewController, context: Context) {}
+}
+#endif
