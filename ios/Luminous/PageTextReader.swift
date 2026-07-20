@@ -26,6 +26,7 @@ struct PageTextReader: View {
     @State private var loaded = false
     @State private var selected: String?
     @State private var cards: [String: WordCard] = [:]
+    @State private var pageTrans: (en: String, zh: String)?
     @State private var scale: CGFloat = 1
     @State private var lastScale: CGFloat = 1
     @State private var offset: CGSize = .zero
@@ -70,16 +71,29 @@ struct PageTextReader: View {
                             .foregroundStyle(.white.opacity(0.8)).padding(.bottom, 30)
                     }
                     if let selected { card(for: selected) }
+                    if let pageTrans { translationPanel(pageTrans) }
                 }
             }
             .task {
-                if !loaded { boxes = await BookStore.wordBoxes(for: pageURL); loaded = true }
+                if !loaded {
+                    boxes = await BookStore.wordBoxes(for: pageURL)
+                    loaded = true
+                }
+            }
+            .task {
+                // Show the page's translation right away, in the white space below.
+                if pageTrans == nil, let t = await BookStore.translation(for: pageURL) {
+                    pageTrans = (t.english, t.chinese)
+                }
             }
             .onDisappear { speaker.stop() }
         }
     }
 
     // A tappable region sitting exactly on its word (Vision space → display space).
+    // Each word gets a faint highlight so you can see what's tappable; the hit
+    // area is the word box itself (contentShape BEFORE position — otherwise a
+    // positioned view expands to fill and every tap lands on one word).
     private func wordRegion(_ box: WordBox, in size: CGSize) -> some View {
         let key = Self.clean(box.text)
         let w = box.w * size.width, h = box.h * size.height
@@ -87,17 +101,45 @@ struct PageTextReader: View {
         let cy = (1 - (box.y + box.h / 2)) * size.height     // flip Y
         let isSel = selected == key && !key.isEmpty
         return RoundedRectangle(cornerRadius: 3)
-            .fill(isSel ? theme.accent.opacity(0.35) : Color.yellow.opacity(0.001))
+            .fill(isSel ? theme.accent.opacity(0.30) : theme.accentText.opacity(0.10))
             .overlay(RoundedRectangle(cornerRadius: 3)
-                .stroke(isSel ? theme.accentText.opacity(0.8) : .clear, lineWidth: 1))
-            .frame(width: max(w, 6), height: max(h, 6))
-            .position(x: cx, y: cy)
+                .stroke(isSel ? theme.accentText.opacity(0.85) : theme.accentText.opacity(0.28),
+                        lineWidth: isSel ? 1.5 : 0.5))
+            .frame(width: max(w, 8), height: max(h, 8))
             .contentShape(Rectangle())
             .onTapGesture {
                 guard !key.isEmpty else { return }
                 withAnimation(.easeOut(duration: 0.2)) { selected = key }
                 if cards[key] == nil { Task { await explain(key, line: box.text) } }
             }
+            .position(x: cx, y: cy)
+    }
+
+    // The page translation, shown immediately in the bottom white space.
+    private func translationPanel(_ t: (en: String, zh: String)) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            transLine("English", t.en, id: "p-en", lang: "en-US")
+            transLine("中文", t.zh, id: "p-zh", lang: "zh-CN")
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .padding([.horizontal, .bottom], Spacing.md)
+    }
+
+    private func transLine(_ label: String, _ value: String, id: String, lang: String) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            Button { speaker.toggle(id: id, text: value, language: lang) } label: {
+                Image(systemName: speaker.speakingId == id ? "stop.circle.fill" : "play.circle")
+                    .font(.system(size: 15)).foregroundStyle(theme.accentText)
+            }.buttonStyle(.plain).padding(.top, 1)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(label).font(.system(size: 10, weight: .medium)).foregroundStyle(theme.textMuted)
+                Text(value).font(.system(size: 14)).lineSpacing(2)
+                    .foregroundStyle(theme.textPrimary).fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 
     // The explanation card.
