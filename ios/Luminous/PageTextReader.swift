@@ -100,11 +100,13 @@ struct PageTextReader: View {
         let cx = (box.x + box.w / 2) * size.width
         let cy = (1 - (box.y + box.h / 2)) * size.height     // flip Y
         let isSel = selected == key && !key.isEmpty
+        // Every pre-recognized word gets a soft, clearly-visible highlight (like a
+        // marker), so you can see what's tappable; the selected word is stronger.
         return RoundedRectangle(cornerRadius: 3)
-            .fill(isSel ? theme.accent.opacity(0.30) : theme.accentText.opacity(0.10))
+            .fill(isSel ? theme.accent.opacity(0.40) : Color.yellow.opacity(0.28))
             .overlay(RoundedRectangle(cornerRadius: 3)
-                .stroke(isSel ? theme.accentText.opacity(0.85) : theme.accentText.opacity(0.28),
-                        lineWidth: isSel ? 1.5 : 0.5))
+                .stroke(isSel ? theme.accentText.opacity(0.9) : theme.accentText.opacity(0.40),
+                        lineWidth: isSel ? 1.5 : 0.75))
             .frame(width: max(w, 8), height: max(h, 8))
             .contentShape(Rectangle())
             .onTapGesture {
