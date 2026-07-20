@@ -68,6 +68,7 @@ private struct PageTextContent: View {
     @State private var selected: String?
     @State private var cards: [String: WordCard] = [:]
     @State private var pageTrans: (en: String, zh: String)?
+    @State private var transTried = false
     @State private var fullText = ""
     @State private var language: String?
     @State private var lesson: [LessonStep]?
@@ -136,8 +137,12 @@ private struct PageTextContent: View {
                     let lang = Self.detectLanguage(t)
                     await MainActor.run { fullText = t; language = lang }
                 }
-                if pageTrans == nil, let t = await BookStore.translation(for: pageURL) {
-                    await MainActor.run { pageTrans = (t.english, t.chinese) }
+                if pageTrans == nil {
+                    let t = await BookStore.translation(for: pageURL)
+                    await MainActor.run {
+                        if let t { pageTrans = (t.english, t.chinese) }
+                        transTried = true
+                    }
                 }
             }
             .onDisappear { speaker.stop() }
@@ -161,6 +166,26 @@ private struct PageTextContent: View {
                 .onChanged { v in move.wrappedValue.scale = min(1.5, max(0.5, move.wrappedValue.lastScale * v)) }
                 .onEnded { _ in move.wrappedValue.lastScale = move.wrappedValue.scale }
         )
+        // Long-press ANYWHERE on the box, then drag to move it. Buttons/scroll
+        // inside still work (a quick tap never trips the 0.3s press).
+        .simultaneousGesture(longPressDrag(move))
+    }
+
+    private func longPressDrag(_ move: Binding<Movable>) -> some Gesture {
+        LongPressGesture(minimumDuration: 0.3)
+            .sequenced(before: DragGesture())
+            .onChanged { value in
+                if case .second(true, let drag?) = value {
+                    move.wrappedValue.offset = CGSize(
+                        width: move.wrappedValue.lastOffset.width + drag.translation.width,
+                        height: move.wrappedValue.lastOffset.height + drag.translation.height)
+                }
+            }
+            .onEnded { value in
+                if case .second(true, _) = value {
+                    move.wrappedValue.lastOffset = move.wrappedValue.offset
+                }
+            }
     }
 
     private func gripBar(_ move: Binding<Movable>) -> some View {
@@ -327,12 +352,35 @@ private struct PageTextContent: View {
         // Find the taller word-free band (above vs below the text block) and drop
         // the panel there so it starts off no word; drag/shrink from there.
         let band = whiteBand(rect: rect, originY: originY, container: container)
+        let y = min(max(band, 120), container.height - 120)   // keep the panel on-screen
         movablePanel($cardMove) {
             if let selected { card(for: selected) }
             else if let pageTrans { translationPanel(pageTrans) }
+            else { translationStatus }
         }
-        .frame(maxWidth: min(container.width - 24, 460))
-        .position(x: container.width / 2, y: band)
+        .frame(maxWidth: min(container.width - 24, 460), maxHeight: container.height * 0.62)
+        .position(x: container.width / 2, y: y)
+    }
+
+    /// Shown in place of the page translation while it's still generating or when
+    /// no model is available — so the panel is never silently empty.
+    private var translationStatus: some View {
+        HStack(spacing: 10) {
+            if !transTried {
+                ProgressView()
+                Text("正在翻译整页…").font(.system(size: 14)).foregroundStyle(theme.textSecondary)
+            } else {
+                Image(systemName: "character.book.closed").foregroundStyle(theme.textMuted)
+                Text(Translator.isAvailable
+                     ? "这一页没有能翻译的文字。"
+                     : "整页翻译需要本机语言模型（开启 Apple Intelligence），或在设置里填一个云端地址。")
+                    .font(.system(size: 13)).lineSpacing(3).foregroundStyle(theme.textSecondary)
+            }
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     /// The y-center (screen space) of the largest word-free horizontal band.
@@ -352,9 +400,11 @@ private struct PageTextContent: View {
     }
 
     private func translationPanel(_ t: (en: String, zh: String)) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            transLine("English", t.en, id: "p-en", lang: "en-US")
-            transLine("中文", t.zh, id: "p-zh", lang: "zh-CN")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 6) {
+                transLine("English", t.en, id: "p-en", lang: "en-US")
+                transLine("中文", t.zh, id: "p-zh", lang: "zh-CN")
+            }
         }
         .padding(Spacing.md)
         .background(.ultraThinMaterial)
@@ -417,13 +467,17 @@ private struct PageTextContent: View {
                 }.buttonStyle(.plain)
             }
             if let c {
-                row("English", c.english); row("中文", c.chinese)
-                row("语法", c.grammar); row("用法", c.usage); row("例句", c.example)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        row("English", c.english); row("中文", c.chinese)
+                        row("语法", c.grammar); row("用法", c.usage); row("例句", c.example)
+                    }
+                }
             } else if WordStudy.isAvailable {
                 HStack(spacing: 10) { ProgressView(); Text("正在想…")
                     .font(.system(size: 14)).foregroundStyle(theme.textSecondary) }
             } else {
-                Text("这个词的解释需要本机的语言模型（真机上、开启 Apple Intelligence 时）。")
+                Text("这个词的解释需要本机的语言模型（开启 Apple Intelligence），或在设置里填一个云端地址。")
                     .font(.system(size: 14)).lineSpacing(4).foregroundStyle(theme.textSecondary)
             }
         }
