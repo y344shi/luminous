@@ -22,6 +22,8 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
     private let synth = AVSpeechSynthesizer()
     /// Which section is playing right now (nil = silent).
     private(set) var speakingId: String?
+    /// How many queued utterances remain (for multi-segment lessons).
+    private var pending = 0
     /// Playback speed multiplier (0.5× / 0.75× / 1× / 2×). Applies to the next
     /// play; changing it stops current speech.
     var rate: Double = 1.0 {
@@ -49,7 +51,27 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
         utterance.rate = Float(min(Double(AVSpeechUtteranceDefaultSpeechRate) * 0.9 * rate,
                                    Double(AVSpeechUtteranceMaximumSpeechRate)))
         speakingId = id
+        pending = 1
         synth.speak(utterance)
+    }
+
+    /// Play a sequence of (text, language) segments back to back — each in its own
+    /// voice — under one id (a little lesson: French word, then its explanations).
+    func speakSequence(id: String, segments: [(text: String, language: String?)]) {
+        if speakingId == id { stop(); return }
+        synth.stopSpeaking(at: .immediate)
+        let clean = segments.filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        guard !clean.isEmpty else { return }
+        speakingId = id
+        pending = clean.count
+        for seg in clean {
+            let u = AVSpeechUtterance(string: seg.text)
+            if let v = Self.voice(for: seg.language) { u.voice = v }
+            u.rate = Float(min(Double(AVSpeechUtteranceDefaultSpeechRate) * 0.9 * rate,
+                               Double(AVSpeechUtteranceMaximumSpeechRate)))
+            u.postUtteranceDelay = 0.25
+            synth.speak(u)
+        }
     }
 
     /// Resolve a real voice for a language code. `NLLanguageRecognizer` gives a
@@ -75,15 +97,19 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
     func stop() {
         synth.stopSpeaking(at: .immediate)
         speakingId = nil
+        pending = 0
     }
 
     nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
                                        didFinish utterance: AVSpeechUtterance) {
-        Task { @MainActor in self.speakingId = nil }
+        Task { @MainActor in
+            self.pending -= 1
+            if self.pending <= 0 { self.speakingId = nil; self.pending = 0 }
+        }
     }
     nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
                                        didCancel utterance: AVSpeechUtterance) {
-        Task { @MainActor in self.speakingId = nil }
+        Task { @MainActor in self.speakingId = nil; self.pending = 0 }
     }
 }
 

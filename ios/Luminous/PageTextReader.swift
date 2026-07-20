@@ -61,6 +61,9 @@ private struct PageTextContent: View {
     @State private var pageTrans: (en: String, zh: String)?
     @State private var fullText = ""
     @State private var language: String?
+    @State private var lesson: [LessonStep]?
+    @State private var lessonLoading = false
+    @State private var showLesson = false
     @State private var scale: CGFloat = 1
     @State private var lastScale: CGFloat = 1
     @State private var offset: CGSize = .zero
@@ -86,29 +89,29 @@ private struct PageTextContent: View {
                 .gesture(zoomGesture)
                 .onTapGesture(count: 2) { withAnimation(.easeInOut(duration: 0.2)) { resetZoom() } }
 
-                // Full-page read, top-left.
+                // Full-page read + the little lesson, top-left.
                 VStack {
-                    HStack {
-                        Button { speaker.toggle(id: "page-src", text: fullText, language: language) } label: {
-                            HStack(spacing: 6) {
-                                Image(systemName: speaker.speakingId == "page-src" ? "stop.circle.fill" : "play.circle.fill")
-                                Text("朗读整页")
-                            }
-                            .font(.system(size: 15, weight: .medium)).foregroundStyle(.white)
-                            .padding(.horizontal, 12).padding(.vertical, 8)
-                            .background(.black.opacity(0.45), in: Capsule())
-                        }
-                        .buttonStyle(.plain).opacity(fullText.isEmpty ? 0 : 1)
+                    HStack(spacing: 8) {
+                        pillButton(playing: speaker.speakingId == "page-src",
+                                   icon: "play.circle.fill", title: "朗读整页") {
+                            speaker.toggle(id: "page-src", text: fullText, language: language)
+                        }.opacity(fullText.isEmpty ? 0 : 1)
+                        pillButton(playing: showLesson, icon: "text.book.closed", title: "小课") {
+                            openLesson()
+                        }.opacity(fullText.isEmpty ? 0 : 1)
                         Spacer()
                     }.padding([.leading, .top]).padding(.top, 4)
                     Spacer()
                 }
 
-                // The lesson (translation), placed in the page's white space; the
-                // tapped-word card takes over the same spot. Hidden while zoomed.
-                if scale <= 1.001 {
+                // The page translation, placed in the page's white space; the
+                // tapped-word card takes over the same spot. Hidden while zoomed
+                // or when the lesson panel is open.
+                if scale <= 1.001 && !showLesson {
                     lessonOverlay(rect: rect, originX: originX, originY: originY, container: geo.size)
                 }
+
+                if showLesson { lessonPanel }
             }
             .task {
                 if !loaded {
@@ -125,6 +128,100 @@ private struct PageTextContent: View {
             }
             .onDisappear { speaker.stop() }
         }
+    }
+
+    private func pillButton(playing: Bool, icon: String, title: String, _ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: playing ? "stop.circle.fill" : icon)
+                Text(title)
+            }
+            .font(.system(size: 15, weight: .medium)).foregroundStyle(.white)
+            .padding(.horizontal, 12).padding(.vertical, 8)
+            .background(.black.opacity(0.45), in: Capsule())
+        }.buttonStyle(.plain)
+    }
+
+    // MARK: 小课 — a word-by-word lesson with voice-over
+
+    private func openLesson() {
+        if showLesson { withAnimation { showLesson = false }; return }
+        withAnimation { showLesson = true }
+        if lesson == nil, !lessonLoading {
+            lessonLoading = true
+            Task {
+                let l = await BookStore.lesson(for: pageURL)
+                await MainActor.run { lesson = l; lessonLoading = false }
+            }
+        }
+    }
+
+    private var lessonPanel: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(spacing: 10) {
+                Text("小课").font(.system(size: 16, weight: .semibold)).foregroundStyle(theme.textPrimary)
+                if let lesson, !lesson.isEmpty {
+                    Button { playLesson(lesson) } label: {
+                        Image(systemName: speaker.speakingId == "lesson" ? "stop.circle.fill" : "play.circle.fill")
+                            .font(.system(size: 22)).foregroundStyle(theme.accentText)
+                    }.buttonStyle(.plain)
+                }
+                Spacer()
+                Button { withAnimation { showLesson = false }; speaker.stop() } label: {
+                    Image(systemName: "chevron.down.circle.fill")
+                        .font(.system(size: 22)).foregroundStyle(theme.textMuted.opacity(0.7))
+                }.buttonStyle(.plain)
+            }
+            if lessonLoading || (lesson == nil && WordStudy.isAvailable) {
+                HStack(spacing: 10) { ProgressView(); Text("正在备课…")
+                    .font(.system(size: 14)).foregroundStyle(theme.textSecondary) }
+            } else if let lesson, !lesson.isEmpty {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        ForEach(Array(lesson.enumerated()), id: \.offset) { _, step in
+                            lessonStepRow(step)
+                        }
+                    }
+                }
+            } else {
+                Text("这一页的小课需要本机的语言模型（真机上、开启 Apple Intelligence 时）。")
+                    .font(.system(size: 14)).lineSpacing(4).foregroundStyle(theme.textSecondary)
+            }
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxHeight: 340)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .padding(Spacing.md)
+        .frame(maxHeight: .infinity, alignment: .bottom)
+    }
+
+    private func lessonStepRow(_ step: LessonStep) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 6) {
+                Text(step.word).font(.system(size: 18, weight: .semibold)).foregroundStyle(theme.accentText)
+                Button { speaker.toggle(id: "ls-\(step.word)", text: step.word, language: language) } label: {
+                    Image(systemName: "play.circle").font(.system(size: 15)).foregroundStyle(theme.accentText)
+                }.buttonStyle(.plain)
+            }
+            Text(step.english).font(.system(size: 14)).foregroundStyle(theme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(step.chinese).font(.system(size: 14)).foregroundStyle(theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func playLesson(_ steps: [LessonStep]) {
+        if speaker.speakingId == "lesson" { speaker.stop(); return }
+        var segs: [(text: String, language: String?)] = []
+        for s in steps {
+            segs.append((s.word, language))
+            segs.append((s.english, "en-US"))
+            segs.append((s.chinese, "zh-CN"))
+        }
+        speaker.speakSequence(id: "lesson", segments: segs)
     }
 
     // MARK: the lesson in white space

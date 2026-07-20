@@ -146,7 +146,7 @@ enum BookStore {
         let base = pageURL.deletingPathExtension()
         // A rotated page no longer aligns with its OCR/translation/notes/word-boxes
         // OR its hand annotation, so all of them are cleared.
-        for ext in ["txt", "trans", "notes", "notes2", "boxes", "ann", "annpng"] {
+        for ext in ["txt", "trans", "notes", "notes2", "lesson", "boxes", "ann", "annpng"] {
             try? FileManager.default.removeItem(at: base.appendingPathExtension(ext))
         }
     }
@@ -201,6 +201,17 @@ enum BookStore {
         guard let n = await WordStudy.notes(for: text), !n.isEmpty else { return nil }
         if let d = try? JSONEncoder().encode(n) { try? d.write(to: sidecar) }
         return n
+    }
+
+    /// The page's little word-by-word lesson, cached in a .lesson sidecar.
+    static func lesson(for pageURL: URL) async -> [LessonStep]? {
+        let sidecar = pageURL.deletingPathExtension().appendingPathExtension("lesson")
+        if let d = try? Data(contentsOf: sidecar),
+           let l = try? JSONDecoder().decode([LessonStep].self, from: d) { return l }
+        let text = await ocrText(for: pageURL)
+        guard let l = await WordStudy.lesson(for: text), !l.isEmpty else { return nil }
+        if let d = try? JSONEncoder().encode(l) { try? d.write(to: sidecar) }
+        return l
     }
 }
 

@@ -26,6 +26,15 @@ struct WordCard: Codable, Hashable {
     var example: String
 }
 
+/// One step of a little language lesson: a word/phrase from the page, explained
+/// in English and 中文. Played as a voice-over (word in its language, then the
+/// explanations) to teach how each word is used.
+struct LessonStep: Codable, Hashable {
+    var word: String        // the original-language word/phrase
+    var english: String     // how it's used + meaning, in English
+    var chinese: String     // 中文 解释
+}
+
 #if canImport(FoundationModels)
 @available(iOS 26.0, macOS 26.0, *)
 @Generable
@@ -102,9 +111,54 @@ enum WordStudy {
         #endif
         return nil
     }
+
+    /// A little lesson over the whole page: walk the key words/phrases in order,
+    /// each with how it's used + its meaning (English + 中文). nil when the model
+    /// is away.
+    static func lesson(for text: String) async -> [LessonStep]? {
+        let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !t.isEmpty else { return nil }
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, macOS 26.0, *), AIHelper.isAvailable {
+            let instructions = """
+            你是一位耐心的语言老师，正带着学生逐词读这一页外语书。按原文顺序挑出主要的词和短语，\
+            为每一个做一小步讲解：写出这个词/短语（保持原文语言），再用一句英文和一句简体中文\
+            讲清它的意思和在这句里的用法。像一堂简短的小课，帮学生真正学会这门语言。\
+            不要评论，不要鼓励或催促的话。
+            """
+            if let r = try? await LanguageModelSession(instructions: instructions)
+                .respond(to: "这一页的原文：「\(t.prefix(600))」", generating: GenLesson.self) {
+                let steps = r.content.steps
+                    .filter { !$0.word.trimmingCharacters(in: .whitespaces).isEmpty
+                              && ForbiddenWords.passes($0.english + $0.chinese) }
+                    .map { LessonStep(word: $0.word, english: $0.english, chinese: $0.chinese) }
+                return steps.isEmpty ? nil : steps
+            }
+        }
+        #endif
+        return nil
+    }
 }
 
 #if canImport(FoundationModels)
+@available(iOS 26.0, macOS 26.0, *)
+@Generable
+private struct GenLessonStep {
+    @Guide(description: "原文里的一个词或短语，保持原来的语言")
+    var word: String
+    @Guide(description: "一句英文，讲这个词的意思和用法")
+    var english: String
+    @Guide(description: "一句简体中文，讲这个词的意思和用法")
+    var chinese: String
+}
+
+@available(iOS 26.0, macOS 26.0, *)
+@Generable
+private struct GenLesson {
+    @Guide(description: "按原文顺序，为主要的词和短语各做一步讲解")
+    var steps: [GenLessonStep]
+}
+
 @available(iOS 26.0, macOS 26.0, *)
 @Generable
 private struct GenPageNotes {
