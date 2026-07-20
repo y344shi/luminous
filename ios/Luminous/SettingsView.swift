@@ -20,6 +20,11 @@ struct SettingsView: View {
     @State private var showingCalendar = false
     @State private var voicePreview = Speaker()
     @State private var voiceRefresh = 0
+    @State private var cloudBase = CloudLLM.baseURL
+    @State private var cloudKey = CloudLLM.apiKey
+    @State private var cloudModel = CloudLLM.model
+    @State private var cloudTesting = false
+    @State private var cloudTestResult: Bool? = nil
 
     var body: some View {
         NavigationStack {
@@ -35,6 +40,7 @@ struct SettingsView: View {
                     themeSection
                     nudgeSection
                     gardenSection
+                    cloudLLMSection
                     cloudSection
                     resetSection
 
@@ -565,6 +571,80 @@ struct SettingsView: View {
     // The interactive toggle only exists in builds carrying the CloudKit
     // entitlement (CLOUDKIT_ENABLED, paid developer program). Until then the
     // section is a quiet, inert note — the feature is disabled by decision.
+
+    // MARK: 高级 · 云端讲解 — point the study features at your own OpenAI-compatible endpoint.
+    private var cloudLLMSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("高级 · 云端讲解")
+                .font(.system(size: 14)).foregroundStyle(theme.textMuted)
+            Text("填一个 OpenAI 兼容的地址（你自己的服务器，如家里跑 vLLM 的 H200），讲解、笔记、小课、译文会先用它，连不上时自动回到本机模型。原文会发到这个地址，请用 https。")
+                .font(.system(size: 12)).lineSpacing(2).foregroundStyle(theme.textMuted)
+
+            VStack(spacing: Spacing.sm) {
+                cloudField(title: "Base URL", text: $cloudBase,
+                           placeholder: "https://你的地址/v1", secure: false)
+                cloudField(title: "API Key（可选）", text: $cloudKey,
+                           placeholder: "sk-…", secure: true)
+                cloudField(title: "模型（可选）", text: $cloudModel,
+                           placeholder: "如 qwen2.5-72b-instruct", secure: false)
+            }
+            .padding(Spacing.md)
+            .background(theme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(theme.border, lineWidth: 1))
+
+            HStack(spacing: Spacing.sm) {
+                SoftButton(title: cloudTesting ? "测试中…" : "测试连接", variant: .ghost) {
+                    saveCloud()
+                    cloudTesting = true
+                    cloudTestResult = nil
+                    Task {
+                        let ok = await CloudLLM.test()
+                        await MainActor.run {
+                            cloudTesting = false
+                            cloudTestResult = ok
+                        }
+                    }
+                }
+                .disabled(cloudBase.trimmingCharacters(in: .whitespaces).isEmpty || cloudTesting)
+                if let r = cloudTestResult {
+                    Label(r ? "连接成功" : "连不上",
+                          systemImage: r ? "checkmark.circle" : "xmark.circle")
+                        .font(.system(size: 13))
+                        .foregroundStyle(r ? theme.accent : theme.textMuted)
+                }
+                Spacer()
+            }
+        }
+        .onChange(of: cloudBase) { _, _ in saveCloud() }
+        .onChange(of: cloudKey) { _, _ in saveCloud() }
+        .onChange(of: cloudModel) { _, _ in saveCloud() }
+    }
+
+    private func cloudField(title: String, text: Binding<String>,
+                            placeholder: String, secure: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title).font(.system(size: 12)).foregroundStyle(theme.textSecondary)
+            Group {
+                if secure {
+                    SecureField(placeholder, text: text)
+                } else {
+                    TextField(placeholder, text: text)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                }
+            }
+            .font(.system(size: 15))
+            .foregroundStyle(theme.textPrimary)
+        }
+    }
+
+    private func saveCloud() {
+        CloudLLM.baseURL = cloudBase
+        CloudLLM.apiKey = cloudKey
+        CloudLLM.model = cloudModel
+    }
 
     private var cloudSection: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {

@@ -52,15 +52,36 @@ private struct GenWordCard {
 }
 #endif
 
+/// Cloud JSON shapes (the OpenAI-compatible equivalents of the @Generable structs).
+private struct CloudWord: Codable { var english, chinese, grammar, usage, example: String }
+private struct CloudNotes: Codable { var notes: [String] }
+private struct CloudLessonStepJSON: Codable { var word, english, chinese: String }
+private struct CloudLessonJSON: Codable { var steps: [CloudLessonStepJSON] }
+
 enum WordStudy {
-    /// Shares availability with the rest of the on-device AI.
-    static var isAvailable: Bool { AIHelper.isAvailable }
+    /// Available when the on-device model is up OR a cloud endpoint is configured.
+    static var isAvailable: Bool { AIHelper.isAvailable || CloudLLM.isConfigured }
 
     /// Explain `word` as it appears in `context` (its sentence). Returns nil when
     /// the model is unavailable or the output can't pass the forbidden-words gate.
     static func base(for word: String, context: String) async -> WordCard? {
         let w = word.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !w.isEmpty else { return nil }
+
+        // Cloud endpoint (your H200 etc.) first, when configured.
+        if CloudLLM.isConfigured {
+            let user = """
+            在这句话里：「\(context.trimmingCharacters(in: .whitespacesAndNewlines).prefix(200))」
+            解释其中的这个词：「\(w)」。
+            返回 JSON：{"english": 基本英文释义, "chinese": 基本中文释义, "grammar": 词性/语法, "usage": 用法, "example": 一个带中文意思的例句}
+            """
+            if let c: CloudWord = await CloudLLM.json(system: PromptTemplates.instructions(.word), user: user, as: CloudWord.self),
+               ForbiddenWords.passes([c.english, c.chinese, c.grammar, c.usage, c.example].joined(separator: " ")) {
+                return WordCard(word: w, english: c.english, chinese: c.chinese,
+                                grammar: c.grammar, usage: c.usage, example: c.example)
+            }
+        }
+
         #if canImport(FoundationModels)
         if #available(iOS 26.0, macOS 26.0, *), AIHelper.isAvailable {
             let instructions = PromptTemplates.instructions(.word)
@@ -87,6 +108,19 @@ enum WordStudy {
     static func notes(for text: String) async -> [String]? {
         let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.isEmpty else { return nil }
+
+        if CloudLLM.isConfigured {
+            let user = """
+            这一页的原文：「\(t.prefix(600))」
+            返回 JSON：{"notes": [三条学习笔记，每条都含原文里的一个词或短语，再加它的英文解释和简体中文解释]}
+            """
+            if let c: CloudNotes = await CloudLLM.json(system: PromptTemplates.instructions(.notes), user: user, as: CloudNotes.self) {
+                let notes = c.notes.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                    .filter { !$0.isEmpty && ForbiddenWords.passes($0) }
+                if !notes.isEmpty { return notes }
+            }
+        }
+
         #if canImport(FoundationModels)
         if #available(iOS 26.0, macOS 26.0, *), AIHelper.isAvailable {
             let instructions = PromptTemplates.instructions(.notes)
@@ -108,6 +142,21 @@ enum WordStudy {
     static func lesson(for text: String) async -> [LessonStep]? {
         let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.isEmpty else { return nil }
+
+        if CloudLLM.isConfigured {
+            let user = """
+            这一页的原文：「\(t.prefix(600))」
+            按原文顺序为主要的词和短语各做一步讲解。返回 JSON：{"steps": [{"word": 原文里的词或短语, "english": 英文解释一句, "chinese": 简体中文解释一句}]}
+            """
+            if let c: CloudLessonJSON = await CloudLLM.json(system: PromptTemplates.instructions(.lesson), user: user, as: CloudLessonJSON.self, maxTokens: 2000) {
+                let steps = c.steps
+                    .filter { !$0.word.trimmingCharacters(in: .whitespaces).isEmpty
+                              && ForbiddenWords.passes($0.english + $0.chinese) }
+                    .map { LessonStep(word: $0.word, english: $0.english, chinese: $0.chinese) }
+                if !steps.isEmpty { return steps }
+            }
+        }
+
         #if canImport(FoundationModels)
         if #available(iOS 26.0, macOS 26.0, *), AIHelper.isAvailable {
             let instructions = PromptTemplates.instructions(.lesson)

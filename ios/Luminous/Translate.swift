@@ -127,9 +127,11 @@ private struct GenTranslation {
 }
 #endif
 
+private struct CloudTranslationJSON: Codable { var sourceLanguage, english, chinese: String }
+
 enum Translator {
-    /// The model shares availability with the rest of the on-device AI.
-    static var isAvailable: Bool { AIHelper.isAvailable }
+    /// Available when the on-device model is up OR a cloud endpoint is configured.
+    static var isAvailable: Bool { AIHelper.isAvailable || CloudLLM.isConfigured }
     static var unavailableReason: String { AIHelper.unavailableReason }
 
     enum TError: Error { case unavailable, noText }
@@ -143,6 +145,20 @@ enum Translator {
     static func translate(_ text: String) async throws -> Translation {
         let trimmed = String(text.trimmingCharacters(in: .whitespacesAndNewlines).prefix(900))
         guard !trimmed.isEmpty else { throw TError.noText }
+
+        // Cloud endpoint first, when configured.
+        if CloudLLM.isConfigured {
+            let sys = "你是一个精准的翻译。无论原文是什么语言，都要给出忠实、自然的英文和简体中文翻译。只翻译文字本身，不要添加解释或评论。"
+            let user = """
+            识别下面这段文字的语言，然后翻译它。返回 JSON：{"sourceLanguage": 语言的英文名, "english": 英文翻译, "chinese": 简体中文翻译}
+            原文：「\(trimmed)」
+            """
+            if let c: CloudTranslationJSON = await CloudLLM.json(system: sys, user: user, as: CloudTranslationJSON.self),
+               ForbiddenWords.passes(c.english + " " + c.chinese) {
+                return Translation(sourceLanguage: c.sourceLanguage, english: c.english, chinese: c.chinese)
+            }
+        }
+
         #if canImport(FoundationModels)
         if #available(iOS 26.0, macOS 26.0, *) {
             if let t = try? await guided(trimmed) { return t }
