@@ -1,0 +1,14 @@
+{
+  "name": "luminous-lesson-proxy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Personal proxy that powers Luminous lessons with your Claude subscription via the Claude Agent SDK (like Claude Code). Not for distribution.",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "*"
+  }
+}
