@@ -86,9 +86,10 @@ enum WordStudy {
         #if canImport(FoundationModels)
         if #available(iOS 26.0, macOS 26.0, *), AIHelper.isAvailable {
             let instructions = """
-            你在帮一个人读一本外语书。给这一页挑几条简短、有趣、实用的读书笔记（简体中文，\
-            每条一句）：最有用或最有意思的词、搭配、语法或文化点，让他不用逐词查也能快速读懂、\
-            学到东西。不要评论，不要鼓励或催促的话。
+            你在帮一个人读一本外语书，目的是帮他学会这门外语。给这一页挑几条学习笔记，\
+            每条聚焦原文里一个最有用的词、搭配或语法点：先写出原文里的那个词/短语，\
+            再用英文和简体中文各解释一句它的意思和用法。既让他快速读懂，也真的学到这门语言。\
+            不要评论，不要鼓励或催促的话。
             """
             if let r = try? await LanguageModelSession(instructions: instructions)
                 .respond(to: "这一页的原文：「\(t.prefix(600))」", generating: GenPageNotes.self) {
@@ -107,7 +108,7 @@ enum WordStudy {
 @available(iOS 26.0, macOS 26.0, *)
 @Generable
 private struct GenPageNotes {
-    @Guide(description: "三条简短有趣的读书笔记，简体中文，每条一句", .count(3))
+    @Guide(description: "三条学习笔记，每条都包含原文里的一个词或短语，再加它的英文解释和简体中文解释", .count(3))
     var notes: [String]
 }
 #endif

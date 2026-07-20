@@ -96,7 +96,9 @@ struct BookReaderView: View {
             }
         }
         .fullScreenCover(item: $textTarget) { t in
-            PageTextReader(pageURL: t.url, image: t.image, language: langByPage[pageIndex]) {
+            PageTextReader(pages: pages,
+                           startIndex: pages.firstIndex(of: t.url) ?? pageIndex,
+                           imageFor: { compositedUIImage(for: $0) }) {
                 textTarget = nil
             }
         }

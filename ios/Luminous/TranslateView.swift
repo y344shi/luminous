@@ -58,6 +58,9 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
     /// to the system (usually English) voice. Normalize, then match by prefix.
     static func voice(for code: String?) -> AVSpeechSynthesisVoice? {
         guard let code, !code.isEmpty else { return nil }
+        // A voice the user chose in Settings for this language wins.
+        if let id = VoicePrefs.selectedIdentifier(for: code),
+           let v = AVSpeechSynthesisVoice(identifier: id) { return v }
         if code.contains("-"), let v = AVSpeechSynthesisVoice(language: code) { return v }
         let map = ["fr": "fr-FR", "en": "en-US", "zh": "zh-CN", "zh-Hans": "zh-CN",
                    "zh-Hant": "zh-TW", "es": "es-ES", "de": "de-DE", "it": "it-IT",

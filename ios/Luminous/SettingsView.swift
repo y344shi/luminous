@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 struct SettingsView: View {
     @Environment(AppStore.self) private var store
@@ -17,6 +18,8 @@ struct SettingsView: View {
     @State private var namingGarden = false
     @State private var newGardenName = ""
     @State private var showingCalendar = false
+    @State private var voicePreview = Speaker()
+    @State private var voiceRefresh = 0
 
     var body: some View {
         NavigationStack {
@@ -26,6 +29,7 @@ struct SettingsView: View {
 
                     skinSection
                     senseSection
+                    voiceSection
                     calendarSection
                     themeSection
                     nudgeSection
@@ -59,6 +63,75 @@ struct SettingsView: View {
                     .environment(store)
                     .environment(\.theme, theme)
             }
+        }
+    }
+
+    // MARK: 朗读声音 — pick which voice (tone) reads each language.
+
+    @ViewBuilder private var voiceSection: some View {
+        let langs = VoicePrefs.availableLanguages()
+        if !langs.isEmpty {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text("朗读声音")
+                    .font(.system(size: 14)).foregroundStyle(theme.textMuted)
+                Text("选择每种语言用哪个声音朗读。")
+                    .font(.system(size: 12)).foregroundStyle(theme.textMuted)
+                let _ = voiceRefresh   // re-read the current selection after a change
+                ForEach(langs, id: \.code) { lang in
+                    voiceRow(code: lang.code, name: lang.name)
+                }
+            }
+        }
+    }
+
+    private func voiceRow(code: String, name: String) -> some View {
+        let voices = VoicePrefs.voices(for: code)
+        let selectedID = VoicePrefs.selectedIdentifier(for: code)
+        let current = voices.first { $0.identifier == selectedID }
+        return HStack(spacing: Spacing.sm) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name).font(.system(size: 15, weight: .medium)).foregroundStyle(theme.textPrimary)
+                Text(current.map(VoicePrefs.label) ?? "系统默认")
+                    .font(.system(size: 12)).foregroundStyle(theme.textSecondary).lineLimit(1)
+            }
+            Spacer()
+            // Preview the currently-chosen voice.
+            Button {
+                voicePreview.toggle(id: "prev-\(code)", text: previewText(code), language: code)
+            } label: {
+                Image(systemName: "speaker.wave.2.circle").font(.system(size: 22))
+                    .foregroundStyle(theme.accentText)
+            }.buttonStyle(.plain)
+            Menu {
+                Button("系统默认") { VoicePrefs.setIdentifier(nil, for: code); voiceRefresh += 1 }
+                ForEach(voices, id: \.identifier) { v in
+                    Button(VoicePrefs.label(for: v)) {
+                        VoicePrefs.setIdentifier(v.identifier, for: code); voiceRefresh += 1
+                    }
+                }
+            } label: {
+                Image(systemName: "chevron.up.chevron.down").font(.system(size: 14))
+                    .foregroundStyle(theme.textSecondary)
+                    .padding(8).background(theme.surfaceSoft, in: Circle())
+            }
+        }
+        .padding(Spacing.md)
+        .background(theme.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+            .strokeBorder(theme.border, lineWidth: 1))
+    }
+
+    private func previewText(_ code: String) -> String {
+        switch VoicePrefs.lang2(code) {
+        case "fr": return "Bonjour, ceci est une voix."
+        case "zh": return "你好，这是一个声音。"
+        case "ja": return "こんにちは、これは声です。"
+        case "ko": return "안녕하세요, 이것은 목소리입니다."
+        case "es": return "Hola, esta es una voz."
+        case "de": return "Hallo, das ist eine Stimme."
+        case "it": return "Ciao, questa è una voce."
+        default:   return "Hello, this is a voice."
         }
     }
 

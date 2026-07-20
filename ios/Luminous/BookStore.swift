@@ -146,7 +146,7 @@ enum BookStore {
         let base = pageURL.deletingPathExtension()
         // A rotated page no longer aligns with its OCR/translation/notes/word-boxes
         // OR its hand annotation, so all of them are cleared.
-        for ext in ["txt", "trans", "notes", "boxes", "ann", "annpng"] {
+        for ext in ["txt", "trans", "notes", "notes2", "boxes", "ann", "annpng"] {
             try? FileManager.default.removeItem(at: base.appendingPathExtension(ext))
         }
     }
@@ -191,9 +191,10 @@ enum BookStore {
         return (t.english, t.chinese)
     }
 
-    /// A few short reading notes for the page, cached in a .notes sidecar.
+    /// A few short reading notes for the page, cached in a .notes2 sidecar (v2 =
+    /// bilingual, teaching notes; the old .notes were Chinese-only).
     static func notes(for pageURL: URL) async -> [String]? {
-        let sidecar = pageURL.deletingPathExtension().appendingPathExtension("notes")
+        let sidecar = pageURL.deletingPathExtension().appendingPathExtension("notes2")
         if let d = try? Data(contentsOf: sidecar),
            let n = try? JSONDecoder().decode([String].self, from: d) { return n }
         let text = await ocrText(for: pageURL)

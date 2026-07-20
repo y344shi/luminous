@@ -1,25 +1,57 @@
 //
 //  PageTextReader.swift
-//  Luminous — 逐字读: read the words ON the photo.
+//  Luminous — 逐字读: read the words ON the photo, full-screen, swipeable.
 //
-//  A full-screen page: the scanned image, with every recognized word overlaid as
-//  a tappable region (from Vision's per-word boxes). Tap a word on the page and
-//  its explanation card rises from the bottom (EN + 中文 + 语法/用法/例句,
-//  on-device). Pinch to zoom, double-tap to reset — the highlights ride the same
-//  transform as the image, so they stay on their words. Opened by double-tapping
-//  the page in the reader. iOS/iPadOS.
+//  A full-screen pager over the book's pages. Each page shows the scanned photo
+//  with every recognized word marked and tappable — tap a word for its card. The
+//  page translation ("the lesson") is placed in the page's WHITE SPACE (a band
+//  with no words) so it never covers text; it hides while you pinch-zoom. 朗读整页
+//  reads the whole page in its own language (French book → French voice). Pinch
+//  to zoom / double-tap to reset; swipe left/right for the next/previous page
+//  (single-finger pan only kicks in once zoomed). iOS/iPadOS.
 //
 
 import SwiftUI
+import NaturalLanguage
 
 #if canImport(UIKit)
 import UIKit
 
 struct PageTextReader: View {
-    let pageURL: URL
-    let image: UIImage
-    var language: String?
+    let pages: [URL]
+    let imageFor: (URL) -> UIImage?
     var onClose: () -> Void
+    @State private var index: Int
+
+    init(pages: [URL], startIndex: Int, imageFor: @escaping (URL) -> UIImage?,
+         onClose: @escaping () -> Void) {
+        self.pages = pages; self.imageFor = imageFor; self.onClose = onClose
+        _index = State(initialValue: startIndex)
+    }
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            Color.black.ignoresSafeArea()
+            TabView(selection: $index) {
+                ForEach(Array(pages.enumerated()), id: \.offset) { i, url in
+                    PageTextContent(pageURL: url, image: imageFor(url)).tag(i)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: pages.count > 1 ? .automatic : .never))
+            .ignoresSafeArea()
+
+            Button { onClose() } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 28)).symbolRenderingMode(.palette)
+                    .foregroundStyle(.white, .black.opacity(0.45))
+            }.buttonStyle(.plain).padding()
+        }
+    }
+}
+
+private struct PageTextContent: View {
+    let pageURL: URL
+    let image: UIImage?
 
     @Environment(\.theme) private var theme
     @State private var boxes: [WordBox] = []
@@ -28,6 +60,7 @@ struct PageTextReader: View {
     @State private var cards: [String: WordCard] = [:]
     @State private var pageTrans: (en: String, zh: String)?
     @State private var fullText = ""
+    @State private var language: String?
     @State private var scale: CGFloat = 1
     @State private var lastScale: CGFloat = 1
     @State private var offset: CGSize = .zero
@@ -36,13 +69,13 @@ struct PageTextReader: View {
 
     var body: some View {
         GeometryReader { geo in
-            let rect = fittedRect(imageSize: image.size, in: geo.size)
+            let rect = fittedRect(imageSize: image?.size ?? .zero, in: geo.size)
+            let originX = (geo.size.width - rect.width) / 2
+            let originY = (geo.size.height - rect.height) / 2
             ZStack {
-                Color.black.ignoresSafeArea()
-
+                // The page + word highlights (share the zoom transform).
                 ZStack(alignment: .topLeading) {
-                    Image(uiImage: image).resizable()
-                        .frame(width: rect.width, height: rect.height)
+                    if let image { Image(uiImage: image).resizable().frame(width: rect.width, height: rect.height) }
                     ForEach(Array(boxes.enumerated()), id: \.offset) { _, box in
                         wordRegion(box, in: rect.size)
                     }
@@ -53,99 +86,87 @@ struct PageTextReader: View {
                 .gesture(zoomGesture)
                 .onTapGesture(count: 2) { withAnimation(.easeInOut(duration: 0.2)) { resetZoom() } }
 
+                // Full-page read, top-left.
                 VStack {
-                    HStack(spacing: 12) {
-                        // Read the whole page aloud in its own language (e.g. French).
-                        Button {
-                            speaker.toggle(id: "page-src", text: fullText, language: language)
-                        } label: {
+                    HStack {
+                        Button { speaker.toggle(id: "page-src", text: fullText, language: language) } label: {
                             HStack(spacing: 6) {
-                                Image(systemName: speaker.speakingId == "page-src"
-                                      ? "stop.circle.fill" : "play.circle.fill")
+                                Image(systemName: speaker.speakingId == "page-src" ? "stop.circle.fill" : "play.circle.fill")
                                 Text("朗读整页")
                             }
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(.white)
+                            .font(.system(size: 15, weight: .medium)).foregroundStyle(.white)
                             .padding(.horizontal, 12).padding(.vertical, 8)
                             .background(.black.opacity(0.45), in: Capsule())
                         }
-                        .buttonStyle(.plain)
-                        .opacity(fullText.isEmpty ? 0 : 1)
+                        .buttonStyle(.plain).opacity(fullText.isEmpty ? 0 : 1)
                         Spacer()
-                        Button { onClose() } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 28)).symbolRenderingMode(.palette)
-                                .foregroundStyle(.white, .black.opacity(0.4))
-                        }.buttonStyle(.plain)
-                    }.padding()
+                    }.padding([.leading, .top]).padding(.top, 4)
                     Spacer()
-                    if !loaded {
-                        HStack(spacing: 10) { ProgressView().tint(.white)
-                            Text("正在找出页面上的字…").font(.system(size: 13)).foregroundStyle(.white) }
-                            .padding(.bottom, 30)
-                    } else if boxes.isEmpty {
-                        Text("这一页没认出可点的字。").font(.system(size: 13))
-                            .foregroundStyle(.white.opacity(0.8)).padding(.bottom, 30)
-                    }
-                    if let selected { card(for: selected) }
-                    if let pageTrans { translationPanel(pageTrans) }
+                }
+
+                // The lesson (translation), placed in the page's white space; the
+                // tapped-word card takes over the same spot. Hidden while zoomed.
+                if scale <= 1.001 {
+                    lessonOverlay(rect: rect, originX: originX, originY: originY, container: geo.size)
                 }
             }
             .task {
                 if !loaded {
-                    boxes = await BookStore.wordBoxes(for: pageURL)
-                    loaded = true
+                    boxes = await BookStore.wordBoxes(for: pageURL); loaded = true
                 }
-                if fullText.isEmpty { fullText = await BookStore.ocrText(for: pageURL) }
-            }
-            .task {
-                // Show the page's translation right away, in the white space below.
+                if fullText.isEmpty {
+                    let t = await BookStore.ocrText(for: pageURL)
+                    let lang = Self.detectLanguage(t)
+                    await MainActor.run { fullText = t; language = lang }
+                }
                 if pageTrans == nil, let t = await BookStore.translation(for: pageURL) {
-                    pageTrans = (t.english, t.chinese)
+                    await MainActor.run { pageTrans = (t.english, t.chinese) }
                 }
             }
             .onDisappear { speaker.stop() }
         }
     }
 
-    // A tappable region sitting exactly on its word (Vision space → display space).
-    // Each word gets a faint highlight so you can see what's tappable; the hit
-    // area is the word box itself (contentShape BEFORE position — otherwise a
-    // positioned view expands to fill and every tap lands on one word).
-    private func wordRegion(_ box: WordBox, in size: CGSize) -> some View {
-        let key = Self.clean(box.text)
-        let w = box.w * size.width, h = box.h * size.height
-        let cx = (box.x + box.w / 2) * size.width
-        let cy = (1 - (box.y + box.h / 2)) * size.height     // flip Y
-        let isSel = selected == key && !key.isEmpty
-        // Every pre-recognized word gets a soft, clearly-visible highlight (like a
-        // marker), so you can see what's tappable; the selected word is stronger.
-        return RoundedRectangle(cornerRadius: 3)
-            .fill(isSel ? theme.accent.opacity(0.40) : Color.yellow.opacity(0.28))
-            .overlay(RoundedRectangle(cornerRadius: 3)
-                .stroke(isSel ? theme.accentText.opacity(0.9) : theme.accentText.opacity(0.40),
-                        lineWidth: isSel ? 1.5 : 0.75))
-            .frame(width: max(w, 8), height: max(h, 8))
-            .contentShape(Rectangle())
-            .onTapGesture {
-                guard !key.isEmpty else { return }
-                withAnimation(.easeOut(duration: 0.2)) { selected = key }
-                if cards[key] == nil { Task { await explain(key, line: box.text) } }
-            }
-            .position(x: cx, y: cy)
+    // MARK: the lesson in white space
+
+    @ViewBuilder private func lessonOverlay(rect: CGRect, originX: CGFloat, originY: CGFloat,
+                                            container: CGSize) -> some View {
+        let panel = Group {
+            if let selected { card(for: selected) }
+            else if let pageTrans { translationPanel(pageTrans) }
+        }
+        // Find the taller word-free band (above vs below the text block) and drop
+        // the panel there so it never sits on any word.
+        let band = whiteBand(rect: rect, originY: originY, container: container)
+        panel
+            .frame(maxWidth: min(container.width - 24, 460))
+            .position(x: container.width / 2, y: band)
     }
 
-    // The page translation, shown immediately in the bottom white space.
+    /// The y-center (screen space) of the largest word-free horizontal band.
+    private func whiteBand(rect: CGRect, originY: CGFloat, container: CGSize) -> CGFloat {
+        guard !boxes.isEmpty else { return container.height - 120 }
+        // Text block extent in screen Y (flip Vision's bottom-left origin).
+        var topY = CGFloat.greatestFiniteMagnitude, botY: CGFloat = 0
+        for b in boxes {
+            let t = originY + CGFloat(1 - (b.y + b.h)) * rect.height
+            let bo = originY + CGFloat(1 - b.y) * rect.height
+            topY = min(topY, t); botY = max(botY, bo)
+        }
+        let gapBelow = container.height - botY
+        let gapAbove = topY
+        if gapBelow >= gapAbove { return botY + gapBelow / 2 }
+        return topY - gapAbove / 2
+    }
+
     private func translationPanel(_ t: (en: String, zh: String)) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             transLine("English", t.en, id: "p-en", lang: "en-US")
             transLine("中文", t.zh, id: "p-zh", lang: "zh-CN")
         }
         .padding(Spacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .padding([.horizontal, .bottom], Spacing.md)
     }
 
     private func transLine(_ label: String, _ value: String, id: String, lang: String) -> some View {
@@ -162,7 +183,29 @@ struct PageTextReader: View {
         }
     }
 
-    // The explanation card.
+    // MARK: word regions + card
+
+    private func wordRegion(_ box: WordBox, in size: CGSize) -> some View {
+        let key = Self.clean(box.text)
+        let w = box.w * size.width, h = box.h * size.height
+        let cx = (box.x + box.w / 2) * size.width
+        let cy = (1 - (box.y + box.h / 2)) * size.height
+        let isSel = selected == key && !key.isEmpty
+        return RoundedRectangle(cornerRadius: 3)
+            .fill(isSel ? theme.accent.opacity(0.40) : Color.yellow.opacity(0.28))
+            .overlay(RoundedRectangle(cornerRadius: 3)
+                .stroke(isSel ? theme.accentText.opacity(0.9) : theme.accentText.opacity(0.40),
+                        lineWidth: isSel ? 1.5 : 0.75))
+            .frame(width: max(w, 8), height: max(h, 8))
+            .contentShape(Rectangle())
+            .onTapGesture {
+                guard !key.isEmpty else { return }
+                withAnimation(.easeOut(duration: 0.2)) { selected = key }
+                if cards[key] == nil { Task { await explain(key, line: box.text) } }
+            }
+            .position(x: cx, y: cy)
+    }
+
     @ViewBuilder private func card(for word: String) -> some View {
         let c = cards[word]
         VStack(alignment: .leading, spacing: Spacing.sm) {
@@ -190,11 +233,8 @@ struct PageTextReader: View {
             }
         }
         .padding(Spacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(theme.surface)
+        .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .padding(Spacing.md)
-        .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 
     private func row(_ label: String, _ value: String) -> some View {
@@ -206,6 +246,8 @@ struct PageTextReader: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    // MARK: gestures + work
+
     private var zoomGesture: some Gesture {
         SimultaneousGesture(
             MagnificationGesture()
@@ -213,7 +255,7 @@ struct PageTextReader: View {
                 .onEnded { _ in lastScale = scale; if scale <= 1.001 { resetZoom() } },
             DragGesture()
                 .onChanged { v in
-                    guard scale > 1 else { return }
+                    guard scale > 1 else { return }     // at 1× let the pager swipe
                     offset = CGSize(width: lastOffset.width + v.translation.width,
                                     height: lastOffset.height + v.translation.height)
                 }
@@ -233,6 +275,11 @@ struct PageTextReader: View {
         guard imageSize.width > 0, imageSize.height > 0 else { return CGRect(origin: .zero, size: container) }
         let s = min(container.width / imageSize.width, container.height / imageSize.height)
         return CGRect(origin: .zero, size: CGSize(width: imageSize.width * s, height: imageSize.height * s))
+    }
+
+    private static func detectLanguage(_ text: String) -> String? {
+        let r = NLLanguageRecognizer(); r.processString(text)
+        return r.dominantLanguage?.rawValue
     }
 
     private static func clean(_ token: String) -> String {
