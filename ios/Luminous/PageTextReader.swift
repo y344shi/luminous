@@ -27,6 +27,7 @@ struct PageTextReader: View {
     @State private var selected: String?
     @State private var cards: [String: WordCard] = [:]
     @State private var pageTrans: (en: String, zh: String)?
+    @State private var fullText = ""
     @State private var scale: CGFloat = 1
     @State private var lastScale: CGFloat = 1
     @State private var offset: CGSize = .zero
@@ -53,14 +54,30 @@ struct PageTextReader: View {
                 .onTapGesture(count: 2) { withAnimation(.easeInOut(duration: 0.2)) { resetZoom() } }
 
                 VStack {
-                    HStack {
+                    HStack(spacing: 12) {
+                        // Read the whole page aloud in its own language (e.g. French).
+                        Button {
+                            speaker.toggle(id: "page-src", text: fullText, language: language)
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: speaker.speakingId == "page-src"
+                                      ? "stop.circle.fill" : "play.circle.fill")
+                                Text("朗读整页")
+                            }
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12).padding(.vertical, 8)
+                            .background(.black.opacity(0.45), in: Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        .opacity(fullText.isEmpty ? 0 : 1)
                         Spacer()
                         Button { onClose() } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 28)).symbolRenderingMode(.palette)
                                 .foregroundStyle(.white, .black.opacity(0.4))
-                        }.buttonStyle(.plain).padding()
-                    }
+                        }.buttonStyle(.plain)
+                    }.padding()
                     Spacer()
                     if !loaded {
                         HStack(spacing: 10) { ProgressView().tint(.white)
@@ -79,6 +96,7 @@ struct PageTextReader: View {
                     boxes = await BookStore.wordBoxes(for: pageURL)
                     loaded = true
                 }
+                if fullText.isEmpty { fullText = await BookStore.ocrText(for: pageURL) }
             }
             .task {
                 // Show the page's translation right away, in the white space below.

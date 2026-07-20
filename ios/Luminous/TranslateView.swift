@@ -45,13 +45,28 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
         synth.stopSpeaking(at: .immediate)
         let utterance = AVSpeechUtterance(string: text)
         let code = language ?? NLLanguageRecognizer.dominantLanguage(for: text)?.rawValue
-        if let code, let voice = AVSpeechSynthesisVoice(language: code) {
-            utterance.voice = voice
-        }
+        if let voice = Self.voice(for: code) { utterance.voice = voice }
         utterance.rate = Float(min(Double(AVSpeechUtteranceDefaultSpeechRate) * 0.9 * rate,
                                    Double(AVSpeechUtteranceMaximumSpeechRate)))
         speakingId = id
         synth.speak(utterance)
+    }
+
+    /// Resolve a real voice for a language code. `NLLanguageRecognizer` gives a
+    /// bare code like "fr" / "zh-Hans", but `AVSpeechSynthesisVoice(language:)`
+    /// wants a full BCP-47 locale ("fr-FR"), so a bare code silently falls back
+    /// to the system (usually English) voice. Normalize, then match by prefix.
+    static func voice(for code: String?) -> AVSpeechSynthesisVoice? {
+        guard let code, !code.isEmpty else { return nil }
+        if code.contains("-"), let v = AVSpeechSynthesisVoice(language: code) { return v }
+        let map = ["fr": "fr-FR", "en": "en-US", "zh": "zh-CN", "zh-Hans": "zh-CN",
+                   "zh-Hant": "zh-TW", "es": "es-ES", "de": "de-DE", "it": "it-IT",
+                   "ja": "ja-JP", "ko": "ko-KR", "pt": "pt-PT", "ru": "ru-RU",
+                   "nl": "nl-NL", "ar": "ar-SA"]
+        let full = map[code] ?? map[String(code.prefix(2))] ?? code
+        if let v = AVSpeechSynthesisVoice(language: full) { return v }
+        let prefix = String(code.prefix(2))
+        return AVSpeechSynthesisVoice.speechVoices().first { $0.language.hasPrefix(prefix) }
     }
 
     func stop() {
