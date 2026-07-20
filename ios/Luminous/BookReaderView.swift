@@ -44,7 +44,12 @@ struct BookReaderView: View {
     @State private var version = 0
     @State private var showApplyAll = false
     @State private var showAnnotator = false
+    @State private var textTarget: TextTarget?
     @State private var speaker = Speaker()
+
+    #if canImport(UIKit)
+    struct TextTarget: Identifiable { let id = UUID(); let url: URL; let image: UIImage }
+    #endif
 
     private var pages: [URL] { book.pageURLs }
 
@@ -90,6 +95,11 @@ struct BookReaderView: View {
                 }
             }
         }
+        .fullScreenCover(item: $textTarget) { t in
+            PageTextReader(pageURL: t.url, image: t.image, language: langByPage[pageIndex]) {
+                textTarget = nil
+            }
+        }
         #endif
     }
 
@@ -123,7 +133,8 @@ struct BookReaderView: View {
     @ViewBuilder private func pageImage(_ url: URL) -> some View {
         #if canImport(UIKit)
         if let ui = compositedUIImage(for: url) {
-            ZoomableImage(image: Image(uiImage: ui))
+            ZoomableImage(image: Image(uiImage: ui),
+                          onDoubleTap: { textTarget = TextTarget(url: url, image: ui) })
                 .id("\(url.lastPathComponent)-\(version)").padding(6)
         } else { Color.clear }
         #else
@@ -455,6 +466,7 @@ struct BookReaderView: View {
 
 private struct ZoomableImage: View {
     let image: Image
+    var onDoubleTap: (() -> Void)? = nil
     @State private var scale: CGFloat = 1
     @State private var lastScale: CGFloat = 1
     @State private var offset: CGSize = .zero
@@ -469,7 +481,12 @@ private struct ZoomableImage: View {
                     .onChanged { v in scale = min(6, max(1, lastScale * v)) }
                     .onEnded { _ in lastScale = scale; if scale <= 1.001 { reset() } }
             )
-            .onTapGesture(count: 2) { withAnimation(.easeInOut(duration: 0.2)) { reset() } }
+            // Double-tap opens the full-screen read-on-photo view (or resets zoom
+            // when there's no handler). Pinching back to 1× still resets.
+            .onTapGesture(count: 2) {
+                if let onDoubleTap { onDoubleTap() }
+                else { withAnimation(.easeInOut(duration: 0.2)) { reset() } }
+            }
             .clipped()
 
         // Only intercept one-finger drags (pan) once zoomed, so the pager keeps

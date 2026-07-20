@@ -144,11 +144,24 @@ enum BookStore {
 
     private static func clearCaches(for pageURL: URL) {
         let base = pageURL.deletingPathExtension()
-        // A rotated page no longer aligns with its OCR/translation/notes OR its
-        // hand annotation, so all of them are cleared.
-        for ext in ["txt", "trans", "notes", "ann", "annpng"] {
+        // A rotated page no longer aligns with its OCR/translation/notes/word-boxes
+        // OR its hand annotation, so all of them are cleared.
+        for ext in ["txt", "trans", "notes", "boxes", "ann", "annpng"] {
             try? FileManager.default.removeItem(at: base.appendingPathExtension(ext))
         }
+    }
+
+    /// Recognized words + their normalized boxes for a page, cached in a .boxes
+    /// sidecar. Empty when there's no text.
+    static func wordBoxes(for pageURL: URL) async -> [WordBox] {
+        let sidecar = pageURL.deletingPathExtension().appendingPathExtension("boxes")
+        if let d = try? Data(contentsOf: sidecar),
+           let b = try? JSONDecoder().decode([WordBox].self, from: d) { return b }
+        guard let data = try? Data(contentsOf: pageURL),
+              let (cg, orientation) = ImageInput.load(data),
+              let boxes = try? await VisionOCR.recognizeWords(cg, orientation: orientation) else { return [] }
+        if let d = try? JSONEncoder().encode(boxes) { try? d.write(to: sidecar) }
+        return boxes
     }
 
     /// OCR text for a page, cached in a .txt sidecar (read once, reused after).

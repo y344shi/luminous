@@ -67,6 +67,49 @@ enum VisionOCR {
             }
         }
     }
+
+    /// Every recognized WORD with its normalized bounding box (Vision space:
+    /// origin bottom-left, 0…1). Used to overlay tappable text on the page.
+    static func recognizeWords(_ cgImage: CGImage,
+                               orientation: CGImagePropertyOrientation) async throws -> [WordBox] {
+        try await withCheckedThrowingContinuation { cont in
+            let request = VNRecognizeTextRequest { req, err in
+                if let err { cont.resume(throwing: err); return }
+                let obs = req.results as? [VNRecognizedTextObservation] ?? []
+                var out: [WordBox] = []
+                for o in obs {
+                    guard let cand = o.topCandidates(1).first else { continue }
+                    let str = cand.string
+                    // Split the line into words and ask Vision for each word's box.
+                    var idx = str.startIndex
+                    for token in str.split(separator: " ", omittingEmptySubsequences: true) {
+                        guard let r = str.range(of: token, range: idx..<str.endIndex) else { continue }
+                        idx = r.upperBound
+                        if let box = try? cand.boundingBox(for: r), !box.boundingBox.isNull {
+                            let b = box.boundingBox
+                            out.append(WordBox(text: String(token),
+                                               x: b.minX, y: b.minY, w: b.width, h: b.height))
+                        }
+                    }
+                }
+                cont.resume(returning: out)
+            }
+            request.recognitionLevel = .accurate
+            request.usesLanguageCorrection = true
+            request.automaticallyDetectsLanguage = true
+            let handler = VNImageRequestHandler(cgImage: cgImage, orientation: orientation, options: [:])
+            DispatchQueue.global(qos: .userInitiated).async {
+                do { try handler.perform([request]) }
+                catch { cont.resume(throwing: error) }
+            }
+        }
+    }
+}
+
+/// One recognized word and its normalized box (Vision space, origin bottom-left).
+struct WordBox: Codable, Hashable {
+    var text: String
+    var x: Double; var y: Double; var w: Double; var h: Double
 }
 
 // MARK: - Translation via the on-device model
