@@ -17,6 +17,15 @@ import NaturalLanguage
 #if canImport(UIKit)
 import UIKit
 
+/// A little move-and-shrink transform for a floating panel: a drag offset plus a
+/// render scale, each with a "last" value so gestures resume from where they left.
+private struct Movable: Equatable {
+    var offset: CGSize = .zero
+    var lastOffset: CGSize = .zero
+    var scale: CGFloat = 1
+    var lastScale: CGFloat = 1
+}
+
 struct PageTextReader: View {
     let pages: [URL]
     let imageFor: (URL) -> UIImage?
@@ -69,6 +78,8 @@ private struct PageTextContent: View {
     @State private var offset: CGSize = .zero
     @State private var lastOffset: CGSize = .zero
     @State private var speaker = Speaker()
+    @State private var cardMove = Movable()      // the word-card / translation panel
+    @State private var lessonMove = Movable()    // the 小课 panel
 
     var body: some View {
         GeometryReader { geo in
@@ -86,7 +97,10 @@ private struct PageTextContent: View {
                 .frame(width: rect.width, height: rect.height)
                 .scaleEffect(scale).offset(offset)
                 .position(x: geo.size.width / 2, y: geo.size.height / 2)
-                .gesture(zoomGesture)
+                .gesture(magnifyGesture)
+                // Pan only bites once zoomed; at 1× the drag is disabled so the
+                // TabView pages across the whole photo, not just the margins.
+                .gesture(panGesture, including: scale > 1.001 ? .all : .none)
                 .onTapGesture(count: 2) { withAnimation(.easeInOut(duration: 0.2)) { resetZoom() } }
 
                 // Full-page read + the little lesson, top-left.
@@ -130,6 +144,67 @@ private struct PageTextContent: View {
         }
     }
 
+    // MARK: draggable + shrinkable floating panels
+
+    /// Wraps a floating panel so it can be dragged (grip bar) and shrunk/grown
+    /// (the −/+ buttons, or a two-finger pinch). Double-tap the grip resets it.
+    @ViewBuilder private func movablePanel<C: View>(_ move: Binding<Movable>,
+                                                    @ViewBuilder content: () -> C) -> some View {
+        VStack(spacing: 6) {
+            gripBar(move)
+            content()
+        }
+        .scaleEffect(move.wrappedValue.scale, anchor: .top)
+        .offset(move.wrappedValue.offset)
+        .simultaneousGesture(
+            MagnificationGesture()
+                .onChanged { v in move.wrappedValue.scale = min(1.5, max(0.5, move.wrappedValue.lastScale * v)) }
+                .onEnded { _ in move.wrappedValue.lastScale = move.wrappedValue.scale }
+        )
+    }
+
+    private func gripBar(_ move: Binding<Movable>) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 10, style: .continuous).fill(.ultraThinMaterial)
+            HStack {
+                Button { stepScale(move, -0.15) } label: {
+                    Image(systemName: "minus.magnifyingglass")
+                        .font(.system(size: 15)).foregroundStyle(theme.textSecondary)
+                }.buttonStyle(.plain)
+                Spacer()
+                Capsule().fill(theme.textMuted.opacity(0.5)).frame(width: 44, height: 5)
+                Spacer()
+                Button { stepScale(move, 0.15) } label: {
+                    Image(systemName: "plus.magnifyingglass")
+                        .font(.system(size: 15)).foregroundStyle(theme.textSecondary)
+                }.buttonStyle(.plain)
+            }
+            .padding(.horizontal, 14)
+        }
+        .frame(height: 30)
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture()
+                .onChanged { v in
+                    move.wrappedValue.offset = CGSize(
+                        width: move.wrappedValue.lastOffset.width + v.translation.width,
+                        height: move.wrappedValue.lastOffset.height + v.translation.height)
+                }
+                .onEnded { _ in move.wrappedValue.lastOffset = move.wrappedValue.offset }
+        )
+        .onTapGesture(count: 2) {
+            withAnimation(.easeInOut(duration: 0.2)) { move.wrappedValue = Movable() }
+        }
+    }
+
+    private func stepScale(_ move: Binding<Movable>, _ d: CGFloat) {
+        withAnimation(.easeInOut(duration: 0.15)) {
+            let s = min(1.5, max(0.5, move.wrappedValue.scale + d))
+            move.wrappedValue.scale = s
+            move.wrappedValue.lastScale = s
+        }
+    }
+
     private func pillButton(playing: Bool, icon: String, title: String, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 6) {
@@ -157,6 +232,13 @@ private struct PageTextContent: View {
     }
 
     private var lessonPanel: some View {
+        movablePanel($lessonMove) { lessonCard }
+            .frame(maxWidth: 520)
+            .padding(Spacing.md)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+    }
+
+    private var lessonCard: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack(spacing: 10) {
                 Text("小课").font(.system(size: 16, weight: .semibold)).foregroundStyle(theme.textPrimary)
@@ -199,8 +281,6 @@ private struct PageTextContent: View {
         .frame(maxHeight: 340)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .padding(Spacing.md)
-        .frame(maxHeight: .infinity, alignment: .bottom)
     }
 
     private func lessonStepRow(_ step: LessonStep) -> some View {
@@ -244,16 +324,15 @@ private struct PageTextContent: View {
 
     @ViewBuilder private func lessonOverlay(rect: CGRect, originX: CGFloat, originY: CGFloat,
                                             container: CGSize) -> some View {
-        let panel = Group {
+        // Find the taller word-free band (above vs below the text block) and drop
+        // the panel there so it starts off no word; drag/shrink from there.
+        let band = whiteBand(rect: rect, originY: originY, container: container)
+        movablePanel($cardMove) {
             if let selected { card(for: selected) }
             else if let pageTrans { translationPanel(pageTrans) }
         }
-        // Find the taller word-free band (above vs below the text block) and drop
-        // the panel there so it never sits on any word.
-        let band = whiteBand(rect: rect, originY: originY, container: container)
-        panel
-            .frame(maxWidth: min(container.width - 24, 460))
-            .position(x: container.width / 2, y: band)
+        .frame(maxWidth: min(container.width - 24, 460))
+        .position(x: container.width / 2, y: band)
     }
 
     /// The y-center (screen space) of the largest word-free horizontal band.
@@ -314,7 +393,10 @@ private struct PageTextContent: View {
             .onTapGesture {
                 guard !key.isEmpty else { return }
                 withAnimation(.easeOut(duration: 0.2)) { selected = key }
-                if cards[key] == nil { Task { await explain(key, line: box.text) } }
+                if cards[key] == nil {
+                    let ctx = sentenceContext(for: box.text)
+                    Task { await explain(key, line: ctx) }
+                }
             }
             .position(x: cx, y: cy)
     }
@@ -361,19 +443,19 @@ private struct PageTextContent: View {
 
     // MARK: gestures + work
 
-    private var zoomGesture: some Gesture {
-        SimultaneousGesture(
-            MagnificationGesture()
-                .onChanged { v in scale = min(6, max(1, lastScale * v)) }
-                .onEnded { _ in lastScale = scale; if scale <= 1.001 { resetZoom() } },
-            DragGesture()
-                .onChanged { v in
-                    guard scale > 1 else { return }     // at 1× let the pager swipe
-                    offset = CGSize(width: lastOffset.width + v.translation.width,
-                                    height: lastOffset.height + v.translation.height)
-                }
-                .onEnded { _ in lastOffset = offset }
-        )
+    private var magnifyGesture: some Gesture {
+        MagnificationGesture()
+            .onChanged { v in scale = min(6, max(1, lastScale * v)) }
+            .onEnded { _ in lastScale = scale; if scale <= 1.001 { resetZoom() } }
+    }
+
+    private var panGesture: some Gesture {
+        DragGesture()
+            .onChanged { v in
+                offset = CGSize(width: lastOffset.width + v.translation.width,
+                                height: lastOffset.height + v.translation.height)
+            }
+            .onEnded { _ in lastOffset = offset }
     }
 
     private func resetZoom() { scale = 1; lastScale = 1; offset = .zero; lastOffset = .zero }
@@ -382,6 +464,20 @@ private struct PageTextContent: View {
         if let card = await WordStudy.base(for: word, context: line) {
             await MainActor.run { cards[word] = card }
         }
+    }
+
+    /// The sentence around `word`, taken from the page's detected text, so the
+    /// card explains the word *in context* rather than in isolation. Falls back
+    /// to the whole page (or the word itself) when we can't isolate a sentence.
+    private func sentenceContext(for word: String) -> String {
+        let w = Self.clean(word)
+        guard !fullText.isEmpty, !w.isEmpty else { return word }
+        let sentences = fullText.components(separatedBy: CharacterSet(charactersIn: ".!?。！？…\n"))
+        if let s = sentences.first(where: { $0.range(of: w, options: .caseInsensitive) != nil }) {
+            let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !t.isEmpty { return t }
+        }
+        return fullText
     }
 
     private func fittedRect(imageSize: CGSize, in container: CGSize) -> CGRect {
