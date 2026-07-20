@@ -166,6 +166,12 @@ private struct PageTextContent: View {
                             .font(.system(size: 22)).foregroundStyle(theme.accentText)
                     }.buttonStyle(.plain)
                 }
+                if lesson != nil {
+                    Button { regenerateLesson() } label: {
+                        Image(systemName: "arrow.clockwise.circle")
+                            .font(.system(size: 20)).foregroundStyle(theme.textSecondary)
+                    }.buttonStyle(.plain).accessibilityLabel("用当前风格重新备课")
+                }
                 Spacer()
                 Button { withAnimation { showLesson = false }; speaker.stop() } label: {
                     Image(systemName: "chevron.down.circle.fill")
@@ -211,6 +217,16 @@ private struct PageTextContent: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func regenerateLesson() {
+        speaker.stop()
+        BookStore.forgetGenerated(for: pageURL)
+        lesson = nil; pageTrans = nil; lessonLoading = true
+        Task {
+            let l = await BookStore.lesson(for: pageURL)
+            await MainActor.run { lesson = l; lessonLoading = false }
+        }
     }
 
     private func playLesson(_ steps: [LessonStep]) {

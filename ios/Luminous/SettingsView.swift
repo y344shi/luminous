@@ -30,6 +30,7 @@ struct SettingsView: View {
                     skinSection
                     senseSection
                     voiceSection
+                    promptSection
                     calendarSection
                     themeSection
                     nudgeSection
@@ -132,6 +133,38 @@ struct SettingsView: View {
         case "de": return "Hallo, das ist eine Stimme."
         case "it": return "Ciao, questa è una voce."
         default:   return "Hello, this is a voice."
+        }
+    }
+
+    // MARK: 讲解风格 — see & edit the prompt templates behind the lessons.
+
+    private var promptSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("讲解风格")
+                .font(.system(size: 14)).foregroundStyle(theme.textMuted)
+            Text("看看每种讲解用的提示词，也可以改成你喜欢的风格。")
+                .font(.system(size: 12)).foregroundStyle(theme.textMuted)
+            ForEach(PromptKind.allCases) { kind in
+                NavigationLink { PromptEditorView(kind: kind) } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(kind.title).font(.system(size: 15, weight: .medium))
+                                .foregroundStyle(theme.textPrimary)
+                            Text(PromptTemplates.isCustom(kind) ? "已自定义" : "系统默认")
+                                .font(.system(size: 12)).foregroundStyle(theme.textSecondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right").font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(theme.textMuted)
+                    }
+                    .padding(Spacing.md)
+                    .background(theme.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(theme.border, lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+            }
         }
     }
 

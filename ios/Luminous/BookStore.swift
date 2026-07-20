@@ -203,6 +203,16 @@ enum BookStore {
         return n
     }
 
+    /// Forget the AI-generated caches for a page (translation / notes / lesson),
+    /// so they regenerate with the current prompt template. Keeps OCR, word
+    /// boxes, and annotations.
+    static func forgetGenerated(for pageURL: URL) {
+        let base = pageURL.deletingPathExtension()
+        for ext in ["trans", "notes2", "lesson"] {
+            try? FileManager.default.removeItem(at: base.appendingPathExtension(ext))
+        }
+    }
+
     /// The page's little word-by-word lesson, cached in a .lesson sidecar.
     static func lesson(for pageURL: URL) async -> [LessonStep]? {
         let sidecar = pageURL.deletingPathExtension().appendingPathExtension("lesson")

@@ -63,12 +63,7 @@ enum WordStudy {
         guard !w.isEmpty else { return nil }
         #if canImport(FoundationModels)
         if #available(iOS 26.0, macOS 26.0, *), AIHelper.isAvailable {
-            let instructions = """
-            你在帮一个人读一本外语书。原文可能是任何语言，先认出这个词是什么语言。\
-            给出这个词最基本的意思，简洁、准确：英文和简体中文各一个基本释义，\
-            再加词性/语法、用法、一个带中文意思的例句。只解释这个词本身，\
-            不要评论，不要鼓励或催促的话。
-            """
+            let instructions = PromptTemplates.instructions(.word)
             let prompt = """
             在这句话里：「\(context.trimmingCharacters(in: .whitespacesAndNewlines).prefix(200))」
             解释其中的这个词：「\(w)」
@@ -94,12 +89,7 @@ enum WordStudy {
         guard !t.isEmpty else { return nil }
         #if canImport(FoundationModels)
         if #available(iOS 26.0, macOS 26.0, *), AIHelper.isAvailable {
-            let instructions = """
-            你在帮一个人读一本外语书，目的是帮他学会这门外语。给这一页挑几条学习笔记，\
-            每条聚焦原文里一个最有用的词、搭配或语法点：先写出原文里的那个词/短语，\
-            再用英文和简体中文各解释一句它的意思和用法。既让他快速读懂，也真的学到这门语言。\
-            不要评论，不要鼓励或催促的话。
-            """
+            let instructions = PromptTemplates.instructions(.notes)
             if let r = try? await LanguageModelSession(instructions: instructions)
                 .respond(to: "这一页的原文：「\(t.prefix(600))」", generating: GenPageNotes.self) {
                 let notes = r.content.notes
@@ -120,12 +110,7 @@ enum WordStudy {
         guard !t.isEmpty else { return nil }
         #if canImport(FoundationModels)
         if #available(iOS 26.0, macOS 26.0, *), AIHelper.isAvailable {
-            let instructions = """
-            你是一位耐心的语言老师，正带着学生逐词读这一页外语书。按原文顺序挑出主要的词和短语，\
-            为每一个做一小步讲解：写出这个词/短语（保持原文语言），再用一句英文和一句简体中文\
-            讲清它的意思和在这句里的用法。像一堂简短的小课，帮学生真正学会这门语言。\
-            不要评论，不要鼓励或催促的话。
-            """
+            let instructions = PromptTemplates.instructions(.lesson)
             if let r = try? await LanguageModelSession(instructions: instructions)
                 .respond(to: "这一页的原文：「\(t.prefix(600))」", generating: GenLesson.self) {
                 let steps = r.content.steps
