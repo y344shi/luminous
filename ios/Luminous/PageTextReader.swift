@@ -358,7 +358,7 @@ private struct PageTextContent: View {
             else if let pageTrans { translationPanel(pageTrans) }
             else { translationStatus }
         }
-        .frame(maxWidth: min(container.width - 24, 460), maxHeight: container.height * 0.62)
+        .frame(maxWidth: min(container.width - 24, 460))
         .position(x: container.width / 2, y: y)
     }
 
@@ -400,11 +400,9 @@ private struct PageTextContent: View {
     }
 
     private func translationPanel(_ t: (en: String, zh: String)) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 6) {
-                transLine("English", t.en, id: "p-en", lang: "en-US")
-                transLine("中文", t.zh, id: "p-zh", lang: "zh-CN")
-            }
+        VStack(alignment: .leading, spacing: 6) {
+            transLine("English", t.en, id: "p-en", lang: "en-US")
+            transLine("中文", t.zh, id: "p-zh", lang: "zh-CN")
         }
         .padding(Spacing.md)
         .background(.ultraThinMaterial)
@@ -467,11 +465,10 @@ private struct PageTextContent: View {
                 }.buttonStyle(.plain)
             }
             if let c {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.sm) {
-                        row("English", c.english); row("中文", c.chinese)
-                        row("语法", c.grammar); row("用法", c.usage); row("例句", c.example)
-                    }
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    row("English", c.english); row("中文", c.chinese)
+                    row("语法", c.grammar); row("用法", c.usage)
+                    playableRow("例句", c.example, id: "ex-\(word)")   // French → tap to hear
                 }
             } else if WordStudy.isAvailable {
                 HStack(spacing: 10) { ProgressView(); Text("正在想…")
@@ -491,6 +488,24 @@ private struct PageTextContent: View {
             Text(label).font(.system(size: 11, weight: .medium)).foregroundStyle(theme.textMuted)
             Text(value.isEmpty ? "—" : value).font(.system(size: 16)).lineSpacing(3)
                 .foregroundStyle(theme.textPrimary).fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// A row whose value can be read aloud in the page's own language (e.g. the
+    /// French example) — the extract the word/example is in, spoken.
+    private func playableRow(_ label: String, _ value: String, id: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label).font(.system(size: 11, weight: .medium)).foregroundStyle(theme.textMuted)
+            HStack(alignment: .top, spacing: 6) {
+                Button { speaker.toggle(id: id, text: value, language: language) } label: {
+                    Image(systemName: speaker.speakingId == id ? "stop.circle.fill" : "play.circle")
+                        .font(.system(size: 16)).foregroundStyle(theme.accentText)
+                }.buttonStyle(.plain).padding(.top, 1)
+                    .opacity(value.isEmpty ? 0 : 1)
+                Text(value.isEmpty ? "—" : value).font(.system(size: 16)).lineSpacing(3)
+                    .foregroundStyle(theme.textPrimary).fixedSize(horizontal: false, vertical: true)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

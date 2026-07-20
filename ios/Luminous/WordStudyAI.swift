@@ -64,7 +64,8 @@ enum WordStudy {
 
     /// Explain `word` as it appears in `context` (its sentence). Returns nil when
     /// the model is unavailable or the output can't pass the forbidden-words gate.
-    static func base(for word: String, context: String) async -> WordCard? {
+    static func base(for word: String, context: String,
+                     instructions: String = PromptTemplates.instructions(.word)) async -> WordCard? {
         let w = word.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !w.isEmpty else { return nil }
 
@@ -75,7 +76,7 @@ enum WordStudy {
             解释其中的这个词：「\(w)」。
             返回 JSON：{"english": 基本英文释义, "chinese": 基本中文释义, "grammar": 词性/语法, "usage": 用法, "example": 一个带中文意思的例句}
             """
-            if let c: CloudWord = await CloudLLM.json(system: PromptTemplates.instructions(.word), user: user, as: CloudWord.self),
+            if let c: CloudWord = await CloudLLM.json(system: instructions, user: user, as: CloudWord.self),
                ForbiddenWords.passes([c.english, c.chinese, c.grammar, c.usage, c.example].joined(separator: " ")) {
                 return WordCard(word: w, english: c.english, chinese: c.chinese,
                                 grammar: c.grammar, usage: c.usage, example: c.example)
@@ -84,7 +85,6 @@ enum WordStudy {
 
         #if canImport(FoundationModels)
         if #available(iOS 26.0, macOS 26.0, *), AIHelper.isAvailable {
-            let instructions = PromptTemplates.instructions(.word)
             let prompt = """
             在这句话里：「\(context.trimmingCharacters(in: .whitespacesAndNewlines).prefix(200))」
             解释其中的这个词：「\(w)」
@@ -105,7 +105,8 @@ enum WordStudy {
 
     /// A few short, interesting reading notes for a whole page — so you can read
     /// it without tapping every word. nil when the model is away.
-    static func notes(for text: String) async -> [String]? {
+    static func notes(for text: String,
+                      instructions: String = PromptTemplates.instructions(.notes)) async -> [String]? {
         let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.isEmpty else { return nil }
 
@@ -114,7 +115,7 @@ enum WordStudy {
             这一页的原文：「\(t.prefix(600))」
             返回 JSON：{"notes": [三条学习笔记，每条都含原文里的一个词或短语，再加它的英文解释和简体中文解释]}
             """
-            if let c: CloudNotes = await CloudLLM.json(system: PromptTemplates.instructions(.notes), user: user, as: CloudNotes.self) {
+            if let c: CloudNotes = await CloudLLM.json(system: instructions, user: user, as: CloudNotes.self) {
                 let notes = c.notes.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                     .filter { !$0.isEmpty && ForbiddenWords.passes($0) }
                 if !notes.isEmpty { return notes }
@@ -123,7 +124,6 @@ enum WordStudy {
 
         #if canImport(FoundationModels)
         if #available(iOS 26.0, macOS 26.0, *), AIHelper.isAvailable {
-            let instructions = PromptTemplates.instructions(.notes)
             if let r = try? await LanguageModelSession(instructions: instructions)
                 .respond(to: "这一页的原文：「\(t.prefix(600))」", generating: GenPageNotes.self) {
                 let notes = r.content.notes
@@ -139,7 +139,8 @@ enum WordStudy {
     /// A little lesson over the whole page: walk the key words/phrases in order,
     /// each with how it's used + its meaning (English + 中文). nil when the model
     /// is away.
-    static func lesson(for text: String) async -> [LessonStep]? {
+    static func lesson(for text: String,
+                       instructions: String = PromptTemplates.instructions(.lesson)) async -> [LessonStep]? {
         let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.isEmpty else { return nil }
 
@@ -148,7 +149,7 @@ enum WordStudy {
             这一页的原文：「\(t.prefix(600))」
             按原文顺序为主要的词和短语各做一步讲解。返回 JSON：{"steps": [{"word": 原文里的词或短语, "english": 英文解释一句, "chinese": 简体中文解释一句}]}
             """
-            if let c: CloudLessonJSON = await CloudLLM.json(system: PromptTemplates.instructions(.lesson), user: user, as: CloudLessonJSON.self, maxTokens: 2000) {
+            if let c: CloudLessonJSON = await CloudLLM.json(system: instructions, user: user, as: CloudLessonJSON.self, maxTokens: 2000) {
                 let steps = c.steps
                     .filter { !$0.word.trimmingCharacters(in: .whitespaces).isEmpty
                               && ForbiddenWords.passes($0.english + $0.chinese) }
@@ -159,7 +160,6 @@ enum WordStudy {
 
         #if canImport(FoundationModels)
         if #available(iOS 26.0, macOS 26.0, *), AIHelper.isAvailable {
-            let instructions = PromptTemplates.instructions(.lesson)
             if let r = try? await LanguageModelSession(instructions: instructions)
                 .respond(to: "这一页的原文：「\(t.prefix(600))」", generating: GenLesson.self) {
                 let steps = r.content.steps
@@ -171,6 +171,28 @@ enum WordStudy {
         }
         #endif
         return nil
+    }
+
+    /// Run one generation with a GIVEN prompt on a sample sentence, ignoring the
+    /// cache — so the prompt editor's "试一下" can show what a prompt actually does.
+    /// Returns a readable multi-line string, or nil when no model produced output.
+    static func preview(kind: PromptKind, instructions: String, sample: String) async -> String? {
+        let s = sample.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !s.isEmpty else { return nil }
+        switch kind {
+        case .word:
+            // Explain the longest word in the sample, in the sample's context.
+            let word = s.split { !$0.isLetter && $0 != "'" && $0 != "’" }
+                .map(String.init).max(by: { $0.count < $1.count }) ?? s
+            guard let c = await base(for: word, context: s, instructions: instructions) else { return nil }
+            return "【\(c.word)】\nEnglish: \(c.english)\n中文: \(c.chinese)\n语法: \(c.grammar)\n用法: \(c.usage)\n例句: \(c.example)"
+        case .notes:
+            guard let n = await notes(for: s, instructions: instructions), !n.isEmpty else { return nil }
+            return n.map { "• \($0)" }.joined(separator: "\n")
+        case .lesson:
+            guard let l = await lesson(for: s, instructions: instructions), !l.isEmpty else { return nil }
+            return l.map { "▸ \($0.word)\n   EN: \($0.english)\n   中: \($0.chinese)" }.joined(separator: "\n\n")
+        }
     }
 }
 

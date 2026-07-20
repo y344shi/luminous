@@ -31,6 +31,15 @@ enum PromptKind: String, CaseIterable, Identifiable {
         }
     }
 
+    /// A short sample the "试一下" preview runs on by default (a French line).
+    var sampleText: String {
+        switch self {
+        case .word:   return "Le petit chat dort sous la table."
+        case .notes:  return "Le petit chat dort sous la table. Il fait un rêve doux."
+        case .lesson: return "Le petit chat dort sous la table."
+        }
+    }
+
     /// The system default instructions (the teaching style we ship with).
     var defaultInstructions: String {
         switch self {
@@ -95,6 +104,10 @@ struct PromptEditorView: View {
     let kind: PromptKind
     @Environment(\.theme) private var theme
     @State private var text = ""
+    @State private var sample = ""
+    @State private var testing = false
+    @State private var result: String?
+    @State private var testedEmpty = false
 
     var body: some View {
         ScrollView {
@@ -120,6 +133,10 @@ struct PromptEditorView: View {
 
                 Divider().padding(.vertical, 4)
 
+                testSection
+
+                Divider().padding(.vertical, 4)
+
                 Text("系统默认")
                     .font(.system(size: 12, weight: .medium)).foregroundStyle(theme.textMuted)
                 Text(kind.defaultInstructions)
@@ -137,7 +154,78 @@ struct PromptEditorView: View {
         .themedScreen()
         .navigationTitle(kind.title)
         .inlineNavTitle()
-        .onAppear { text = PromptTemplates.instructions(kind) }
+        .onAppear {
+            text = PromptTemplates.instructions(kind)
+            if sample.isEmpty { sample = kind.sampleText }
+        }
         .onDisappear { PromptTemplates.set(kind, text) }   // save on leave
+    }
+
+    // MARK: 试一下 — run the CURRENT prompt on a sample, live, ignoring the cache
+
+    @ViewBuilder private var testSection: some View {
+        Text("试一下")
+            .font(.system(size: 12, weight: .medium)).foregroundStyle(theme.textMuted)
+        Text("用上面这段提示词，现在就在一小句上跑一次，看看效果。不写进书里，也不受缓存影响。")
+            .font(.system(size: 12)).lineSpacing(3).foregroundStyle(theme.textMuted)
+
+        TextEditor(text: $sample)
+            .font(.system(size: 14)).lineSpacing(3)
+            .frame(minHeight: 60)
+            .padding(8)
+            .background(theme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(theme.border, lineWidth: 1))
+
+        HStack(spacing: Spacing.sm) {
+            Button {
+                runTest()
+            } label: {
+                Label(testing ? "生成中…" : "试一下", systemImage: "play.circle.fill")
+                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(theme.accentText)
+            }
+            .buttonStyle(.plain)
+            .disabled(testing || sample.trimmingCharacters(in: .whitespaces).isEmpty)
+
+            if !WordStudy.isAvailable {
+                Text("需要 Apple Intelligence 或云端地址")
+                    .font(.system(size: 12)).foregroundStyle(theme.textMuted)
+            }
+            Spacer()
+        }
+
+        if testing {
+            HStack(spacing: 10) { ProgressView(); Text("正在用你的提示词生成…")
+                .font(.system(size: 13)).foregroundStyle(theme.textSecondary) }
+        } else if let result {
+            Text(result)
+                .font(.system(size: 14)).lineSpacing(4)
+                .textSelection(.enabled)
+                .foregroundStyle(theme.textPrimary)
+                .padding(Spacing.md)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(theme.surfaceSoft)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        } else if testedEmpty {
+            Text("这次没有生成内容。可能是模型暂时不可用，或原文太短——换句样例再试。")
+                .font(.system(size: 13)).lineSpacing(3).foregroundStyle(theme.textSecondary)
+        }
+    }
+
+    private func runTest() {
+        let prompt = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let s = sample
+        testing = true; result = nil; testedEmpty = false
+        Task {
+            let r = await WordStudy.preview(kind: kind,
+                                            instructions: prompt.isEmpty ? kind.defaultInstructions : prompt,
+                                            sample: s)
+            await MainActor.run {
+                testing = false
+                result = r
+                testedEmpty = (r == nil)
+            }
+        }
     }
 }
