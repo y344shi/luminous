@@ -23,18 +23,35 @@ enum CloudLLM {
         static let model = "tdd.cloud.model"
     }
 
-    // MARK: config (persisted)
+    /// Shipped defaults — the app points at the home MLX server out of the box.
+    /// All three are overridable in Settings; a stored value always wins.
+    private enum Default {
+        static let base = "http://192.168.2.138:8080/v1"
+        static let apiKey = "omlx-2.718282"
+        static let model = "local-qwen"
+    }
+
+    // MARK: config (persisted, falling back to the shipped defaults)
 
     static var baseURL: String {
-        get { UserDefaults.standard.string(forKey: Key.base) ?? "" }
+        get {
+            let v = UserDefaults.standard.string(forKey: Key.base) ?? ""
+            return v.isEmpty ? Default.base : v
+        }
         set { UserDefaults.standard.set(newValue.trimmingCharacters(in: .whitespaces), forKey: Key.base) }
     }
     static var apiKey: String {
-        get { UserDefaults.standard.string(forKey: Key.apiKey) ?? "" }
+        get {
+            let v = UserDefaults.standard.string(forKey: Key.apiKey) ?? ""
+            return v.isEmpty ? Default.apiKey : v
+        }
         set { UserDefaults.standard.set(newValue.trimmingCharacters(in: .whitespaces), forKey: Key.apiKey) }
     }
     static var model: String {
-        get { UserDefaults.standard.string(forKey: Key.model) ?? "" }
+        get {
+            let v = UserDefaults.standard.string(forKey: Key.model) ?? ""
+            return v.isEmpty ? Default.model : v
+        }
         set { UserDefaults.standard.set(newValue.trimmingCharacters(in: .whitespaces), forKey: Key.model) }
     }
 

@@ -370,9 +370,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = S29PL5D9HM;
 				ENABLE_APP_SANDBOX = YES;
+				"ENABLE_APP_SANDBOX[sdk=macosx*]" = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
+				"ENABLE_USER_SELECTED_FILES[sdk=macosx*]" = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "Luminous-mac.entitlements";
 				INFOPLIST_FILE = Info.plist;
 				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphoneos*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphonesimulator*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
@@ -421,9 +424,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = S29PL5D9HM;
 				ENABLE_APP_SANDBOX = YES;
+				"ENABLE_APP_SANDBOX[sdk=macosx*]" = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
+				"ENABLE_USER_SELECTED_FILES[sdk=macosx*]" = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "Luminous-mac.entitlements";
 				INFOPLIST_FILE = Info.plist;
 				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphoneos*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";
 				"INFOPLIST_KEY_NSCameraUsageDescription[sdk=iphonesimulator*]" = "拍下有文字的照片，在本机读出来并翻译；只在本机，不上传图片。";

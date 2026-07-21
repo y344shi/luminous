@@ -44,10 +44,10 @@ struct BookReaderView: View {
     @State private var version = 0
     @State private var showApplyAll = false
     @State private var showAnnotator = false
-    @State private var textTarget: TextTarget?
     @State private var speaker = Speaker()
 
     #if canImport(UIKit)
+    @State private var textTarget: TextTarget?
     struct TextTarget: Identifiable { let id = UUID(); let url: URL; let image: UIImage }
     #endif
 

@@ -631,8 +631,10 @@ struct SettingsView: View {
                     SecureField(placeholder, text: text)
                 } else {
                     TextField(placeholder, text: text)
-                        .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        #if os(iOS)
+                        .textInputAutocapitalization(.never)
+                        #endif
                 }
             }
             .font(.system(size: 15))
