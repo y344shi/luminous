@@ -26,8 +26,8 @@ enum CloudLLM {
     /// Shipped defaults — the app points at the home MLX server out of the box.
     /// All three are overridable in Settings; a stored value always wins.
     private enum Default {
-        static let base = "http://192.168.2.138:8080/v1"
-        static let apiKey = "omlx-2.718282"
+        static let base = "https://184.147.157.106/v1"
+        static let apiKey = "omlx_live_ST-XxXjRvdLofkD5tAm1QN-qkscp6SAnQvxOY-T40n90iqVt"
         static let model = "local-qwen"
     }
 
