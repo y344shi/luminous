@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Personal build: allow the app to reach a self-hosted讲解 server over
+	     plain HTTP on the local network (e.g. http://192.168.x.x:8080/v1 or a
+	     .local name). The cloud endpoint is off by default and user-entered. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>连接你在本地网络里自建的讲解服务器（只在你填了地址时）。</string>
+</dict>
+</plist>
