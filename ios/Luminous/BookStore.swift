@@ -208,14 +208,16 @@ enum BookStore {
     /// boxes, and annotations.
     static func forgetGenerated(for pageURL: URL) {
         let base = pageURL.deletingPathExtension()
-        for ext in ["trans", "notes2", "lesson"] {
+        for ext in ["trans", "notes2", "lesson", "lesson2"] {
             try? FileManager.default.removeItem(at: base.appendingPathExtension(ext))
         }
     }
 
     /// The page's little word-by-word lesson, cached in a .lesson sidecar.
     static func lesson(for pageURL: URL) async -> [LessonStep]? {
-        let sidecar = pageURL.deletingPathExtension().appendingPathExtension("lesson")
+        // .lesson2 = the richer, "explain + connect" lessons (the old .lesson were
+        // word→translation only). Bumping the name auto-regenerates on next open.
+        let sidecar = pageURL.deletingPathExtension().appendingPathExtension("lesson2")
         if let d = try? Data(contentsOf: sidecar),
            let l = try? JSONDecoder().decode([LessonStep].self, from: d) { return l }
         let text = await ocrText(for: pageURL)

@@ -27,12 +27,17 @@ struct WordCard: Codable, Hashable {
 }
 
 /// One step of a little language lesson: a word/phrase from the page, explained
-/// in English and 中文. Played as a voice-over (word in its language, then the
-/// explanations) to teach how each word is used.
+/// in English and 中文, plus a teaching note that connects it to the rest of the
+/// sentence. Played as a voice-over (word in its language, then the meaning, then
+/// the note) to teach how each word is used and how it links to the others.
 struct LessonStep: Codable, Hashable {
     var word: String        // the original-language word/phrase
-    var english: String     // how it's used + meaning, in English
-    var chinese: String     // 中文 解释
+    var english: String     // meaning, in English
+    var chinese: String     // 中文 意思
+    // The richer part — how the word works and connects to its neighbours
+    // (grammar, agreement, what it points to / pairs with). Bilingual. Optional
+    // so older cached lessons (without it) still decode.
+    var note: String?
 }
 
 #if canImport(FoundationModels)
@@ -55,7 +60,7 @@ private struct GenWordCard {
 /// Cloud JSON shapes (the OpenAI-compatible equivalents of the @Generable structs).
 private struct CloudWord: Codable { var english, chinese, grammar, usage, example: String }
 private struct CloudNotes: Codable { var notes: [String] }
-private struct CloudLessonStepJSON: Codable { var word, english, chinese: String }
+private struct CloudLessonStepJSON: Codable { var word, english, chinese: String; var note: String? }
 private struct CloudLessonJSON: Codable { var steps: [CloudLessonStepJSON] }
 
 enum WordStudy {
@@ -147,13 +152,16 @@ enum WordStudy {
         if CloudLLM.isConfigured {
             let user = """
             这一页的原文：「\(t.prefix(600))」
-            按原文顺序为主要的词和短语各做一步讲解。返回 JSON：{"steps": [{"word": 原文里的词或短语, "english": 英文解释一句, "chinese": 简体中文解释一句}]}
+            按原文顺序为主要的词和短语各做一步讲解。每一步除了意思，还要讲清楚它在这句话里怎么用、\
+            以及它和前后词的关系（比如性数配合、和哪个词搭配、指向谁、时态语气）。
+            返回 JSON：{"steps": [{"word": 原文里的词或短语, "english": 一句英文意思, "chinese": 一句简体中文意思, "note": 两三句话的讲解，说明它的语法作用和它怎样和句子里其它词连起来，中英文都可以}]}
             """
-            if let c: CloudLessonJSON = await CloudLLM.json(system: instructions, user: user, as: CloudLessonJSON.self, maxTokens: 2000) {
+            if let c: CloudLessonJSON = await CloudLLM.json(system: instructions, user: user, as: CloudLessonJSON.self, maxTokens: 3200) {
                 let steps = c.steps
                     .filter { !$0.word.trimmingCharacters(in: .whitespaces).isEmpty
-                              && ForbiddenWords.passes($0.english + $0.chinese) }
-                    .map { LessonStep(word: $0.word, english: $0.english, chinese: $0.chinese) }
+                              && ForbiddenWords.passes($0.english + $0.chinese + " " + ($0.note ?? "")) }
+                    .map { LessonStep(word: $0.word, english: $0.english, chinese: $0.chinese,
+                                      note: ($0.note?.isEmpty == false) ? $0.note : nil) }
                 if !steps.isEmpty { return steps }
             }
         }
@@ -164,8 +172,9 @@ enum WordStudy {
                 .respond(to: "这一页的原文：「\(t.prefix(600))」", generating: GenLesson.self) {
                 let steps = r.content.steps
                     .filter { !$0.word.trimmingCharacters(in: .whitespaces).isEmpty
-                              && ForbiddenWords.passes($0.english + $0.chinese) }
-                    .map { LessonStep(word: $0.word, english: $0.english, chinese: $0.chinese) }
+                              && ForbiddenWords.passes($0.english + $0.chinese + " " + $0.note) }
+                    .map { LessonStep(word: $0.word, english: $0.english, chinese: $0.chinese,
+                                      note: $0.note.isEmpty ? nil : $0.note) }
                 return steps.isEmpty ? nil : steps
             }
         }
@@ -191,7 +200,11 @@ enum WordStudy {
             return n.map { "• \($0)" }.joined(separator: "\n")
         case .lesson:
             guard let l = await lesson(for: s, instructions: instructions), !l.isEmpty else { return nil }
-            return l.map { "▸ \($0.word)\n   EN: \($0.english)\n   中: \($0.chinese)" }.joined(separator: "\n\n")
+            return l.map { step in
+                var t = "▸ \(step.word)\n   EN: \(step.english)\n   中: \(step.chinese)"
+                if let n = step.note, !n.isEmpty { t += "\n   ↳ \(n)" }
+                return t
+            }.joined(separator: "\n\n")
         }
     }
 }
@@ -202,10 +215,12 @@ enum WordStudy {
 private struct GenLessonStep {
     @Guide(description: "原文里的一个词或短语，保持原来的语言")
     var word: String
-    @Guide(description: "一句英文，讲这个词的意思和用法")
+    @Guide(description: "一句英文意思")
     var english: String
-    @Guide(description: "一句简体中文，讲这个词的意思和用法")
+    @Guide(description: "一句简体中文意思")
     var chinese: String
+    @Guide(description: "两三句话的讲解：这个词在句中的语法作用，以及它怎样和前后的词连起来（性数配合、搭配、指向、时态语气）。中英文都可以")
+    var note: String
 }
 
 @available(iOS 26.0, macOS 26.0, *)

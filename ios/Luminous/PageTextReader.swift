@@ -320,6 +320,17 @@ private struct PageTextContent: View {
                 .fixedSize(horizontal: false, vertical: true)
             Text(step.chinese).font(.system(size: 14)).foregroundStyle(theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
+            if let note = step.note, !note.isEmpty {
+                Text(note).font(.system(size: 13)).lineSpacing(3)
+                    .foregroundStyle(theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 2)
+                    .overlay(alignment: .leading) {
+                        Rectangle().fill(theme.accent.opacity(0.35)).frame(width: 2)
+                            .padding(.vertical, 1)
+                    }
+                    .padding(.leading, 8)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -341,6 +352,10 @@ private struct PageTextContent: View {
             segs.append((s.word, language))
             segs.append((s.english, "en-US"))
             segs.append((s.chinese, "zh-CN"))
+            if let note = s.note, !note.isEmpty {
+                // The connecting explanation — read in 中文 (it's mostly 中文).
+                segs.append((note, "zh-CN"))
+            }
         }
         speaker.speakSequence(id: "lesson", segments: segs)
     }
