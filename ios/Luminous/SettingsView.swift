@@ -26,6 +26,8 @@ struct SettingsView: View {
     @State private var cloudTesting = false
     @State private var cloudTestResult: Bool? = nil
     @State private var cloudLocalOnly = CloudLLM.localOnly
+    @State private var localTesting = false
+    @State private var localTestResult: String?
     @State private var transcribeBooks = BookPrefs.transcribeEnabled
 
     var body: some View {
@@ -620,6 +622,8 @@ struct SettingsView: View {
             .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .strokeBorder(cloudLocalOnly ? theme.accent : theme.border, lineWidth: 1))
 
+            localModelCard
+
             VStack(spacing: Spacing.sm) {
                 cloudField(title: "Base URL", text: $cloudBase,
                            placeholder: "https://你的地址/v1", secure: false)
@@ -660,6 +664,48 @@ struct SettingsView: View {
         .onChange(of: cloudBase) { _, _ in saveCloud() }
         .onChange(of: cloudKey) { _, _ in saveCloud() }
         .onChange(of: cloudModel) { _, _ in saveCloud() }
+    }
+
+    /// 本机模型 · status + a real generation test (the only way to know it works here).
+    private var localModelCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(spacing: 8) {
+                Image(systemName: AIHelper.isAvailable ? "checkmark.seal" : "exclamationmark.triangle")
+                    .font(.system(size: 15))
+                    .foregroundStyle(AIHelper.isAvailable ? theme.accentText : theme.textMuted)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("本机模型（Apple 智能）")
+                        .font(.system(size: 15)).foregroundStyle(theme.textPrimary)
+                    Text(AIHelper.statusLine)
+                        .font(.system(size: 12)).foregroundStyle(theme.textSecondary)
+                }
+                Spacer()
+            }
+            HStack(spacing: Spacing.sm) {
+                SoftButton(title: localTesting ? "测试中…" : "测试本机模型",
+                           variant: .ghost, full: false) {
+                    localTesting = true; localTestResult = nil
+                    Task {
+                        let r = await AIHelper.selfTest()
+                        await MainActor.run { localTesting = false; localTestResult = r }
+                    }
+                }
+                .disabled(localTesting)
+                Spacer()
+            }
+            if let r = localTestResult {
+                Text(r).font(.system(size: 12)).lineSpacing(2)
+                    .textSelection(.enabled)
+                    .foregroundStyle(r.hasPrefix("可用") ? theme.accentText : theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(theme.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .strokeBorder(theme.border, lineWidth: 1))
     }
 
     private func cloudField(title: String, text: Binding<String>,

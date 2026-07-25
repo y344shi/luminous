@@ -73,6 +73,44 @@ enum AIHelper {
 
     enum AIError: Error { case unavailable }
 
+    /// A one-line status for Settings: what the system says about the model.
+    static var statusLine: String {
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, macOS 26.0, *) {
+            switch SystemLanguageModel.default.availability {
+            case .available: return "已就绪"
+            case .unavailable(.deviceNotEligible): return "这台设备不支持"
+            case .unavailable(.appleIntelligenceNotEnabled): return "还没在系统设置里打开 Apple 智能"
+            case .unavailable(.modelNotReady): return "模型还在下载/准备中"
+            case .unavailable: return "暂时不可用"
+            }
+        }
+        #endif
+        return "这台设备没有本机模型（需要 iOS 26 + Apple 智能）"
+    }
+
+    /// Actually run a tiny generation — the only way to know the on-device model
+    /// really works here. Returns a human-readable result (including the system's
+    /// own error text, which is what makes a failing device diagnosable).
+    static func selfTest() async -> String {
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, macOS 26.0, *) {
+            guard case .available = SystemLanguageModel.default.availability else {
+                return "不可用 · \(statusLine)"
+            }
+            do {
+                let session = LanguageModelSession(instructions: "你是一个连通性测试。只回一个词。")
+                let r = try await session.respond(to: "请只回复两个字：可以")
+                let out = r.content.trimmingCharacters(in: .whitespacesAndNewlines)
+                return out.isEmpty ? "模型可用，但这次没有返回内容" : "可用 · 模型回复：\(out.prefix(30))"
+            } catch {
+                return "模型报错 · \(error.localizedDescription)"
+            }
+        }
+        #endif
+        return "这台设备没有本机模型（需要 iOS 26 + Apple 智能）"
+    }
+
     /// Choose three new words to learn, fitting the moment and building on history.
     static func vocab(language: String, learned: [String], context: String) async throws -> [VocabItem] {
         #if canImport(FoundationModels)
