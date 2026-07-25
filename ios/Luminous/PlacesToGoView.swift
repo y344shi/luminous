@@ -101,6 +101,87 @@ enum OutingSearch {
 
 private struct KindReasons: Codable { var reasons: [String: String] }
 
+/// A wrapping row of tappable link chips (opens the real venue page).
+private struct FlowLinks: View {
+    @Environment(\.theme) private var theme
+    let links: [VenueLink]
+    let open: (URL) -> Void
+
+    var body: some View {
+        FlowLayout(spacing: Spacing.sm) {
+            ForEach(links) { link in
+                Button { open(link.url) } label: {
+                    Label(link.label, systemImage: link.icon)
+                        .font(.system(size: 12, weight: .medium)).foregroundStyle(theme.accentText)
+                        .padding(.horizontal, 10).padding(.vertical, 6)
+                        .background(theme.accent.opacity(0.14), in: Capsule())
+                }.buttonStyle(.plain)
+            }
+        }
+    }
+}
+
+// MARK: - focus venues (curated, exact-schedule links)
+
+/// A named venue you care about, with links to the REAL, daily-updated pages —
+/// the exact sessions/times live there and stay correct (no in-app scraping, so
+/// nothing goes stale or gets a time wrong). Tap through for today's schedule.
+struct VenueLink: Identifiable {
+    let id = UUID()
+    let label: String
+    let icon: String
+    let url: URL
+}
+
+struct FocusVenue: Identifiable {
+    let id: String
+    let emoji: String
+    let name: String
+    let blurb: String
+    let category: SeedCategory
+    let scheduleURL: URL      // the one attached when kept as a wish
+    let links: [VenueLink]
+
+    private static func u(_ s: String) -> URL { URL(string: s)! }
+
+    static let all: [FocusVenue] = [
+        FocusVenue(
+            id: "richcraft", emoji: "🏊",
+            name: "Richcraft 康乐中心 · Kanata",
+            blurb: "游泳、Lane swim、健身、Zumba、篮球、乒乓球——每天都有能走进去(walk-in)或预约(reserve)的场次。",
+            category: .body,
+            scheduleURL: u("https://www.613today.ca/drop-in/centres/richcraft-recreation-complex-kanata"),
+            links: [
+                VenueLink(label: "今天的场次", icon: "calendar", url: u("https://www.613today.ca/drop-in/centres/richcraft-recreation-complex-kanata")),
+                VenueLink(label: "预约", icon: "checkmark.circle", url: u("https://reservation.frontdesksuite.ca/rcfs/richcraftkanata")),
+                VenueLink(label: "场馆信息", icon: "info.circle", url: u("https://ottawa.ca/en/residents/facilities/richcraft-recreation-complex-kanata")),
+            ]),
+        FocusVenue(
+            id: "racentre", emoji: "🏸",
+            name: "RA Centre",
+            blurb: "羽毛球、游泳、健身、桥牌、射箭——Riverside 上的大型运动中心，也有夏令营。",
+            category: .connection,
+            scheduleURL: u("https://www.racentre.com/sports-recreation.html"),
+            links: [
+                VenueLink(label: "项目 · 排期", icon: "calendar", url: u("https://www.racentre.com/sports-recreation.html")),
+                VenueLink(label: "游泳", icon: "figure.pool.swim", url: u("https://www.racentre.com/aquatics.html")),
+                VenueLink(label: "营地", icon: "tent", url: u("https://www.racentre.com/summer-camps.html")),
+                VenueLink(label: "时间 · 联系", icon: "info.circle", url: u("https://www.racentre.com/hourscontact-us.html")),
+            ]),
+        FocusVenue(
+            id: "uottawa", emoji: "🎓",
+            name: "uOttawa 校园康乐",
+            blurb: "Drop-in 足球、滑冰、武术、团课，Minto 运动中心——带学生/会员卡就能进。",
+            category: .learning,
+            scheduleURL: u("https://www.uottawa.ca/campus-life/recreation/drop-in-activities"),
+            links: [
+                VenueLink(label: "Drop-in 活动", icon: "calendar", url: u("https://www.uottawa.ca/campus-life/recreation/drop-in-activities")),
+                VenueLink(label: "开放时间", icon: "clock", url: u("https://www.uottawa.ca/campus-life/recreation/hours-operation")),
+                VenueLink(label: "场馆", icon: "info.circle", url: u("https://www.uottawa.ca/campus-life/recreation/facilities")),
+            ]),
+    ]
+}
+
 // MARK: - view
 
 struct PlacesToGoView: View {
@@ -113,6 +194,7 @@ struct PlacesToGoView: View {
     @State private var loading = false
     @State private var loadedOnce = false
     @State private var savedIds: Set<UUID> = []
+    @State private var savedFocus: Set<String> = []
 
     private var hour: Int { Calendar.current.component(.hour, from: Date()) }
     private var isLateNight: Bool { TimeOfDay.isLateNight(hour: hour) }
@@ -122,12 +204,15 @@ struct PlacesToGoView: View {
             VStack(alignment: .leading, spacing: Spacing.lg) {
                 header
                 if isLateNight { lateNightNote }
+                focusSection
+                Text("附近其它去处")
+                    .font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.textSecondary)
                 if sensed.coordinate == nil {
                     locationPrompt
                 } else {
                     ForEach($kinds) { $kind in kindSection($kind) }
-                    accuracyFootnote
                 }
+                accuracyFootnote
             }
             .padding(Spacing.lg)
         }
@@ -172,9 +257,70 @@ struct PlacesToGoView: View {
     }
 
     private var accuracyFootnote: some View {
-        Text("开放时间、名额和报名都以场馆自己的页面为准（点“报名 · 排期”打开）。这里不编造时间。")
+        Text("具体的场次、时间和报名都以场馆自己的页面为准（每天更新）。这里只带你到真实的页面，不编造时间。")
             .font(.system(size: 12)).lineSpacing(3).foregroundStyle(theme.textMuted)
             .padding(.top, 4)
+    }
+
+    // MARK: 重点场馆 — your focus venues, with exact-schedule links
+
+    private var focusSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("重点场馆 · 今天在办什么")
+                .font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.textSecondary)
+            ForEach(FocusVenue.all) { v in focusCard(v) }
+        }
+    }
+
+    private func focusCard(_ v: FocusVenue) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(spacing: 8) {
+                Text(v.emoji).font(.system(size: 20))
+                Text(v.name).font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(theme.textPrimary)
+                Spacer()
+            }
+            Text(v.blurb).font(.system(size: 13)).lineSpacing(3)
+                .foregroundStyle(theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            FlowLinks(links: v.links) { openURL($0) }
+            Button {
+                saveFocusWish(v)
+            } label: {
+                Label(savedFocus.contains(v.id) ? "已记成小愿望" : "记成小愿望",
+                      systemImage: savedFocus.contains(v.id) ? "checkmark.circle.fill" : "leaf")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(savedFocus.contains(v.id) ? theme.accentText : theme.textSecondary)
+            }
+            .buttonStyle(.plain).disabled(savedFocus.contains(v.id))
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(theme.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .strokeBorder(theme.accent.opacity(0.3), lineWidth: 1))
+    }
+
+    private func saveFocusWish(_ v: FocusVenue) {
+        let ts = DomainUtil.nowIso()
+        let seed = Seed(
+            id: DomainUtil.uid("seed"),
+            rawText: v.name,
+            title: "去 \(v.name)",
+            description: "\(v.blurb)\n今天的场次：\(v.scheduleURL.absoluteString)",
+            categories: [v.category],
+            minimumAction: "看一眼今天的场次",
+            estimatedDurationMin: 60,
+            energyRequired: .medium,
+            locationType: .outdoor,
+            preferredTimes: [],
+            triggerConditions: [],
+            tags: [v.name],
+            status: .active,
+            createdAt: ts, updatedAt: ts)
+        store.addSeed(seed)
+        savedFocus.insert(v.id)
     }
 
     @ViewBuilder private func kindSection(_ kind: Binding<OutingKind>) -> some View {
