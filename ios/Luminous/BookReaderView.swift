@@ -21,6 +21,9 @@ import UIKit
 #elseif canImport(AppKit)
 import AppKit
 #endif
+#if canImport(PencilKit) && os(iOS)
+import PencilKit
+#endif
 
 struct BookReaderView: View {
     let book: Book
@@ -43,6 +46,13 @@ struct BookReaderView: View {
     @State private var pageNote: String?          // per-page lesson kept with the book
     @State private var editingNote = false
     @State private var noteLoading = false
+    // Words highlighted right on the page in the split view
+    @State private var boxesByPage: [Int: [WordBox]] = [:]
+    @State private var showWords = true
+    @State private var inking = false
+    @State private var selectedWord: String?
+    @State private var wordCard: WordCard?
+    @State private var wordLoading = false
 
     #if canImport(UIKit)
     @State private var textTarget: TextTarget?
@@ -143,11 +153,29 @@ struct BookReaderView: View {
     }
 
     @ViewBuilder private func pageImage(_ url: URL) -> some View {
-        #if canImport(UIKit)
+        #if canImport(PencilKit) && os(iOS)
+        if inking, url == pages[safe: pageIndex], let ui = compositedUIImage(for: url) {
+            InkablePage(pageURL: url, image: ui)
+                .id("ink-\(url.lastPathComponent)")
+                .padding(6)
+        } else if let ui = compositedUIImage(for: url) {
+            ZoomableImage(image: Image(uiImage: ui),
+                          imageSize: ui.size,
+                          boxes: showWords ? (boxesByPage[pageIndex] ?? []) : [],
+                          selectedWord: selectedWord,
+                          onWordTap: { box in tapWord(box) },
+                          onDoubleTap: { textTarget = TextTarget(url: url, image: ui) })
+                .id("\(url.lastPathComponent)-\(version)-\(showWords)").padding(6)
+        } else { Color.clear }
+        #elseif canImport(UIKit)
         if let ui = compositedUIImage(for: url) {
             ZoomableImage(image: Image(uiImage: ui),
+                          imageSize: ui.size,
+                          boxes: showWords ? (boxesByPage[pageIndex] ?? []) : [],
+                          selectedWord: selectedWord,
+                          onWordTap: { box in tapWord(box) },
                           onDoubleTap: { textTarget = TextTarget(url: url, image: ui) })
-                .id("\(url.lastPathComponent)-\(version)").padding(6)
+                .id("\(url.lastPathComponent)-\(version)-\(showWords)").padding(6)
         } else { Color.clear }
         #else
         if let data = BookStore.data(for: url), let img = platformImage(data) {
@@ -253,16 +281,38 @@ struct BookReaderView: View {
                 .buttonStyle(.plain)
                 .disabled(pageText.isEmpty)
 
+                #if canImport(PencilKit) && os(iOS)
+                Button { withAnimation { inking.toggle() }; if !inking { version += 1 } } label: {
+                    Label(inking ? "写完了" : "笔",
+                          systemImage: inking ? "checkmark.circle.fill" : "pencil.tip")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(inking ? theme.accentText : theme.textSecondary)
+                        .padding(.horizontal, 11).padding(.vertical, 6)
+                        .background(inking ? theme.accent.opacity(0.16) : theme.surfaceSoft, in: Capsule())
+                }.buttonStyle(.plain)
+                #endif
+
+                Button { withAnimation { showWords.toggle() } } label: {
+                    Label(showWords ? "词已标出" : "标出可点的词",
+                          systemImage: showWords ? "highlighter" : "hand.tap")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(showWords ? theme.accentText : theme.textSecondary)
+                        .padding(.horizontal, 11).padding(.vertical, 6)
+                        .background(showWords ? theme.accent.opacity(0.16) : theme.surfaceSoft, in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .disabled((boxesByPage[pageIndex] ?? []).isEmpty)
+
                 #if canImport(UIKit)
                 Button {
                     if let url = pages[safe: pageIndex], let ui = compositedUIImage(for: url) {
                         textTarget = TextTarget(url: url, image: ui)
                     }
                 } label: {
-                    Label("在书页上点词", systemImage: "hand.tap")
-                        .font(.system(size: 13, weight: .medium)).foregroundStyle(theme.accentText)
+                    Label("全屏", systemImage: "arrow.up.left.and.arrow.down.right")
+                        .font(.system(size: 13, weight: .medium)).foregroundStyle(theme.textSecondary)
                         .padding(.horizontal, 11).padding(.vertical, 6)
-                        .background(theme.accent.opacity(0.12), in: Capsule())
+                        .background(theme.surfaceSoft, in: Capsule())
                 }.buttonStyle(.plain)
                 #endif
 
@@ -308,6 +358,7 @@ struct BookReaderView: View {
     private var pageLessonCard: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.md) {
+                inlineWordCard
                 if let note = pageNote, !note.isEmpty {
                     Text(renderedNote(note))
                         .font(.system(size: 15)).lineSpacing(4)
@@ -349,6 +400,87 @@ struct BookReaderView: View {
         (try? AttributedString(markdown: s,
                                options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
             ?? AttributedString(s)
+    }
+
+    /// Tapping a word right on the page: show its card instantly when the
+    /// pre-warm pass already explained it, otherwise ask and wait.
+    private func tapWord(_ box: WordBox) {
+        let key = ZoomableImage.clean(box.text)
+        guard !key.isEmpty else { return }
+        withAnimation(.easeOut(duration: 0.15)) { selectedWord = key }
+        if let cached = WordCardStore.card(key, book: book.id) {
+            wordCard = cached; wordLoading = false; return
+        }
+        wordCard = nil; wordLoading = true
+        let ctx = sentenceContext(for: box.text)
+        Task {
+            let c = await WordStudy.base(for: key, context: ctx)
+            await MainActor.run {
+                wordLoading = false
+                if selectedWord == key { wordCard = c }
+            }
+            if let c { WordCardStore.put(c, book: book.id) }
+        }
+    }
+
+    /// The sentence the tapped word sits in, from this page's text.
+    private func sentenceContext(for word: String) -> String {
+        let w = ZoomableImage.clean(word)
+        let full = pageText
+        guard !full.isEmpty, !w.isEmpty else { return word }
+        for s in full.components(separatedBy: CharacterSet(charactersIn: ".!?。！？…\n")) {
+            if s.range(of: w, options: .caseInsensitive) != nil {
+                let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !t.isEmpty { return t }
+            }
+        }
+        return full
+    }
+
+    /// The tapped word's card, above the page's course.
+    @ViewBuilder private var inlineWordCard: some View {
+        if let w = selectedWord {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 8) {
+                    Text(w).font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(theme.textPrimary)
+                    Button { speaker.toggle(id: "w-\(w)", text: w, language: langByPage[pageIndex]) } label: {
+                        Image(systemName: speaker.speakingId == "w-\(w)" ? "stop.circle.fill" : "play.circle")
+                            .font(.system(size: 16)).foregroundStyle(theme.accentText)
+                    }.buttonStyle(.plain)
+                    Spacer()
+                    Button {
+                        withAnimation { selectedWord = nil; wordCard = nil }
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 16)).foregroundStyle(theme.textMuted.opacity(0.7))
+                    }.buttonStyle(.plain)
+                }
+                if let c = wordCard {
+                    Text("\(c.english) ／ \(c.chinese)")
+                        .font(.system(size: 15)).foregroundStyle(theme.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if !c.grammar.isEmpty {
+                        Text(c.grammar).font(.system(size: 13)).foregroundStyle(theme.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    if !c.example.isEmpty {
+                        Text(c.example).font(.system(size: 13)).italic()
+                            .foregroundStyle(theme.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                } else if wordLoading {
+                    HStack(spacing: 8) { ProgressView().controlSize(.small)
+                        Text("正在想…").font(.system(size: 13)).foregroundStyle(theme.textMuted) }
+                } else {
+                    Text("这个词还没有解释。").font(.system(size: 13)).foregroundStyle(theme.textMuted)
+                }
+            }
+            .padding(Spacing.sm)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(theme.accent.opacity(0.10))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
     }
 
     /// Read the page's course aloud — each line in the voice its language needs
@@ -449,6 +581,12 @@ struct BookReaderView: View {
             let lang = Self.detectLanguage(text)
             await MainActor.run { tokensByPage[page] = rows; langByPage[page] = lang }
         }
+        // Word boxes, so the page itself can highlight what's tappable.
+        if boxesByPage[page] == nil {
+            let b = await BookStore.wordBoxes(for: pages[page])
+            await MainActor.run { boxesByPage[page] = b }
+        }
+
         // Explain this page's words in the background, so tapping any of them
         // (here or in the full-screen photo reader) opens instantly.
         WordCardStore.prewarm(pageURL: pages[page], book: book.id)
@@ -495,16 +633,75 @@ struct BookReaderView: View {
 
 // MARK: - a pinch-zoomable image (double-tap resets; one finger pans when zoomed)
 
+#if canImport(PencilKit) && os(iOS)
+/// The page with a PencilKit canvas laid straight over it, so you can annotate
+/// in the split view without opening the full-screen annotator. Saves as you
+/// draw (and on leaving), into the same `.ann` sidecar.
+private struct InkablePage: View {
+    let pageURL: URL
+    let image: UIImage
+    @State private var drawing = PKDrawing()
+    @State private var canvasSize: CGSize = .zero
+
+    var body: some View {
+        GeometryReader { geo in
+            let rect = fitted(in: geo.size)
+            ZStack {
+                Image(uiImage: image).resizable().scaledToFit()
+                    .frame(width: rect.width, height: rect.height)
+                AnnotationCanvas(drawing: $drawing)
+                    .frame(width: rect.width, height: rect.height)
+            }
+            .position(x: geo.size.width / 2, y: geo.size.height / 2)
+            .onAppear {
+                canvasSize = rect.size
+                if let data = BookStore.annotation(for: pageURL),
+                   let d = try? PKDrawing(data: data) { drawing = d }
+            }
+            .onChange(of: rect.size) { _, new in canvasSize = new }
+        }
+        .onDisappear { save() }
+    }
+
+    private func save() {
+        guard !drawing.strokes.isEmpty else {
+            BookStore.saveAnnotation(nil, png: nil, for: pageURL); return
+        }
+        let size = canvasSize == .zero ? CGSize(width: 1, height: 1) : canvasSize
+        let png = drawing.image(from: CGRect(origin: .zero, size: size),
+                                scale: UIScreen.main.scale).pngData()
+        BookStore.saveAnnotation(drawing.dataRepresentation(), png: png, for: pageURL)
+    }
+
+    private func fitted(in container: CGSize) -> CGRect {
+        guard image.size.width > 0, image.size.height > 0 else {
+            return CGRect(origin: .zero, size: container)
+        }
+        let s = min(container.width / image.size.width, container.height / image.size.height)
+        return CGRect(origin: .zero,
+                      size: CGSize(width: image.size.width * s, height: image.size.height * s))
+    }
+}
+#endif
+
 private struct ZoomableImage: View {
     let image: Image
+    /// Pixel size of the image, so word boxes can be laid out over it.
+    var imageSize: CGSize = .zero
+    /// Recognized words to highlight right on the page (tap → explain).
+    var boxes: [WordBox] = []
+    var selectedWord: String? = nil
+    var onWordTap: ((WordBox) -> Void)? = nil
     var onDoubleTap: (() -> Void)? = nil
+
+    @Environment(\.theme) private var theme
     @State private var scale: CGFloat = 1
     @State private var lastScale: CGFloat = 1
     @State private var offset: CGSize = .zero
     @State private var lastOffset: CGSize = .zero
 
     var body: some View {
-        let base = image.resizable().scaledToFit()
+        let base = imageWithWords
             .scaleEffect(scale)
             .offset(offset)
             .gesture(
@@ -534,6 +731,57 @@ private struct ZoomableImage: View {
         } else {
             base
         }
+    }
+
+    /// The page, with every recognized word marked and tappable — so you can
+    /// study straight from the split view, without going full-screen.
+    private var imageWithWords: some View {
+        GeometryReader { geo in
+            let rect = fitted(in: geo.size)
+            ZStack(alignment: .topLeading) {
+                image.resizable().frame(width: rect.width, height: rect.height)
+                if !boxes.isEmpty {
+                    ForEach(Array(boxes.enumerated()), id: \.offset) { _, box in
+                        wordRegion(box, in: rect.size)
+                    }
+                }
+            }
+            .frame(width: rect.width, height: rect.height)
+            .position(x: geo.size.width / 2, y: geo.size.height / 2)
+        }
+    }
+
+    private func wordRegion(_ box: WordBox, in size: CGSize) -> some View {
+        let isSel = selectedWord != nil && ZoomableImage.clean(box.text) == selectedWord
+        let w = box.w * size.width, h = box.h * size.height
+        let cx = (box.x + box.w / 2) * size.width
+        let cy = (1 - (box.y + box.h / 2)) * size.height
+        return RoundedRectangle(cornerRadius: 3)
+            .fill(isSel ? theme.accent.opacity(0.40) : Color.yellow.opacity(0.22))
+            .overlay(RoundedRectangle(cornerRadius: 3)
+                .stroke(isSel ? theme.accentText.opacity(0.9) : theme.accentText.opacity(0.35),
+                        lineWidth: isSel ? 1.5 : 0.6))
+            .frame(width: max(w, 8), height: max(h, 8))
+            .contentShape(Rectangle())
+            .onTapGesture { onWordTap?(box) }
+            .position(x: cx, y: cy)
+    }
+
+    /// The image's drawn rect inside `container` (scaledToFit maths, so the word
+    /// boxes land exactly where the words are).
+    private func fitted(in container: CGSize) -> CGRect {
+        guard imageSize.width > 0, imageSize.height > 0 else {
+            return CGRect(origin: .zero, size: container)
+        }
+        let s = min(container.width / imageSize.width, container.height / imageSize.height)
+        return CGRect(origin: .zero,
+                      size: CGSize(width: imageSize.width * s, height: imageSize.height * s))
+    }
+
+    static func clean(_ token: String) -> String {
+        token.trimmingCharacters(in: CharacterSet.alphanumerics.inverted
+            .subtracting(CharacterSet(charactersIn: "'’-")))
+            .trimmingCharacters(in: CharacterSet(charactersIn: "'’-"))
     }
 
     private func reset() { scale = 1; lastScale = 1; offset = .zero; lastOffset = .zero }

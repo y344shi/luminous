@@ -203,6 +203,11 @@ enum BookExport {
         「\(t.prefix(1500))」
 
         请写这一页的课，用这个结构：
+        ## 生词表
+        先给一份简明的词汇对照，像词典词条那样，一行一个，按原文出现顺序：
+        **原词** *(词性)* — English meaning ／ 中文意思
+        动词请一并写出原形（例如 dort → dormir）。这一部分要简短、好扫读。
+
         ## 译文
         English: 一句自然的英文翻译
         中文: 一句自然的简体中文翻译
@@ -230,7 +235,8 @@ enum BookExport {
             // Shorter brief so it fits the on-device context window.
             let brief = """
             这一页的原文：「\(t.prefix(500))」
-            用 Markdown 写：## 译文（英文一句、中文一句）；## 逐词讲解（每个重要的词：**原词** — 英文／中文，语法，一个例句）；## 语法要点。
+            用 Markdown 写：## 生词表（一行一个：**原词** *(词性)* — English ／ 中文，动词写出原形）；\
+            ## 译文（英文一句、中文一句）；## 逐词讲解（每个重要的词：语法，一个例句）；## 语法要点。
             """
             if let r2 = try? await LanguageModelSession(instructions: sys).respond(to: brief) {
                 let out = r2.content.trimmingCharacters(in: .whitespacesAndNewlines)

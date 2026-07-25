@@ -79,7 +79,7 @@ struct PageAnnotator: View {
 
 /// A PencilKit canvas over a clear background, its drawing bound out. Finger +
 /// Pencil, with the system tool picker.
-private struct AnnotationCanvas: UIViewRepresentable {
+struct AnnotationCanvas: UIViewRepresentable {
     @Binding var drawing: PKDrawing
 
     func makeUIView(context: Context) -> PKCanvasView {
