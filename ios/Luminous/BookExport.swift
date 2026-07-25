@@ -162,14 +162,27 @@ enum BookExport {
 
     // MARK: full-book lesson (in-app, via our cloud model)
 
+    /// Why a lesson couldn't be made — so the UI can say something actionable
+    /// instead of a guess.
+    enum LessonOutcome {
+        case ok(String)
+        case failed(reason: String)
+    }
+
     /// A complete "understand this whole book" lesson: all vocabulary in batch, then
     /// the grammar foundations the book uses. Built through the gateway (cloud), and
     /// cached so it isn't regenerated. Returns Markdown, or nil when unreachable.
     static func fullBookLesson(_ book: Book, force: Bool = false,
                                progress: (@Sendable (Int, Int) -> Void)? = nil) async -> String? {
-        if !force, let cached = cachedLesson(book) { return cached }
+        if case .ok(let s) = await fullBookLessonOutcome(book, force: force, progress: progress) { return s }
+        return nil
+    }
+
+    static func fullBookLessonOutcome(_ book: Book, force: Bool = false,
+                                      progress: (@Sendable (Int, Int) -> Void)? = nil) async -> LessonOutcome {
+        if !force, let cached = cachedLesson(book) { return .ok(cached) }
         let docs = await transcribe(book, progress: progress)
-        guard !docs.isEmpty else { return nil }
+        guard !docs.isEmpty else { return .failed(reason: "这本书还没认出文字。") }
 
         let lang = language(of: docs)
         let ranked = vocabularyRanked(docs)
@@ -190,23 +203,52 @@ enum BookExport {
         // Cloud (gateway) first, unless we're in local-only mode. A full-book
         // lesson is a big generation — give it minutes, not the default 60s, or
         // it times out mid-think and returns nothing.
-        if CloudLLM.isConfigured,
-           let out = await CloudLLM.chat(system: sys, user: user, maxTokens: 8000, timeout: 900),
-           !out.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            cache(out, book: book)
-            return out
+        var cloudTried = false
+        if CloudLLM.isConfigured {
+            cloudTried = true
+            if let out = await CloudLLM.chat(system: sys, user: user, maxTokens: 8000, timeout: 900),
+               !out.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                cache(out, book: book)
+                return .ok(out)
+            }
         }
 
-        // On-device (Apple Intelligence) — the local AI can build it too.
+        // On-device (Apple Intelligence). The local model's context window is a
+        // fraction of the cloud's, so it gets a COMPACT brief — the whole-book
+        // prompt above would overflow it and fail even when the model is ready.
         #if canImport(FoundationModels)
-        if #available(iOS 26.0, macOS 26.0, *), AIHelper.isAvailable,
-           let r = try? await LanguageModelSession(instructions: sys).respond(to: user) {
-            let out = r.content.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !out.isEmpty { cache(out, book: book); return out }
+        if #available(iOS 26.0, macOS 26.0, *) {
+            guard AIHelper.isAvailable else {
+                return .failed(reason: localUnavailableMessage(cloudTried: cloudTried))
+            }
+            let topVocab = ranked.prefix(60).map { "\($0.word)(\($0.count))" }.joined(separator: "、")
+            let brief = """
+            这是一本\(lang)图画书里的词和句子。请用简体中文写一份简明的课（Markdown）：
+            1) 常用词：按下面的顺序（出现最多的在前）讲解，每个给出词性、英文意思、中文意思。
+            2) 语法基础：这些句子用到的主要语法点，各配一个书里的例句。
+            常用词：\(topVocab)
+            书里的句子（节选）：
+            \(text.prefix(1200))
+            """
+            if let r = try? await LanguageModelSession(instructions: sys).respond(to: brief) {
+                let out = r.content.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !out.isEmpty { cache(out, book: book); return .ok(out) }
+            }
+            return .failed(reason: cloudTried
+                ? "云端没连上，本机模型这次也没写出来（书比较长时会这样）。可以先导出 XML/JSON 交给 ChatGPT，再把课粘回来。"
+                : "本机模型这次没写出来。可以先导出 XML/JSON 交给 ChatGPT，再把课粘回来。")
         }
         #endif
+        return .failed(reason: localUnavailableMessage(cloudTried: cloudTried))
+    }
 
-        return cachedLesson(book)
+    /// A precise, actionable reason (uses the system's own explanation).
+    private static func localUnavailableMessage(cloudTried: Bool) -> String {
+        let why = AIHelper.unavailableReason
+        let local = why.isEmpty ? "本机模型暂时不可用" : why
+        return cloudTried
+            ? "云端没连上（在外面时家里的地址访问不到），本机也不行：\(local)。可以先导出 XML/JSON 交给 ChatGPT，再把课粘回来。"
+            : "\(local)。可以先导出 XML/JSON 交给 ChatGPT，再把课粘回来。"
     }
 
     static func cachedLesson(_ book: Book) -> String? {

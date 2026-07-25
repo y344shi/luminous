@@ -496,14 +496,12 @@ struct BookOverviewView: View {
         }
         Task {
             await MainActor.run { status = "正在备整本书的课（可能要一两分钟）…" }
-            let text = await BookExport.fullBookLesson(book, force: force, progress: bump)
+            let outcome = await BookExport.fullBookLessonOutcome(book, force: force, progress: bump)
             await MainActor.run {
                 generating = false
-                if let text { lesson = LessonBox(text: text) }
-                else {
-                    noteMessage = CloudLLM.isConfigured
-                        ? "云端这次没返回（可能太慢或连不上）。可在设置里打开“只用本机 AI”用本机模型，或稍后再试。"
-                        : "本机模型不可用（需开启 Apple Intelligence），或在设置里填云端地址。"
+                switch outcome {
+                case .ok(let text): lesson = LessonBox(text: text)
+                case .failed(let reason): noteMessage = reason
                 }
             }
         }

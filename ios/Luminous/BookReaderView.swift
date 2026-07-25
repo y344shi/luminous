@@ -55,9 +55,20 @@ struct BookReaderView: View {
 
     private var pages: [URL] { book.pageURLs }
 
+    /// Side-by-side only where there's real width. On iPhone the split is ALWAYS
+    /// vertical (page up, lesson down) — even held sideways, two columns on a
+    /// phone leave both halves too narrow to read.
+    private var allowsSideBySide: Bool {
+        #if os(iOS)
+        return UIDevice.current.userInterfaceIdiom != .phone
+        #else
+        return true
+        #endif
+    }
+
     var body: some View {
         GeometryReader { geo in
-            let landscape = geo.size.width > geo.size.height
+            let landscape = allowsSideBySide && geo.size.width > geo.size.height
             if landscape {
                 HStack(spacing: 0) {
                     pagePane.frame(width: max(220, min(geo.size.width - 300, geo.size.width * hsplit)))
