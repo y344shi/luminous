@@ -54,19 +54,23 @@ struct OutingKind: Identifiable {
     var reason: String?          // gentle model-framed invitation (fallback below)
     var fallbackReason: String
 
+    // Weighted toward places that actually RUN registered drop-in programs,
+    // classes and camps — community / recreation centres, campus rec, the Y —
+    // rather than commercial venues. These bundle the swim / badminton / classes
+    // with real sign-up pages.
     static let all: [OutingKind] = [
-        .init(id: "swim",   emoji: "🏊", label: "游泳",        query: "swimming pool",
-              category: .body,      fallbackReason: "泡进水里，脑子会安静下来。"),
-        .init(id: "badminton", emoji: "🏸", label: "羽毛球",   query: "badminton court",
-              category: .body,      fallbackReason: "挥两拍，出点汗就好。"),
-        .init(id: "bike",   emoji: "🚲", label: "骑行",        query: "bike rental cycling trail",
-              category: .body,      fallbackReason: "沿着江边慢慢骑一段。"),
-        .init(id: "french", emoji: "🇫🇷", label: "法语 · 语言课", query: "French language school",
-              category: .learning,  fallbackReason: "去坐一节课，听听就好。"),
-        .init(id: "make",   emoji: "💻", label: "写代码 · 共创",  query: "coworking space",
-              category: .creation,  fallbackReason: "换个地方，和人一起待着写点东西。"),
-        .init(id: "meet",   emoji: "🤝", label: "认识人 · 活动",  query: "community center",
-              category: .connection, fallbackReason: "去有人的地方，待一会儿。"),
+        .init(id: "community", emoji: "🏫", label: "社区 · 康乐中心", query: "community recreation centre",
+              category: .connection, fallbackReason: "康乐中心里常有可以直接进去的活动。"),
+        .init(id: "university", emoji: "🎓", label: "大学 · 校园项目", query: "university recreation center",
+              category: .learning,   fallbackReason: "去校园里坐坐，蹭一场讲座或活动。"),
+        .init(id: "camp",    emoji: "⛺", label: "营地 · 训练营",   query: "summer camp day camp",
+              category: .exploration, fallbackReason: "报一个短营，换换环境。"),
+        .init(id: "ymca",    emoji: "🅨", label: "青年会 · YMCA",   query: "YMCA",
+              category: .connection, fallbackReason: "这里有游泳、课程，也有人。"),
+        .init(id: "french",  emoji: "🇫🇷", label: "法语 · 语言课",   query: "French language school",
+              category: .learning,   fallbackReason: "去听一节课，慢慢来。"),
+        .init(id: "pool",    emoji: "🏊", label: "泳池 · 羽毛球",   query: "public swimming pool badminton",
+              category: .body,       fallbackReason: "游一会儿，或挥两拍。"),
     ]
 }
 
@@ -137,7 +141,7 @@ struct PlacesToGoView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("现在能去的").font(.system(size: 22, weight: .semibold))
                 .foregroundStyle(theme.textPrimary)
-            Text("把“想动一动、想认识人、想学点什么”变成身边真的能去的地方。都是地图上真实的场馆和它们自己的报名/排期链接——不着急，看一眼就好。")
+            Text("把“想动一动、想认识人、想学点什么”变成身边真的能去的地方——偏向社区康乐中心、大学项目和营地这类真的在办活动、可以报名的地方。都是地图上真实的场馆和它们自己的报名/排期链接，不着急，看一眼就好。")
                 .font(.system(size: 13)).lineSpacing(3).foregroundStyle(theme.textSecondary)
         }
     }

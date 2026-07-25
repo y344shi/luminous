@@ -71,11 +71,11 @@ struct MapPinboardView: View {
     private var placesToGoEntry: some View {
         NavigationLink { PlacesToGoView() } label: {
             HStack(spacing: Spacing.md) {
-                Text("🏊🏸🚲").font(.system(size: 22))
+                Text("🏫🎓⛺").font(.system(size: 22))
                 VStack(alignment: .leading, spacing: 2) {
                     Text("去处 · 现在能去的").font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(theme.textPrimary)
-                    Text("想动一动、认识人、学点什么——身边真实的场馆和报名链接。")
+                    Text("社区康乐中心、大学项目、营地——真实的场馆和报名链接。")
                         .font(.system(size: 12)).lineSpacing(2).foregroundStyle(theme.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
