@@ -45,6 +45,8 @@ struct BookReaderView: View {
     @State private var showApplyAll = false
     @State private var showAnnotator = false
     @State private var speaker = Speaker()
+    @State private var pageNote: String?          // per-page lesson kept with the book
+    @State private var editingNote = false
 
     #if canImport(UIKit)
     @State private var textTarget: TextTarget?
@@ -249,6 +251,7 @@ struct BookReaderView: View {
     private var referenceCard: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             if pageIndex == 0 { bookOverviewLink }
+            pageNoteRow
             HStack {
                 Text("原文").font(.system(size: 11, weight: .medium)).foregroundStyle(theme.textMuted)
                 Spacer()
@@ -268,6 +271,34 @@ struct BookReaderView: View {
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
             .strokeBorder(theme.border.opacity(0.5), lineWidth: 1))
         .padding([.horizontal, .top], Spacing.md)
+    }
+
+    /// This page's own kept lesson (e.g. pasted from ChatGPT). Tap to read / edit.
+    private var pageNoteRow: some View {
+        Button { editingNote = true } label: {
+            HStack(spacing: 8) {
+                Image(systemName: (pageNote?.isEmpty == false) ? "note.text" : "plus.rectangle.on.folder")
+                    .font(.system(size: 13)).foregroundStyle(theme.accentText)
+                Text((pageNote?.isEmpty == false) ? "本页课 · 读 / 改" : "＋ 本页课（粘贴讲解，随书保存）")
+                    .font(.system(size: 13, weight: .medium)).foregroundStyle(theme.textPrimary)
+                Spacer()
+                Image(systemName: "chevron.right").font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(theme.textMuted)
+            }
+            .padding(.horizontal, Spacing.sm).padding(.vertical, 7)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background((pageNote?.isEmpty == false) ? theme.accent.opacity(0.10) : theme.surfaceSoft.opacity(0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .sheet(isPresented: $editingNote) {
+            PageNoteEditorView(text: pageNote ?? "", page: pageIndex + 1) { saved in
+                if let url = pages[safe: pageIndex] {
+                    BookStore.savePageNote(saved, for: url)
+                    pageNote = saved.isEmpty ? nil : saved
+                }
+            }
+        }
     }
 
     private var bookOverviewLink: some View {
@@ -436,6 +467,7 @@ struct BookReaderView: View {
 
     private func loadPage(_ page: Int) async {
         guard page < pages.count else { return }
+        await MainActor.run { pageNote = BookStore.pageNote(for: pages[page]) }
         if tokensByPage[page] == nil {
             let text = await BookStore.ocrText(for: pages[page])
             var rows: [[String]] = []
@@ -545,4 +577,66 @@ private struct DashedLine: Shape {
 
 private extension Array {
     subscript(safe i: Int) -> Element? { indices.contains(i) ? self[i] : nil }
+}
+
+/// Read / edit a page's kept lesson. Starts in read mode when there's content
+/// (rendered Markdown, selectable), or straight into editing when empty.
+struct PageNoteEditorView: View {
+    @Environment(\.theme) private var theme
+    @Environment(\.dismiss) private var dismiss
+    let page: Int
+    let onSave: (String) -> Void
+
+    @State private var text: String
+    @State private var editing: Bool
+
+    init(text: String, page: Int, onSave: @escaping (String) -> Void) {
+        self.page = page; self.onSave = onSave
+        _text = State(initialValue: text)
+        _editing = State(initialValue: text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if editing {
+                    TextEditor(text: $text)
+                        .font(.system(size: 14)).lineSpacing(3)
+                        .padding(8)
+                        .background(theme.surface)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(theme.border, lineWidth: 1))
+                        .padding(Spacing.lg)
+                } else {
+                    ScrollView {
+                        Text(rendered).font(.system(size: 15)).lineSpacing(4)
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(Spacing.lg)
+                            .foregroundStyle(theme.textPrimary)
+                    }
+                }
+            }
+            .themedScreen()
+            .navigationTitle("第 \(page) 页 · 课")
+            .inlineNavTitle()
+            .toolbar {
+                #if os(iOS)
+                ToolbarItem(placement: .topBarLeading) { Button("完成") { onSave(text); dismiss() } }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(editing ? "预览" : "编辑") { editing.toggle() }
+                        .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !editing)
+                }
+                #endif
+            }
+        }
+    }
+
+    private var rendered: AttributedString {
+        (try? AttributedString(
+            markdown: text,
+            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
+            ?? AttributedString(text)
+    }
 }

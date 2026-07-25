@@ -191,6 +191,20 @@ enum BookStore {
         return (t.english, t.chinese)
     }
 
+    /// A per-page lesson/annotation the user keeps with the book (e.g. pasted from
+    /// ChatGPT). Markdown, stored in a `.pagelesson` sidecar. Survives regeneration
+    /// of the AI caches (it's the user's own content).
+    static func pageNote(for pageURL: URL) -> String? {
+        let sidecar = pageURL.deletingPathExtension().appendingPathExtension("pagelesson")
+        return try? String(contentsOf: sidecar, encoding: .utf8)
+    }
+    static func savePageNote(_ text: String, for pageURL: URL) {
+        let sidecar = pageURL.deletingPathExtension().appendingPathExtension("pagelesson")
+        let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if t.isEmpty { try? FileManager.default.removeItem(at: sidecar) }
+        else { try? t.write(to: sidecar, atomically: true, encoding: .utf8) }
+    }
+
     /// Cache-only translation read (never generates) — for the book export, which
     /// includes translations opportunistically without triggering the model.
     static func cachedTranslation(for pageURL: URL) -> (english: String, chinese: String)? {

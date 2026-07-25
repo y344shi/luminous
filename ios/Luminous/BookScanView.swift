@@ -385,10 +385,14 @@ struct BookOverviewView: View {
     let book: Book
 
     @State private var ranked: [(word: String, count: Int)] = []
+    @State private var language: String?
     @State private var loading = true
     @State private var generating = false
     @State private var status = ""
     @State private var lesson: LessonBox?
+    @State private var selection: WordSelection?
+    @State private var noteMessage: String?
+    @State private var pasting = false
 
     private struct LessonBox: Identifiable { let id = UUID(); let text: String }
 
@@ -404,7 +408,9 @@ struct BookOverviewView: View {
         .navigationTitle("词汇与语法")
         .inlineNavTitle()
         .task { await load() }
-        .sheet(item: $lesson) { l in FullBookLessonView(book: book, text: l.text) }
+        .alert("没生成出来", isPresented: Binding(get: { noteMessage != nil }, set: { if !$0 { noteMessage = nil } })) {
+            Button("好", role: .cancel) {}
+        } message: { Text(noteMessage ?? "") }
     }
 
     private var vocabSection: some View {
@@ -419,21 +425,24 @@ struct BookOverviewView: View {
             } else {
                 FlowLayout(spacing: Spacing.sm) {
                     ForEach(Array(ranked.prefix(150).enumerated()), id: \.offset) { _, item in
-                        HStack(spacing: 4) {
-                            Text(item.word).font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(theme.textPrimary)
-                            Text("\(item.count)").font(.system(size: 11))
-                                .foregroundStyle(theme.accentText)
-                        }
-                        .padding(.horizontal, 9).padding(.vertical, 5)
-                        .background(theme.surface, in: Capsule())
-                        .overlay(Capsule().strokeBorder(theme.border, lineWidth: 0.5))
+                        Button { selection = WordSelection(word: item.word, language: language) } label: {
+                            HStack(spacing: 4) {
+                                Text(item.word).font(.system(size: 14, weight: .medium))
+                                    .foregroundStyle(theme.textPrimary)
+                                Text("\(item.count)").font(.system(size: 11))
+                                    .foregroundStyle(theme.accentText)
+                            }
+                            .padding(.horizontal, 9).padding(.vertical, 5)
+                            .background(theme.surface, in: Capsule())
+                            .overlay(Capsule().strokeBorder(theme.border, lineWidth: 0.5))
+                        }.buttonStyle(.plain)
                     }
                 }
-                Text("共 \(ranked.count) 个不同的词，越靠前出现得越多。")
+                Text("共 \(ranked.count) 个不同的词，越靠前出现得越多。点一个看释义、英文和例句。")
                     .font(.system(size: 12)).foregroundStyle(theme.textMuted)
             }
         }
+        .sheet(item: $selection) { s in WordDetailView(word: s.word, language: s.language) }
     }
 
     private var lessonSection: some View {
@@ -449,13 +458,23 @@ struct BookOverviewView: View {
                     Text(status.isEmpty ? "正在备课…" : status)
                         .font(.system(size: 13)).foregroundStyle(theme.textSecondary) }
             } else {
-                HStack(spacing: Spacing.sm) {
+                FlowLayout(spacing: Spacing.sm) {
                     SoftButton(title: "生成整本书的课", variant: .solid, full: false) { generate(force: false) }
-                    if BookExport.cachedLesson(book) != nil {
+                    if let cached = BookExport.cachedLesson(book) {
+                        SoftButton(title: "看", variant: .soft, full: false) { lesson = LessonBox(text: cached) }
                         SoftButton(title: "重做", variant: .ghost, full: false) { generate(force: true) }
                     }
-                    Spacer()
+                    SoftButton(title: "粘贴 ChatGPT 的课", variant: .ghost, full: false) { pasting = true }
                 }
+            }
+            Text("也可以把书导出成 XML/JSON 发给 ChatGPT，做出更详细的课，再粘回来——它会和这本书一起保存。")
+                .font(.system(size: 12)).lineSpacing(2).foregroundStyle(theme.textMuted)
+        }
+        .sheet(item: $lesson) { l in FullBookLessonView(book: book, text: l.text) }
+        .sheet(isPresented: $pasting) {
+            LessonPasteEditor(initial: BookExport.cachedLesson(book) ?? "") { saved in
+                BookExport.saveLesson(saved, book: book)
+                lesson = LessonBox(text: saved)
             }
         }
     }
@@ -464,8 +483,9 @@ struct BookOverviewView: View {
         let docs = await BookExport.transcribe(book)
         await MainActor.run {
             ranked = BookExport.vocabularyRanked(docs)
+            language = BookExport.language(of: docs)
             loading = false
-            if let cached = BookExport.cachedLesson(book) { lesson = LessonBox(text: cached) }
+            // Don't auto-open a cached lesson; just note it's there (重做 shows).
         }
     }
 
@@ -475,11 +495,55 @@ struct BookOverviewView: View {
             Task { @MainActor in status = "正在转写… \(p)/\(t)" }
         }
         Task {
-            await MainActor.run { status = "正在备整本书的课…" }
+            await MainActor.run { status = "正在备整本书的课（可能要一两分钟）…" }
             let text = await BookExport.fullBookLesson(book, force: force, progress: bump)
             await MainActor.run {
                 generating = false
                 if let text { lesson = LessonBox(text: text) }
+                else {
+                    noteMessage = CloudLLM.isConfigured
+                        ? "云端这次没返回（可能太慢或连不上）。可在设置里打开“只用本机 AI”用本机模型，或稍后再试。"
+                        : "本机模型不可用（需开启 Apple Intelligence），或在设置里填云端地址。"
+                }
+            }
+        }
+    }
+}
+
+/// Paste a lesson (e.g. from ChatGPT) to keep it with the book.
+private struct LessonPasteEditor: View {
+    @Environment(\.theme) private var theme
+    @Environment(\.dismiss) private var dismiss
+    let initial: String
+    let onSave: (String) -> Void
+    @State private var text: String = ""
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text("把 ChatGPT（或别处）做好的课粘到这里，保存后就和这本书一起留着，可在“看”里读，也能分享成 .md。支持 Markdown。")
+                    .font(.system(size: 13)).lineSpacing(3).foregroundStyle(theme.textSecondary)
+                TextEditor(text: $text)
+                    .font(.system(size: 14)).lineSpacing(3)
+                    .padding(8)
+                    .background(theme.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(theme.border, lineWidth: 1))
+            }
+            .padding(Spacing.lg)
+            .themedScreen()
+            .navigationTitle("粘贴课文")
+            .inlineNavTitle()
+            .onAppear { if text.isEmpty { text = initial } }
+            .toolbar {
+                #if os(iOS)
+                ToolbarItem(placement: .topBarLeading) { Button("取消") { dismiss() } }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("保存") { onSave(text); dismiss() }
+                        .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+                #endif
             }
         }
     }

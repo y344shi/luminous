@@ -83,11 +83,12 @@ enum CloudLLM {
 
     // MARK: one text turn
 
-    static func chat(system: String, user: String, maxTokens: Int = 1200) async -> String? {
+    static func chat(system: String, user: String, maxTokens: Int = 1200,
+                     timeout: TimeInterval = 60) async -> String? {
         guard let url = chatURL() else { return nil }
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
-        req.timeoutInterval = 60
+        req.timeoutInterval = timeout
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let key = apiKey
         if !key.isEmpty { req.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization") }

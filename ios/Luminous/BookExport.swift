@@ -187,9 +187,11 @@ enum BookExport {
         书里识别到的词（已按频率排序，括号是次数）：\(vocabLine)
         """
 
-        // Cloud (gateway) first, unless we're in local-only mode.
+        // Cloud (gateway) first, unless we're in local-only mode. A full-book
+        // lesson is a big generation — give it minutes, not the default 60s, or
+        // it times out mid-think and returns nothing.
         if CloudLLM.isConfigured,
-           let out = await CloudLLM.chat(system: sys, user: user, maxTokens: 4000),
+           let out = await CloudLLM.chat(system: sys, user: user, maxTokens: 8000, timeout: 900),
            !out.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             cache(out, book: book)
             return out
@@ -214,6 +216,10 @@ enum BookExport {
         cachedLesson(book) == nil ? nil : lessonURL(book)
     }
     private static func cache(_ s: String, book: Book) {
+        try? s.write(to: lessonURL(book), atomically: true, encoding: .utf8)
+    }
+    /// Save a lesson the user brought in (e.g. pasted from ChatGPT) with the book.
+    static func saveLesson(_ s: String, book: Book) {
         try? s.write(to: lessonURL(book), atomically: true, encoding: .utf8)
     }
     private static func lessonURL(_ book: Book) -> URL {
