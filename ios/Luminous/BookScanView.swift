@@ -31,7 +31,19 @@ struct BookScanView: View {
     @State private var showImporter = false
     @State private var importMessage: String?
 
+    // Transcribe / export / full-book lesson
+    @State private var pendingExport: ExportAction?
+    @State private var showTranscribeAsk = false
+    @State private var working = false
+    @State private var workStatus = ""
+    @State private var lessonSheet: LessonSheet?
+
     private struct ShareItem: Identifiable { let id = UUID(); let url: URL }
+    private struct LessonSheet: Identifiable { let id = UUID(); let book: Book; let text: String }
+    private enum ExportAction {
+        case xml(Book), json(Book), lesson(Book)
+        var book: Book { switch self { case .xml(let b), .json(let b), .lesson(let b): return b } }
+    }
 
     var body: some View {
         NavigationStack {
@@ -116,6 +128,64 @@ struct BookScanView: View {
                                           set: { if !$0 { importMessage = nil } })) {
             Button("好", role: .cancel) {}
         } message: { Text(importMessage ?? "") }
+        .alert("把这本书转写成文字？", isPresented: $showTranscribeAsk) {
+            Button("转写并继续") { BookPrefs.hasAsked = true; runPending() }
+            Button("以后一直转写") { BookPrefs.hasAsked = true; BookPrefs.transcribeEnabled = true; runPending() }
+            Button("取消", role: .cancel) { BookPrefs.hasAsked = true; pendingExport = nil }
+        } message: {
+            Text("会识别这本书每一页上的文字（在本机完成）。之后就能导出成学习文档，或让 AI 讲整本书。可以在设置里改。")
+        }
+        .sheet(item: $lessonSheet) { s in FullBookLessonView(book: s.book, text: s.text) }
+        .overlay { if working { workingOverlay } }
+    }
+
+    private var workingOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.35).ignoresSafeArea()
+            VStack(spacing: Spacing.md) {
+                ProgressView()
+                Text(workStatus.isEmpty ? "处理中…" : workStatus)
+                    .font(.system(size: 14)).foregroundStyle(.white)
+            }
+            .padding(Spacing.lg)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+    }
+
+    // MARK: transcribe → export / lesson
+
+    private func begin(_ action: ExportAction) {
+        pendingExport = action
+        if BookPrefs.transcribeEnabled { runPending() }
+        else { showTranscribeAsk = true }
+    }
+
+    private func runPending() {
+        guard let action = pendingExport else { return }
+        pendingExport = nil
+        working = true; workStatus = "正在转写…"
+        let bump: @Sendable (Int, Int) -> Void = { p, t in
+            Task { @MainActor in workStatus = "正在转写… \(p)/\(t)" }
+        }
+        Task {
+            switch action {
+            case .xml(let book):
+                let url = await BookExport.export(book, as: .xml, progress: bump)
+                await MainActor.run { working = false; if let url { shareURL = ShareItem(url: url) } }
+            case .json(let book):
+                let url = await BookExport.export(book, as: .json, progress: bump)
+                await MainActor.run { working = false; if let url { shareURL = ShareItem(url: url) } }
+            case .lesson(let book):
+                await MainActor.run { workStatus = "正在备整本书的课…" }
+                let text = await BookExport.fullBookLesson(book, progress: bump)
+                await MainActor.run {
+                    working = false
+                    if let text { lessonSheet = LessonSheet(book: book, text: text) }
+                    else { importMessage = "这次没能生成——云端连不上，或本机模型不可用。可在设置里切换 AI 模式后再试。" }
+                }
+            }
+        }
     }
 
     private var importButton: some View {
@@ -208,7 +278,16 @@ struct BookScanView: View {
         }
         .contextMenu {
             Button { if let url = BookArchive.export(book) { shareURL = ShareItem(url: url) } } label: {
-                Label("分享 / 隔空投送", systemImage: "square.and.arrow.up")
+                Label("分享 / 隔空投送（.luminousbook）", systemImage: "square.and.arrow.up")
+            }
+            Menu {
+                Button { begin(.xml(book)) } label: { Label("XML（注释文档）", systemImage: "doc.text") }
+                Button { begin(.json(book)) } label: { Label("JSON", systemImage: "curlybraces") }
+            } label: {
+                Label("导出学习文档", systemImage: "square.and.arrow.up.on.square")
+            }
+            Button { begin(.lesson(book)) } label: {
+                Label("生成整本书的课（云端）", systemImage: "graduationcap")
             }
             Button(role: .destructive) { BookStore.delete(book.id); reload() } label: {
                 Label("删除", systemImage: "trash")
@@ -239,6 +318,171 @@ struct BookScanView: View {
     }
 
     private func reload() { books = BookStore.books() }
+}
+
+/// The full-book lesson (Markdown from the cloud model) — scrollable, selectable,
+/// and shareable out as a .md file (e.g. to Notes / ChatGPT / Files).
+private struct FullBookLessonView: View {
+    @Environment(\.theme) private var theme
+    @Environment(\.dismiss) private var dismiss
+    let book: Book
+    let text: String
+    @State private var shareURL: URL?
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                Text(rendered)
+                    .font(.system(size: 15)).lineSpacing(4)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(Spacing.lg)
+                    .foregroundStyle(theme.textPrimary)
+            }
+            .themedScreen()
+            .navigationTitle("整本书的课")
+            .inlineNavTitle()
+            .toolbar {
+                #if os(iOS)
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { shareURL = writeMarkdown() } label: {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("完成") { dismiss() }
+                }
+                #endif
+            }
+            #if os(iOS)
+            .sheet(isPresented: Binding(get: { shareURL != nil }, set: { if !$0 { shareURL = nil } })) {
+                if let shareURL { ActivityView(items: [shareURL]) }
+            }
+            #endif
+        }
+    }
+
+    /// Best-effort Markdown → attributed; falls back to plain text.
+    private var rendered: AttributedString {
+        (try? AttributedString(
+            markdown: text,
+            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
+            ?? AttributedString(text)
+    }
+
+    private func writeMarkdown() -> URL? {
+        let safe = book.name.isEmpty ? "book" : book.name.replacingOccurrences(of: "/", with: "-")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(safe) · 整本书的课.md")
+        do { try text.write(to: url, atomically: true, encoding: .utf8); return url } catch { return nil }
+    }
+}
+
+/// Shown with the first page (and from the shelf): the whole book's vocabulary,
+/// ordered by how often each word appears, plus a one-tap "teach the whole book"
+/// lesson (cloud model, or the local AI when cloud is off / unreachable).
+struct BookOverviewView: View {
+    @Environment(\.theme) private var theme
+    let book: Book
+
+    @State private var ranked: [(word: String, count: Int)] = []
+    @State private var loading = true
+    @State private var generating = false
+    @State private var status = ""
+    @State private var lesson: LessonBox?
+
+    private struct LessonBox: Identifiable { let id = UUID(); let text: String }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.lg) {
+                vocabSection
+                lessonSection
+            }
+            .padding(Spacing.lg)
+        }
+        .themedScreen()
+        .navigationTitle("词汇与语法")
+        .inlineNavTitle()
+        .task { await load() }
+        .sheet(item: $lesson) { l in FullBookLessonView(book: book, text: l.text) }
+    }
+
+    private var vocabSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("本书词汇 · 按出现频率")
+                .font(.system(size: 16, weight: .semibold)).foregroundStyle(theme.textPrimary)
+            if loading {
+                HStack(spacing: 10) { ProgressView(); Text("正在转写整本书…")
+                    .font(.system(size: 13)).foregroundStyle(theme.textSecondary) }
+            } else if ranked.isEmpty {
+                Text("这本书还没认出文字。").font(.system(size: 13)).foregroundStyle(theme.textMuted)
+            } else {
+                FlowLayout(spacing: Spacing.sm) {
+                    ForEach(Array(ranked.prefix(150).enumerated()), id: \.offset) { _, item in
+                        HStack(spacing: 4) {
+                            Text(item.word).font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(theme.textPrimary)
+                            Text("\(item.count)").font(.system(size: 11))
+                                .foregroundStyle(theme.accentText)
+                        }
+                        .padding(.horizontal, 9).padding(.vertical, 5)
+                        .background(theme.surface, in: Capsule())
+                        .overlay(Capsule().strokeBorder(theme.border, lineWidth: 0.5))
+                    }
+                }
+                Text("共 \(ranked.count) 个不同的词，越靠前出现得越多。")
+                    .font(.system(size: 12)).foregroundStyle(theme.textMuted)
+            }
+        }
+    }
+
+    private var lessonSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("整本书的课 · 词汇与语法")
+                .font(.system(size: 16, weight: .semibold)).foregroundStyle(theme.textPrimary)
+            Text(CloudLLM.isConfigured
+                 ? "把整本书的词和语法讲一遍——先用云端，连不上就用本机。"
+                 : "把整本书的词和语法讲一遍——用本机 AI（Apple Intelligence）。")
+                .font(.system(size: 13)).lineSpacing(3).foregroundStyle(theme.textSecondary)
+            if generating {
+                HStack(spacing: 10) { ProgressView()
+                    Text(status.isEmpty ? "正在备课…" : status)
+                        .font(.system(size: 13)).foregroundStyle(theme.textSecondary) }
+            } else {
+                HStack(spacing: Spacing.sm) {
+                    SoftButton(title: "生成整本书的课", variant: .solid, full: false) { generate(force: false) }
+                    if BookExport.cachedLesson(book) != nil {
+                        SoftButton(title: "重做", variant: .ghost, full: false) { generate(force: true) }
+                    }
+                    Spacer()
+                }
+            }
+        }
+    }
+
+    private func load() async {
+        let docs = await BookExport.transcribe(book)
+        await MainActor.run {
+            ranked = BookExport.vocabularyRanked(docs)
+            loading = false
+            if let cached = BookExport.cachedLesson(book) { lesson = LessonBox(text: cached) }
+        }
+    }
+
+    private func generate(force: Bool) {
+        generating = true; status = "正在转写…"
+        let bump: @Sendable (Int, Int) -> Void = { p, t in
+            Task { @MainActor in status = "正在转写… \(p)/\(t)" }
+        }
+        Task {
+            await MainActor.run { status = "正在备整本书的课…" }
+            let text = await BookExport.fullBookLesson(book, force: force, progress: bump)
+            await MainActor.run {
+                generating = false
+                if let text { lesson = LessonBox(text: text) }
+            }
+        }
+    }
 }
 
 #if os(iOS)

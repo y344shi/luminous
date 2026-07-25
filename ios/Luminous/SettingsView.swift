@@ -25,6 +25,8 @@ struct SettingsView: View {
     @State private var cloudModel = CloudLLM.model
     @State private var cloudTesting = false
     @State private var cloudTestResult: Bool? = nil
+    @State private var cloudLocalOnly = CloudLLM.localOnly
+    @State private var transcribeBooks = BookPrefs.transcribeEnabled
 
     var body: some View {
         NavigationStack {
@@ -41,6 +43,7 @@ struct SettingsView: View {
                     nudgeSection
                     gardenSection
                     cloudLLMSection
+                    booksSection
                     cloudSection
                     resetSection
 
@@ -572,6 +575,28 @@ struct SettingsView: View {
     // entitlement (CLOUDKIT_ENABLED, paid developer program). Until then the
     // section is a quiet, inert note — the feature is disabled by decision.
 
+    // MARK: 书 · 转写与导出
+    private var booksSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("书 · 转写与导出")
+                .font(.system(size: 14)).foregroundStyle(theme.textMuted)
+            Toggle(isOn: Binding(get: { transcribeBooks },
+                                 set: { transcribeBooks = $0; BookPrefs.transcribeEnabled = $0; BookPrefs.hasAsked = true })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("转写整本书").font(.system(size: 15)).foregroundStyle(theme.textPrimary)
+                    Text("识别每一页的文字，用于导出学习文档(XML/JSON)、按频率的生词表，以及“整本书的课”。都在本机识别。")
+                        .font(.system(size: 12)).lineSpacing(2).foregroundStyle(theme.textSecondary)
+                }
+            }
+            .tint(theme.accent)
+            .padding(Spacing.md)
+            .background(theme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(transcribeBooks ? theme.accent : theme.border, lineWidth: 1))
+        }
+    }
+
     // MARK: 高级 · 云端讲解 — point the study features at your own OpenAI-compatible endpoint.
     private var cloudLLMSection: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
@@ -579,6 +604,21 @@ struct SettingsView: View {
                 .font(.system(size: 14)).foregroundStyle(theme.textMuted)
             Text("填一个 OpenAI 兼容的地址（你自己的服务器，如家里跑 vLLM 的 H200），讲解、笔记、小课、译文会先用它，连不上时自动回到本机模型。原文会发到这个地址，请用 https。")
                 .font(.system(size: 12)).lineSpacing(2).foregroundStyle(theme.textMuted)
+
+            Toggle(isOn: Binding(get: { cloudLocalOnly },
+                                 set: { cloudLocalOnly = $0; CloudLLM.localOnly = $0 })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("只用本机 AI").font(.system(size: 15)).foregroundStyle(theme.textPrimary)
+                    Text("打开后完全不连云端，直接用本机 Apple Intelligence——云端连不上时不必再等。")
+                        .font(.system(size: 12)).lineSpacing(2).foregroundStyle(theme.textSecondary)
+                }
+            }
+            .tint(theme.accent)
+            .padding(Spacing.md)
+            .background(theme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(cloudLocalOnly ? theme.accent : theme.border, lineWidth: 1))
 
             VStack(spacing: Spacing.sm) {
                 cloudField(title: "Base URL", text: $cloudBase,

@@ -248,6 +248,7 @@ struct BookReaderView: View {
 
     private var referenceCard: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
+            if pageIndex == 0 { bookOverviewLink }
             HStack {
                 Text("原文").font(.system(size: 11, weight: .medium)).foregroundStyle(theme.textMuted)
                 Spacer()
@@ -267,6 +268,29 @@ struct BookReaderView: View {
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
             .strokeBorder(theme.border.opacity(0.5), lineWidth: 1))
         .padding([.horizontal, .top], Spacing.md)
+    }
+
+    private var bookOverviewLink: some View {
+        NavigationLink { BookOverviewView(book: book) } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "text.book.closed").font(.system(size: 14))
+                    .foregroundStyle(theme.accentText)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("本书词汇与语法").font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(theme.textPrimary)
+                    Text("按频率的生词表 + 整本书的课").font(.system(size: 11))
+                        .foregroundStyle(theme.textSecondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right").font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(theme.textMuted)
+            }
+            .padding(Spacing.sm)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(theme.accent.opacity(0.10))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder private var sourceLines: some View {

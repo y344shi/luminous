@@ -191,6 +191,15 @@ enum BookStore {
         return (t.english, t.chinese)
     }
 
+    /// Cache-only translation read (never generates) — for the book export, which
+    /// includes translations opportunistically without triggering the model.
+    static func cachedTranslation(for pageURL: URL) -> (english: String, chinese: String)? {
+        let sidecar = pageURL.deletingPathExtension().appendingPathExtension("trans")
+        guard let d = try? Data(contentsOf: sidecar),
+              let t = try? JSONDecoder().decode(PageTranslation.self, from: d) else { return nil }
+        return (t.english, t.chinese)
+    }
+
     /// A few short reading notes for the page, cached in a .notes2 sidecar (v2 =
     /// bilingual, teaching notes; the old .notes were Chinese-only).
     static func notes(for pageURL: URL) async -> [String]? {

@@ -21,6 +21,15 @@ enum CloudLLM {
         static let base = "tdd.cloud.baseURL"
         static let apiKey = "tdd.cloud.apiKey"
         static let model = "tdd.cloud.model"
+        static let localOnly = "tdd.ai.localOnly"
+    }
+
+    /// Explicit "use the on-device model only" mode. When on, the cloud is skipped
+    /// entirely (isConfigured → false), so nothing waits on an unreachable endpoint
+    /// and the features run straight on Apple Intelligence.
+    static var localOnly: Bool {
+        get { UserDefaults.standard.bool(forKey: Key.localOnly) }
+        set { UserDefaults.standard.set(newValue, forKey: Key.localOnly) }
     }
 
     /// Shipped defaults — the app points at the home MLX server out of the box.
@@ -55,9 +64,10 @@ enum CloudLLM {
         set { UserDefaults.standard.set(newValue.trimmingCharacters(in: .whitespaces), forKey: Key.model) }
     }
 
-    /// Configured = a base URL is set. (Key/model are recommended but optional.)
+    /// Configured = not in local-only mode AND a base URL is set. (Key/model are
+    /// recommended but optional.)
     static var isConfigured: Bool {
-        !baseURL.trimmingCharacters(in: .whitespaces).isEmpty
+        !localOnly && !baseURL.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     // MARK: endpoint
