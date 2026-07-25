@@ -328,6 +328,7 @@ private struct FullBookLessonView: View {
     let book: Book
     let text: String
     @State private var shareURL: URL?
+    @State private var speaker = Speaker()
 
     var body: some View {
         NavigationStack {
@@ -345,15 +346,22 @@ private struct FullBookLessonView: View {
             .toolbar {
                 #if os(iOS)
                 ToolbarItem(placement: .topBarTrailing) {
+                    Button { readAloud() } label: {
+                        Image(systemName: speaker.speakingId == "lesson" ? "stop.circle.fill" : "speaker.wave.2")
+                    }
+                    .accessibilityLabel("朗读这节课")
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     Button { shareURL = writeMarkdown() } label: {
                         Image(systemName: "square.and.arrow.up")
                     }
                 }
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("完成") { dismiss() }
+                    Button("完成") { dismiss(); speaker.stop() }
                 }
                 #endif
             }
+            .onDisappear { speaker.stop() }
             #if os(iOS)
             .sheet(isPresented: Binding(get: { shareURL != nil }, set: { if !$0 { shareURL = nil } })) {
                 if let shareURL { ActivityView(items: [shareURL]) }
@@ -368,6 +376,14 @@ private struct FullBookLessonView: View {
             markdown: text,
             options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
             ?? AttributedString(text)
+    }
+
+    /// Read the whole lesson aloud, each line in the voice its language needs.
+    private func readAloud() {
+        if speaker.speakingId == "lesson" { speaker.stop(); return }
+        let segs = LessonSpeech.segments(for: text)
+        guard !segs.isEmpty else { return }
+        speaker.speakSequence(id: "lesson", segments: segs)
     }
 
     private func writeMarkdown() -> URL? {

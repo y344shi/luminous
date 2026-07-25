@@ -32,6 +32,21 @@ enum BookPrefs {
         get { UserDefaults.standard.bool(forKey: askedKey) }
         set { UserDefaults.standard.set(newValue, forKey: askedKey) }
     }
+
+    /// The book's foreign language, for reading lessons aloud. "" = auto-detect.
+    /// Setting it (e.g. "fr") guarantees the非中文 parts are spoken with that
+    /// language's voice, instead of relying on detection of short fragments.
+    private static let langKey = "tdd.book.lessonLanguage"
+    static var lessonLanguage: String {
+        get { UserDefaults.standard.string(forKey: langKey) ?? "" }
+        set { UserDefaults.standard.set(newValue, forKey: langKey) }
+    }
+
+    /// The languages offered in Settings (code, label).
+    static let lessonLanguageOptions: [(code: String, label: String)] = [
+        ("", "自动识别"), ("fr", "法语"), ("en", "英语"), ("es", "西班牙语"),
+        ("de", "德语"), ("it", "意大利语"), ("ja", "日语"), ("ko", "韩语"),
+    ]
 }
 
 /// One transcribed page.

@@ -29,6 +29,7 @@ struct SettingsView: View {
     @State private var localTesting = false
     @State private var localTestResult: String?
     @State private var transcribeBooks = BookPrefs.transcribeEnabled
+    @State private var lessonLang = BookPrefs.lessonLanguage
 
     var body: some View {
         NavigationStack {
@@ -596,6 +597,26 @@ struct SettingsView: View {
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .strokeBorder(transcribeBooks ? theme.accent : theme.border, lineWidth: 1))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("课文朗读 · 外语").font(.system(size: 15)).foregroundStyle(theme.textPrimary)
+                Text("朗读讲解时，中文部分用中文读，其余用这个语言读。选定后就不靠自动识别——短句常被认错。")
+                    .font(.system(size: 12)).lineSpacing(2).foregroundStyle(theme.textSecondary)
+                Picker("", selection: Binding(get: { lessonLang },
+                                              set: { lessonLang = $0; BookPrefs.lessonLanguage = $0 })) {
+                    ForEach(BookPrefs.lessonLanguageOptions, id: \.code) { opt in
+                        Text(opt.label).tag(opt.code)
+                    }
+                }
+                .pickerStyle(.menu)
+                .tint(theme.accentText)
+            }
+            .padding(Spacing.md)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(theme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(theme.border, lineWidth: 1))
         }
     }
 
@@ -736,6 +757,7 @@ struct SettingsView: View {
         CloudLLM.baseURL = cloudBase
         CloudLLM.apiKey = cloudKey
         CloudLLM.model = cloudModel
+        CloudLLM.resetReachability()   // new settings deserve a fresh try
     }
 
     private var cloudSection: some View {

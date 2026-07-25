@@ -81,10 +81,38 @@ enum CloudLLM {
         return URL(string: s + "/v1/chat/completions")
     }
 
+    // MARK: unreachable-endpoint cooldown
+    //
+    // Away from home the endpoint just hangs until it times out. Page loads ask
+    // for a translation AND notes, so every page could sit through two full
+    // timeouts before falling back — the book appeared to "load" forever. After a
+    // failure we mark the endpoint down and skip it fast for a while.
+
+    private static let lock = NSLock()
+    nonisolated(unsafe) private static var downUntil: Date?
+
+    /// True when a recent attempt failed and we shouldn't wait on it again yet.
+    static var isCoolingDown: Bool {
+        lock.lock(); defer { lock.unlock() }
+        guard let downUntil else { return false }
+        if Date() >= downUntil { Self.downUntil = nil; return false }
+        return true
+    }
+
+    private static func markDown(_ seconds: TimeInterval = 120) {
+        lock.lock(); downUntil = Date().addingTimeInterval(seconds); lock.unlock()
+    }
+    private static func markUp() {
+        lock.lock(); downUntil = nil; lock.unlock()
+    }
+    /// Clear the cooldown by hand (Settings' 测试连接, or after editing the URL).
+    static func resetReachability() { markUp() }
+
     // MARK: one text turn
 
     static func chat(system: String, user: String, maxTokens: Int = 1200,
                      timeout: TimeInterval = 60) async -> String? {
+        if isCoolingDown { return nil }
         guard let url = chatURL() else { return nil }
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
@@ -106,13 +134,17 @@ enum CloudLLM {
         if !m.isEmpty { body["model"] = m }
         req.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
-        guard let (data, resp) = try? await URLSession.shared.data(for: req),
-              (resp as? HTTPURLResponse)?.statusCode == 200,
+        guard let (data, resp) = try? await URLSession.shared.data(for: req) else {
+            markDown()          // unreachable / timed out — stop waiting on it for a while
+            return nil
+        }
+        guard (resp as? HTTPURLResponse)?.statusCode == 200,
               let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let choices = obj["choices"] as? [[String: Any]],
               let msg = choices.first?["message"] as? [String: Any],
               let content = msg["content"] as? String
-        else { return nil }
+        else { return nil }   // reachable but unhappy (auth/model) — don't cool down
+        markUp()
         return content.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 

@@ -600,6 +600,7 @@ struct PageNoteEditorView: View {
 
     @State private var text: String
     @State private var editing: Bool
+    @State private var speaker = Speaker()
 
     init(text: String, page: Int, onSave: @escaping (String) -> Void) {
         self.page = page; self.onSave = onSave
@@ -634,14 +635,31 @@ struct PageNoteEditorView: View {
             .inlineNavTitle()
             .toolbar {
                 #if os(iOS)
-                ToolbarItem(placement: .topBarLeading) { Button("完成") { onSave(text); dismiss() } }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("完成") { onSave(text); speaker.stop(); dismiss() }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(editing ? "预览" : "编辑") { editing.toggle() }
                         .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !editing)
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { readAloud() } label: {
+                        Image(systemName: speaker.speakingId == "note" ? "stop.circle.fill" : "speaker.wave.2")
+                    }
+                    .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .accessibilityLabel("朗读本页课")
+                }
                 #endif
             }
+            .onDisappear { speaker.stop() }
         }
+    }
+
+    private func readAloud() {
+        if speaker.speakingId == "note" { speaker.stop(); return }
+        let segs = LessonSpeech.segments(for: text)
+        guard !segs.isEmpty else { return }
+        speaker.speakSequence(id: "note", segments: segs)
     }
 
     private var rendered: AttributedString {
