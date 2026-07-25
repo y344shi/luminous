@@ -58,6 +58,22 @@ struct PageTextReader: View {
     }
 }
 
+/// A word to open in the system dictionary sheet.
+struct DictTerm: Identifiable { let id = UUID(); let word: String }
+
+#if os(iOS)
+/// Apple's native dictionary panel — uses the dictionaries enabled in Settings ›
+/// General › Dictionary, which include the Oxford Dictionary of English and the
+/// Oxford-Hachette French Dictionary. Works offline.
+struct DictionaryPanel: UIViewControllerRepresentable {
+    let term: String
+    func makeUIViewController(context: Context) -> UIReferenceLibraryViewController {
+        UIReferenceLibraryViewController(term: term)
+    }
+    func updateUIViewController(_ vc: UIReferenceLibraryViewController, context: Context) {}
+}
+#endif
+
 private struct PageTextContent: View {
     let pageURL: URL
     let image: UIImage?
@@ -81,6 +97,9 @@ private struct PageTextContent: View {
     @State private var speaker = Speaker()
     @State private var cardMove = Movable()      // the word-card / translation panel
     @State private var lessonMove = Movable()    // the 小课 panel
+    @State private var refs: [String: WordRef] = [:]   // real dictionary lookups
+    @State private var refLoading: Set<String> = []
+    @State private var dictTerm: DictTerm?             // Apple/Oxford system dictionary
 
     var body: some View {
         GeometryReader { geo in
@@ -146,6 +165,9 @@ private struct PageTextContent: View {
                 }
             }
             .onDisappear { speaker.stop() }
+            #if os(iOS)
+            .sheet(item: $dictTerm) { t in DictionaryPanel(term: t.word).ignoresSafeArea() }
+            #endif
         }
     }
 
@@ -460,6 +482,7 @@ private struct PageTextContent: View {
                     let ctx = sentenceContext(for: box.text)
                     Task { await explain(key, line: ctx) }
                 }
+                if refs[key] == nil { Task { await lookUp(key) } }
             }
             .position(x: cx, y: cy)
     }
@@ -492,10 +515,58 @@ private struct PageTextContent: View {
                 Text("这个词的解释需要本机的语言模型（开启 Apple Intelligence），或在设置里填一个云端地址。")
                     .font(.system(size: 14)).lineSpacing(4).foregroundStyle(theme.textSecondary)
             }
+            dictionarySection(word)
         }
         .padding(Spacing.md)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    /// A real reference: the Apple/Oxford system dictionary (offline) + an online
+    /// definition and example sentence (with translation) when connected.
+    @ViewBuilder private func dictionarySection(_ word: String) -> some View {
+        Divider().padding(.vertical, 2)
+        HStack(spacing: 8) {
+            Text("词典").font(.system(size: 11, weight: .medium)).foregroundStyle(theme.textMuted)
+            Spacer()
+            #if os(iOS)
+            Button { dictTerm = DictTerm(word: word) } label: {
+                Label("Oxford · 系统词典", systemImage: "character.book.closed")
+                    .font(.system(size: 12, weight: .medium)).foregroundStyle(theme.accentText)
+            }.buttonStyle(.plain)
+            #endif
+        }
+        if let ref = refs[word] {
+            VStack(alignment: .leading, spacing: 4) {
+                if let ph = ref.phonetic, !ph.isEmpty {
+                    Text(ph).font(.system(size: 13)).foregroundStyle(theme.textSecondary)
+                }
+                if let def = ref.definition, !def.isEmpty {
+                    Text((ref.partOfSpeech.map { "\($0) · " } ?? "") + def)
+                        .font(.system(size: 14)).lineSpacing(3)
+                        .foregroundStyle(theme.textPrimary).fixedSize(horizontal: false, vertical: true)
+                }
+                if let ex = ref.exampleText, !ex.isEmpty {
+                    HStack(alignment: .top, spacing: 6) {
+                        Button { speaker.toggle(id: "ref-\(word)", text: ex, language: language) } label: {
+                            Image(systemName: speaker.speakingId == "ref-\(word)" ? "stop.circle.fill" : "play.circle")
+                                .font(.system(size: 15)).foregroundStyle(theme.accentText)
+                        }.buttonStyle(.plain).padding(.top, 1)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(ex).font(.system(size: 14)).italic().lineSpacing(2)
+                                .foregroundStyle(theme.textPrimary).fixedSize(horizontal: false, vertical: true)
+                            if let tr = ref.exampleTranslation, !tr.isEmpty {
+                                Text(tr).font(.system(size: 12)).foregroundStyle(theme.textSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+                }
+            }
+        } else if refLoading.contains(word) {
+            HStack(spacing: 8) { ProgressView().controlSize(.small)
+                Text("查词典…").font(.system(size: 12)).foregroundStyle(theme.textMuted) }
+        }
     }
 
     private func row(_ label: String, _ value: String) -> some View {
@@ -547,6 +618,15 @@ private struct PageTextContent: View {
     private func explain(_ word: String, line: String) async {
         if let card = await WordStudy.base(for: word, context: line) {
             await MainActor.run { cards[word] = card }
+        }
+    }
+
+    private func lookUp(_ word: String) async {
+        await MainActor.run { _ = refLoading.insert(word) }
+        let ref = await WordReference.look(word, language: language)
+        await MainActor.run {
+            refLoading.remove(word)
+            if let ref { refs[word] = ref }
         }
     }
 
