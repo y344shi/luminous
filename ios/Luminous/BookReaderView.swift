@@ -31,15 +31,10 @@ struct BookReaderView: View {
     @State private var baseSplit: CGFloat = 0.5
     @State private var hsplit: CGFloat = 0.5        // landscape: page fraction
     @State private var baseHSplit: CGFloat = 0.5
-    @State private var readSplit: CGFloat = 0.42    // reference vs explanation
-    @State private var baseReadSplit: CGFloat = 0.42
-    @State private var fontScale: CGFloat = 1.0
     @State private var tokensByPage: [Int: [[String]]] = [:]
     @State private var translations: [Int: (en: String, zh: String)] = [:]
     @State private var notesByPage: [Int: [String]] = [:]
     @State private var langByPage: [Int: String] = [:]
-    @State private var selected: String?
-    @State private var cards: [String: WordCard] = [:]
     @State private var sessionTurns = 0
     @State private var version = 0
     @State private var showApplyAll = false
@@ -47,6 +42,7 @@ struct BookReaderView: View {
     @State private var speaker = Speaker()
     @State private var pageNote: String?          // per-page lesson kept with the book
     @State private var editingNote = false
+    @State private var noteLoading = false
 
     #if canImport(UIKit)
     @State private var textTarget: TextTarget?
@@ -88,7 +84,7 @@ struct BookReaderView: View {
         .inlineNavTitle()
         .toolbar { rotateToolbar }
         .task(id: pageIndex) { await loadPage(pageIndex) }
-        .onChange(of: pageIndex) { _, _ in sessionTurns = 0; selected = nil; speaker.stop() }
+        .onChange(of: pageIndex) { _, _ in sessionTurns = 0; speaker.stop() }
         .onDisappear { speaker.stop() }
         .alert("整本书都这样转吗？", isPresented: $showApplyAll) {
             Button("好，一起转") {
@@ -199,21 +195,6 @@ struct BookReaderView: View {
         .accessibilityLabel("拖动调整比例")
     }
 
-    private func dottedHandle(total H: CGFloat) -> some View {
-        ZStack {
-            DashedLine().stroke(theme.textMuted.opacity(0.5),
-                                style: StrokeStyle(lineWidth: 1, dash: [3, 3])).frame(height: 1)
-            Capsule().fill(theme.textMuted.opacity(0.4)).frame(width: 34, height: 4)
-        }
-        .frame(height: 20).frame(maxWidth: .infinity)
-        .contentShape(Rectangle())
-        .gesture(
-            DragGesture()
-                .onChanged { v in readSplit = min(0.85, max(0.15, baseReadSplit + v.translation.height / max(H, 1))) }
-                .onEnded { _ in baseReadSplit = readSplit }
-        )
-        .accessibilityLabel("拖动调整原文与解释的比例")
-    }
 
     // MARK: rotation
 
@@ -248,60 +229,60 @@ struct BookReaderView: View {
     // MARK: reading area — reference card | dotted handle | explanation card
 
     private var readingArea: some View {
-        GeometryReader { g in
-            let refH = max(90, min(g.size.height - 110, g.size.height * readSplit))
-            VStack(spacing: 0) {
-                referenceCard.frame(height: refH)
-                dottedHandle(total: g.size.height)
-                explanationCard.frame(maxHeight: .infinity)
-            }
+        VStack(spacing: 0) {
+            pageActionBar
+            pageLessonCard.frame(maxHeight: .infinity)
         }
         .background(theme.background)
     }
 
-    private var referenceCard: some View {
+    /// A compact strip instead of the old wall of word chips: read the WHOLE page
+    /// aloud, or go tap words directly on the photo (where highlighting lives).
+    private var pageActionBar: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             if pageIndex == 0 { bookOverviewLink }
-            pageNoteRow
-            HStack {
-                Text("原文").font(.system(size: 11, weight: .medium)).foregroundStyle(theme.textMuted)
-                Spacer()
-                Button { fontScale = max(0.7, fontScale - 0.1) } label: {
-                    Text("A").font(.system(size: 12)).foregroundStyle(theme.textSecondary)
-                }.buttonStyle(.plain).accessibilityLabel("字小一点")
-                Button { fontScale = min(1.8, fontScale + 0.1) } label: {
-                    Text("A").font(.system(size: 18)).foregroundStyle(theme.textSecondary)
-                }.buttonStyle(.plain).accessibilityLabel("字大一点")
-            }
-            ScrollView { sourceLines.frame(maxWidth: .infinity, alignment: .leading) }
-        }
-        .padding(Spacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(theme.surfaceSoft.opacity(0.55))
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
-            .strokeBorder(theme.border.opacity(0.5), lineWidth: 1))
-        .padding([.horizontal, .top], Spacing.md)
-    }
+            FlowLayout(spacing: Spacing.sm) {
+                Button { readWholePage() } label: {
+                    Label(speaker.speakingId == "page" ? "停止" : "读整页",
+                          systemImage: speaker.speakingId == "page" ? "stop.circle.fill" : "speaker.wave.2.fill")
+                        .font(.system(size: 13, weight: .medium)).foregroundStyle(theme.accentText)
+                        .padding(.horizontal, 11).padding(.vertical, 6)
+                        .background(theme.accent.opacity(0.16), in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .disabled(pageText.isEmpty)
 
-    /// This page's own kept lesson (e.g. pasted from ChatGPT). Tap to read / edit.
-    private var pageNoteRow: some View {
-        Button { editingNote = true } label: {
-            HStack(spacing: 8) {
-                Image(systemName: (pageNote?.isEmpty == false) ? "note.text" : "plus.rectangle.on.folder")
-                    .font(.system(size: 13)).foregroundStyle(theme.accentText)
-                Text((pageNote?.isEmpty == false) ? "本页课 · 读 / 改" : "＋ 本页课（粘贴讲解，随书保存）")
-                    .font(.system(size: 13, weight: .medium)).foregroundStyle(theme.textPrimary)
-                Spacer()
-                Image(systemName: "chevron.right").font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(theme.textMuted)
+                #if canImport(UIKit)
+                Button {
+                    if let url = pages[safe: pageIndex], let ui = compositedUIImage(for: url) {
+                        textTarget = TextTarget(url: url, image: ui)
+                    }
+                } label: {
+                    Label("在书页上点词", systemImage: "hand.tap")
+                        .font(.system(size: 13, weight: .medium)).foregroundStyle(theme.accentText)
+                        .padding(.horizontal, 11).padding(.vertical, 6)
+                        .background(theme.accent.opacity(0.12), in: Capsule())
+                }.buttonStyle(.plain)
+                #endif
+
+                Button { editingNote = true } label: {
+                    Label("编辑", systemImage: "square.and.pencil")
+                        .font(.system(size: 13, weight: .medium)).foregroundStyle(theme.textSecondary)
+                        .padding(.horizontal, 11).padding(.vertical, 6)
+                        .background(theme.surfaceSoft, in: Capsule())
+                }.buttonStyle(.plain)
+
+                Button { regeneratePageLesson() } label: {
+                    Label("重新生成", systemImage: "arrow.clockwise")
+                        .font(.system(size: 13, weight: .medium)).foregroundStyle(theme.textSecondary)
+                        .padding(.horizontal, 11).padding(.vertical, 6)
+                        .background(theme.surfaceSoft, in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .disabled(noteLoading)
             }
-            .padding(.horizontal, Spacing.sm).padding(.vertical, 7)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background((pageNote?.isEmpty == false) ? theme.accent.opacity(0.10) : theme.surfaceSoft.opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, Spacing.md).padding(.top, Spacing.sm).padding(.bottom, 4)
         .sheet(isPresented: $editingNote) {
             PageNoteEditorView(text: pageNote ?? "", page: pageIndex + 1) { saved in
                 if let url = pages[safe: pageIndex] {
@@ -311,6 +292,75 @@ struct BookReaderView: View {
             }
         }
     }
+
+    /// The page's course — auto-populated on first open, then yours to edit.
+    private var pageLessonCard: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                if let note = pageNote, !note.isEmpty {
+                    Text(renderedNote(note))
+                        .font(.system(size: 15)).lineSpacing(4)
+                        .textSelection(.enabled)
+                        .foregroundStyle(theme.textPrimary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Divider().padding(.vertical, 2)
+                    DeepenSection(topic: "第 \(pageIndex + 1) 页",
+                                  context: pageText,
+                                  language: langByPage[pageIndex]) { note }
+                        .id("deep-\(pageIndex)")
+                } else if noteLoading {
+                    loadingRow("正在写这一页的课…")
+                } else if pageText.isEmpty {
+                    Text("这一页没认出文字。").font(.system(size: 13)).foregroundStyle(theme.textMuted)
+                } else {
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        Text("这一页还没有课。可以让 AI 写一份，或者自己粘一份进来。")
+                            .font(.system(size: 14)).lineSpacing(3).foregroundStyle(theme.textSecondary)
+                        HStack(spacing: Spacing.sm) {
+                            SoftButton(title: "生成这一页的课", variant: .solid, full: false) {
+                                regeneratePageLesson()
+                            }
+                            SoftButton(title: "粘贴", variant: .ghost, full: false) { editingNote = true }
+                            Spacer()
+                        }
+                    }
+                }
+            }
+            .padding(Spacing.md).frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .background(theme.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(theme.border, lineWidth: 1))
+        .padding([.horizontal, .bottom], Spacing.md)
+    }
+
+    private func renderedNote(_ s: String) -> AttributedString {
+        (try? AttributedString(markdown: s,
+                               options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
+            ?? AttributedString(s)
+    }
+
+    /// Read the WHOLE page in one go (not line by line).
+    private func readWholePage() {
+        if speaker.speakingId == "page" { speaker.stop(); return }
+        let t = pageText
+        guard !t.isEmpty else { return }
+        speaker.toggle(id: "page", text: t, language: langByPage[pageIndex])
+    }
+
+    private func regeneratePageLesson() {
+        guard let url = pages[safe: pageIndex], !noteLoading else { return }
+        noteLoading = true
+        Task {
+            let out = await BookExport.pageLesson(for: url, force: true)
+            await MainActor.run {
+                noteLoading = false
+                if let out { pageNote = out }
+            }
+        }
+    }
+
+
 
     private var bookOverviewLink: some View {
         NavigationLink { BookOverviewView(book: book) } label: {
@@ -335,153 +385,19 @@ struct BookReaderView: View {
         .buttonStyle(.plain)
     }
 
-    @ViewBuilder private var sourceLines: some View {
-        let lines = tokensByPage[pageIndex]
-        if lines == nil {
-            loadingRow("正在读这一页…")
-        } else if lines?.isEmpty == true {
-            Text("这一页没认出文字。").font(.system(size: 13)).foregroundStyle(theme.textMuted)
-        } else {
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                ForEach(Array((lines ?? []).enumerated()), id: \.offset) { i, line in
-                    HStack(alignment: .top, spacing: 6) {
-                        playButton(id: "src-\(pageIndex)-\(i)", text: line.joined(separator: " "),
-                                   language: langByPage[pageIndex]).padding(.top, 2)
-                        FlowLayout(spacing: 5) {
-                            ForEach(Array(line.enumerated()), id: \.offset) { _, token in wordChip(token) }
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     /// This page's source text (context for "再讲深一点").
     private var pageText: String {
         (tokensByPage[pageIndex] ?? []).map { $0.joined(separator: " ") }.joined(separator: " ")
     }
 
-    /// What the card already shows, so "更多" adds instead of repeating.
-    private var shownSoFar: String {
-        var bits: [String] = []
-        if let w = selected, let c = cards[w] {
-            bits.append("\(w) — 英文：\(c.english)；中文：\(c.chinese)；语法：\(c.grammar)；用法：\(c.usage)")
-        }
-        if let t = translations[pageIndex] { bits.append("译文：\(t.en) / \(t.zh)") }
-        if let notes = notesByPage[pageIndex] { bits.append("笔记：" + notes.joined(separator: "；")) }
-        return bits.joined(separator: "\n")
-    }
 
-    private var explanationCard: some View {
-        let hasText = tokensByPage[pageIndex] != nil && !(tokensByPage[pageIndex]?.isEmpty ?? true)
-        return ScrollView {
-            VStack(alignment: .leading, spacing: Spacing.md) {
-                if let word = selected { wordCardView(word) }
-                if let t = translations[pageIndex] {
-                    transRow("English", t.en, id: "en-\(pageIndex)", language: "en-US")
-                    transRow("中文", t.zh, id: "zh-\(pageIndex)", language: "zh-CN")
-                } else if hasText {
-                    loadingRow("正在译这一页…")
-                }
-                if let notes = notesByPage[pageIndex], !notes.isEmpty {
-                    VStack(alignment: .leading, spacing: Spacing.sm) {
-                        Text("读书笔记").font(.system(size: 11, weight: .medium)).foregroundStyle(theme.textMuted)
-                        ForEach(Array(notes.enumerated()), id: \.offset) { _, note in
-                            HStack(alignment: .top, spacing: 6) {
-                                Text("·").foregroundStyle(theme.accentText)
-                                Text(note).font(.system(size: 15)).lineSpacing(3)
-                                    .foregroundStyle(theme.textPrimary).fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
-                    }
-                    .padding(.top, 2)
-                    .overlay(Rectangle().fill(theme.border.opacity(0.5)).frame(height: 1), alignment: .top)
-                    .padding(.top, Spacing.sm)
-                } else if hasText && WordStudy.isAvailable {
-                    loadingRow("正在写笔记…")
-                }
-                if hasText {
-                    Divider().padding(.vertical, 2)
-                    DeepenSection(topic: selected ?? "第 \(pageIndex + 1) 页",
-                                  context: pageText,
-                                  language: langByPage[pageIndex]) { shownSoFar }
-                        .id("deep-\(pageIndex)-\(selected ?? "")")
-                }
-            }
-            .padding(Spacing.md).frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .background(theme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(theme.border, lineWidth: 1))
-        .padding([.horizontal, .bottom], Spacing.md)
-    }
 
     // MARK: pieces
 
-    @ViewBuilder private func wordCardView(_ word: String) -> some View {
-        let card = cards[word]
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            HStack(spacing: 8) {
-                Text(word).font(.system(size: 22, weight: .semibold)).foregroundStyle(theme.textPrimary)
-                playButton(id: "word-\(word)", text: word, language: langByPage[pageIndex])
-                Spacer()
-                Button { withAnimation(.easeOut(duration: 0.2)) { selected = nil } } label: {
-                    Image(systemName: "xmark.circle.fill").font(.system(size: 18))
-                        .foregroundStyle(theme.textMuted.opacity(0.7))
-                }.buttonStyle(.plain).accessibilityLabel("收起")
-            }
-            if let card {
-                row("English", card.english); row("中文", card.chinese)
-                row("语法", card.grammar); row("用法", card.usage); row("例句", card.example)
-            } else if WordStudy.isAvailable {
-                HStack(spacing: 10) { ProgressView(); Text("正在想…")
-                    .font(.system(size: 14)).foregroundStyle(theme.textSecondary) }
-            } else {
-                Text("这个词的解释需要本机的语言模型（真机上、开启 Apple Intelligence 时）。现在先记住它的样子。")
-                    .font(.system(size: 14)).lineSpacing(4).foregroundStyle(theme.textSecondary)
-            }
-        }
-        .padding(Spacing.sm)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(theme.accentSoft.opacity(0.4))
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-    }
 
-    private func transRow(_ label: String, _ value: String, id: String, language: String) -> some View {
-        HStack(alignment: .top, spacing: 6) {
-            playButton(id: id, text: value, language: language).padding(.top, 2)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(label).font(.system(size: 11, weight: .medium)).foregroundStyle(theme.textMuted)
-                Text(value).font(.system(size: 15)).lineSpacing(3)
-                    .foregroundStyle(theme.textSecondary).fixedSize(horizontal: false, vertical: true)
-            }
-        }
-    }
 
-    private func wordChip(_ token: String) -> some View {
-        let key = Self.clean(token)
-        let isSel = selected == key
-        return Button {
-            guard !key.isEmpty else { return }
-            withAnimation(.easeOut(duration: 0.2)) { selected = key }
-            if cards[key] == nil { Task { await explain(key) } }
-        } label: {
-            Text(token).font(.system(size: 19 * fontScale)).lineSpacing(4)
-                .foregroundStyle(isSel ? theme.accentText : theme.textPrimary)
-                .padding(.horizontal, 3).padding(.vertical, 1)
-                .background(isSel ? theme.accentSoft : Color.clear, in: RoundedRectangle(cornerRadius: 5))
-        }
-        .buttonStyle(.plain).disabled(key.isEmpty)
-    }
 
-    private func playButton(id: String, text: String, language: String?) -> some View {
-        Button { speaker.toggle(id: id, text: text, language: language) } label: {
-            Image(systemName: speaker.speakingId == id ? "stop.circle.fill" : "play.circle")
-                .font(.system(size: 17))
-                .foregroundStyle(speaker.speakingId == id ? theme.accentText : theme.textMuted)
-        }
-        .buttonStyle(.plain).accessibilityLabel(speaker.speakingId == id ? "停止朗读" : "朗读")
-    }
 
     private func row(_ label: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -512,21 +428,19 @@ struct BookReaderView: View {
             let lang = Self.detectLanguage(text)
             await MainActor.run { tokensByPage[page] = rows; langByPage[page] = lang }
         }
-        if translations[page] == nil, let t = await BookStore.translation(for: pages[page]) {
-            await MainActor.run { translations[page] = (t.english, t.chinese) }
-        }
-        if notesByPage[page] == nil, let n = await BookStore.notes(for: pages[page]) {
-            await MainActor.run { notesByPage[page] = n }
+        // The page's course IS its note: pre-populate when empty, never overwrite
+        // what the user wrote or pasted.
+        let existing = BookStore.pageNote(for: pages[page])
+        if existing?.isEmpty != false {
+            await MainActor.run { noteLoading = true }
+            let out = await BookExport.pageLesson(for: pages[page])
+            await MainActor.run {
+                noteLoading = false
+                if page == pageIndex, let out { pageNote = out }
+            }
         }
     }
 
-    private func explain(_ word: String) async {
-        let context = (tokensByPage[pageIndex] ?? [])
-            .first(where: { $0.map(Self.clean).contains(word) })?.joined(separator: " ") ?? word
-        if let card = await WordStudy.base(for: word, context: context) {
-            await MainActor.run { cards[word] = card }
-        }
-    }
 
     private func clearPage(_ i: Int) {
         tokensByPage[i] = nil; translations[i] = nil; notesByPage[i] = nil; langByPage[i] = nil

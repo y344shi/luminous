@@ -177,6 +177,73 @@ enum BookExport {
 
     // MARK: full-book lesson (in-app, via our cloud model)
 
+    // MARK: per-page lesson (the page's note, pre-populated)
+
+    /// The course for ONE page: translation, then word-by-word (English meaning,
+    /// grammar, an example), then the grammar points — as Markdown. This becomes
+    /// the page's note, so it is editable and anything the user pastes wins.
+    /// Returns the existing note untouched unless `force`.
+    static func pageLesson(for pageURL: URL, force: Bool = false) async -> String? {
+        if !force, let existing = BookStore.pageNote(for: pageURL),
+           !existing.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return existing }
+
+        let text = await BookStore.ocrText(for: pageURL)
+        let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !t.isEmpty else { return nil }
+
+        let r = NLLanguageRecognizer(); r.processString(t)
+        let lang = r.dominantLanguage?.rawValue ?? "und"
+
+        let sys = """
+        你是一位耐心细致的语言老师。用简体中文讲解，帮学习者真正读懂这一页。\
+        只输出 Markdown 内容本身，不要寒暄。
+        """
+        let user = """
+        这一页的原文（语言代码：\(lang)）：
+        「\(t.prefix(1500))」
+
+        请写这一页的课，用这个结构：
+        ## 译文
+        English: 一句自然的英文翻译
+        中文: 一句自然的简体中文翻译
+
+        ## 逐词讲解
+        按原文顺序，对每一个重要的词或短语：
+        **原词** — 英文意思 ／ 中文意思
+        - 语法：词性、性数配合或变位，以及它和前后词的关系
+        - 例句：一个地道的例句，后面跟中文意思
+
+        ## 语法要点
+        这一页用到的语法点，从基础讲清楚，每点都用这一页的原句作例子。
+        """
+
+        if CloudLLM.isConfigured,
+           let out = await CloudLLM.chat(system: sys, user: user, maxTokens: 3000, timeout: 300),
+           !out.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+           ForbiddenWords.passes(out) {
+            BookStore.savePageNote(out, for: pageURL)
+            return out
+        }
+
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, macOS 26.0, *), AIHelper.isAvailable {
+            // Shorter brief so it fits the on-device context window.
+            let brief = """
+            这一页的原文：「\(t.prefix(500))」
+            用 Markdown 写：## 译文（英文一句、中文一句）；## 逐词讲解（每个重要的词：**原词** — 英文／中文，语法，一个例句）；## 语法要点。
+            """
+            if let r2 = try? await LanguageModelSession(instructions: sys).respond(to: brief) {
+                let out = r2.content.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !out.isEmpty, ForbiddenWords.passes(out) {
+                    BookStore.savePageNote(out, for: pageURL)
+                    return out
+                }
+            }
+        }
+        #endif
+        return nil
+    }
+
     /// Why a lesson couldn't be made — so the UI can say something actionable
     /// instead of a guess.
     enum LessonOutcome {
