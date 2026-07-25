@@ -73,6 +73,9 @@ enum AIHelper {
 
     enum AIError: Error { case unavailable }
 
+    /// The default persona for the Settings chat tester.
+    static let testerInstructions = "你是一个友好的助手。用简体中文回答，简洁清楚。"
+
     /// A one-line status for Settings: what the system says about the model.
     static var statusLine: String {
         #if canImport(FoundationModels)

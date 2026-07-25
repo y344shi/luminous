@@ -691,6 +691,10 @@ struct SettingsView: View {
                     }
                 }
                 .disabled(localTesting)
+                NavigationLink { ModelTesterView() } label: {
+                    Label("对话测试", systemImage: "bubble.left.and.bubble.right")
+                        .font(.system(size: 13, weight: .medium)).foregroundStyle(theme.accentText)
+                }.buttonStyle(.plain)
                 Spacer()
             }
             if let r = localTestResult {
