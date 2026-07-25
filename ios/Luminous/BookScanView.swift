@@ -333,12 +333,16 @@ private struct FullBookLessonView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                Text(rendered)
-                    .font(.system(size: 15)).lineSpacing(4)
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(Spacing.lg)
-                    .foregroundStyle(theme.textPrimary)
+                VStack(alignment: .leading, spacing: Spacing.md) {
+                    Text(rendered)
+                        .font(.system(size: 15)).lineSpacing(4)
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .foregroundStyle(theme.textPrimary)
+                    Divider()
+                    DeepenSection(topic: "《\(book.name)》这本书的词汇和语法") { text }
+                }
+                .padding(Spacing.lg)
             }
             .themedScreen()
             .navigationTitle("整本书的课")

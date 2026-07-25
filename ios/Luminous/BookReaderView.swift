@@ -356,6 +356,22 @@ struct BookReaderView: View {
         }
     }
 
+    /// This page's source text (context for "再讲深一点").
+    private var pageText: String {
+        (tokensByPage[pageIndex] ?? []).map { $0.joined(separator: " ") }.joined(separator: " ")
+    }
+
+    /// What the card already shows, so "更多" adds instead of repeating.
+    private var shownSoFar: String {
+        var bits: [String] = []
+        if let w = selected, let c = cards[w] {
+            bits.append("\(w) — 英文：\(c.english)；中文：\(c.chinese)；语法：\(c.grammar)；用法：\(c.usage)")
+        }
+        if let t = translations[pageIndex] { bits.append("译文：\(t.en) / \(t.zh)") }
+        if let notes = notesByPage[pageIndex] { bits.append("笔记：" + notes.joined(separator: "；")) }
+        return bits.joined(separator: "\n")
+    }
+
     private var explanationCard: some View {
         let hasText = tokensByPage[pageIndex] != nil && !(tokensByPage[pageIndex]?.isEmpty ?? true)
         return ScrollView {
@@ -383,6 +399,13 @@ struct BookReaderView: View {
                     .padding(.top, Spacing.sm)
                 } else if hasText && WordStudy.isAvailable {
                     loadingRow("正在写笔记…")
+                }
+                if hasText {
+                    Divider().padding(.vertical, 2)
+                    DeepenSection(topic: selected ?? "第 \(pageIndex + 1) 页",
+                                  context: pageText,
+                                  language: langByPage[pageIndex]) { shownSoFar }
+                        .id("deep-\(pageIndex)-\(selected ?? "")")
                 }
             }
             .padding(Spacing.md).frame(maxWidth: .infinity, alignment: .leading)

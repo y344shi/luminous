@@ -35,6 +35,8 @@ struct WordDetailView: View {
                     header
                     meaningBlock
                     referenceBlock
+                    Divider().padding(.vertical, 2)
+                    DeepenSection(topic: word, language: language) { shownSoFar }
                 }
                 .padding(Spacing.lg)
             }
@@ -152,6 +154,19 @@ struct WordDetailView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Everything already on screen, so "更多" doesn't repeat it.
+    private var shownSoFar: String {
+        var bits: [String] = []
+        if let c = card {
+            bits.append("英文：\(c.english)；中文：\(c.chinese)；语法：\(c.grammar)；用法：\(c.usage)；例句：\(c.example)")
+        }
+        if let r = ref {
+            if let d = r.definition { bits.append("词典：\(d)") }
+            if let e = r.exampleText { bits.append("例句：\(e)") }
+        }
+        return bits.joined(separator: "\n")
     }
 
     private func load() async {

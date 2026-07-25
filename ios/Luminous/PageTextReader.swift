@@ -516,10 +516,27 @@ private struct PageTextContent: View {
                     .font(.system(size: 14)).lineSpacing(4).foregroundStyle(theme.textSecondary)
             }
             dictionarySection(word)
+            DeepenSection(topic: word,
+                          context: sentenceContext(for: word),
+                          language: language) { deepenBaseline(word) }
+                .id("deep-\(word)")
         }
         .padding(Spacing.md)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    /// What the card already shows for this word.
+    private func deepenBaseline(_ word: String) -> String {
+        var bits: [String] = []
+        if let c = cards[word] {
+            bits.append("英文：\(c.english)；中文：\(c.chinese)；语法：\(c.grammar)；用法：\(c.usage)；例句：\(c.example)")
+        }
+        if let r = refs[word] {
+            if let d = r.definition { bits.append("词典：\(d)") }
+            if let e = r.exampleText { bits.append("例句：\(e)") }
+        }
+        return bits.joined(separator: "\n")
     }
 
     /// A real reference: the Apple/Oxford system dictionary (offline) + an online

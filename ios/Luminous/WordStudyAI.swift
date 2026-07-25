@@ -182,6 +182,51 @@ enum WordStudy {
         return nil
     }
 
+    /// "再讲深一点" — expand on something already generated. Takes what the learner
+    /// has already been told and asks for MORE: the parts that were skipped,
+    /// nuance, contrast with near-synonyms, extra examples. Cloud first (it has
+    /// the room), on-device fallback with a shorter brief. nil when neither works.
+    static func deepen(topic: String, sofar: String, context: String = "",
+                       language: String? = nil) async -> String? {
+        let t = topic.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !t.isEmpty else { return nil }
+        let lang = (language?.isEmpty == false) ? "（原文语言代码：\(language!)）" : ""
+        let sys = """
+        你是一位耐心的语言老师。学习者已经看过下面的讲解，现在想更深入。\
+        不要重复已经说过的内容，只补充新的：更细的用法差别、容易混淆的近义表达、\
+        变化形式、地道例句（都带中文意思）、以及为什么这样说。用简体中文，Markdown 分点。
+        """
+        let user = """
+        要深入讲解的对象：「\(t)」\(lang)
+        \(context.isEmpty ? "" : "它出现的上下文：「\(context.prefix(300))」")
+        学习者已经看过的讲解：
+        \(sofar.prefix(2000))
+
+        请补充更多，不要重复上面已有的内容。
+        """
+
+        if CloudLLM.isConfigured,
+           let out = await CloudLLM.chat(system: sys, user: user, maxTokens: 2000, timeout: 240),
+           !out.isEmpty, ForbiddenWords.passes(out) {
+            return out
+        }
+
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, macOS 26.0, *), AIHelper.isAvailable {
+            // The on-device model needs a much shorter brief to fit its window.
+            let brief = """
+            再深入讲讲「\(t)」\(lang)：用法差别、近义表达、变化形式、两个地道例句（带中文意思）。\
+            不要重复这些：\(sofar.prefix(400))
+            """
+            if let r = try? await LanguageModelSession(instructions: sys).respond(to: brief) {
+                let out = r.content.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !out.isEmpty, ForbiddenWords.passes(out) { return out }
+            }
+        }
+        #endif
+        return nil
+    }
+
     /// Run one generation with a GIVEN prompt on a sample sentence, ignoring the
     /// cache — so the prompt editor's "试一下" can show what a prompt actually does.
     /// Returns a readable multi-line string, or nil when no model produced output.
