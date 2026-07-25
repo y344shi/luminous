@@ -89,9 +89,29 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
                    "ja": "ja-JP", "ko": "ko-KR", "pt": "pt-PT", "ru": "ru-RU",
                    "nl": "nl-NL", "ar": "ar-SA"]
         let full = map[code] ?? map[String(code.prefix(2))] ?? code
+        // Prefer the BEST installed voice for the language. `AVSpeechSynthesisVoice
+        // (language:)` returns the default, which is usually the compact one — the
+        // robotic-sounding French. Premium/enhanced voices sound far more natural.
+        if let best = bestVoice(matching: full) { return best }
         if let v = AVSpeechSynthesisVoice(language: full) { return v }
         let prefix = String(code.prefix(2))
+        if let best = bestVoice(matching: prefix) { return best }
         return AVSpeechSynthesisVoice.speechVoices().first { $0.language.hasPrefix(prefix) }
+    }
+
+    /// The highest-quality installed voice whose language starts with `prefix`.
+    private static func bestVoice(matching prefix: String) -> AVSpeechSynthesisVoice? {
+        let candidates = AVSpeechSynthesisVoice.speechVoices()
+            .filter { $0.language.hasPrefix(prefix) }
+        guard !candidates.isEmpty else { return nil }
+        func rank(_ v: AVSpeechSynthesisVoice) -> Int {
+            switch v.quality {
+            case .premium: return 3
+            case .enhanced: return 2
+            default: return 1
+            }
+        }
+        return candidates.max { rank($0) < rank($1) }
     }
 
     func stop() {

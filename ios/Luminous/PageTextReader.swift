@@ -29,12 +29,14 @@ private struct Movable: Equatable {
 struct PageTextReader: View {
     let pages: [URL]
     let imageFor: (URL) -> UIImage?
+    let bookID: String
     var onClose: () -> Void
     @State private var index: Int
 
-    init(pages: [URL], startIndex: Int, imageFor: @escaping (URL) -> UIImage?,
+    init(pages: [URL], startIndex: Int, bookID: String,
+         imageFor: @escaping (URL) -> UIImage?,
          onClose: @escaping () -> Void) {
-        self.pages = pages; self.imageFor = imageFor; self.onClose = onClose
+        self.pages = pages; self.imageFor = imageFor; self.bookID = bookID; self.onClose = onClose
         _index = State(initialValue: startIndex)
     }
 
@@ -43,7 +45,7 @@ struct PageTextReader: View {
             Color.black.ignoresSafeArea()
             TabView(selection: $index) {
                 ForEach(Array(pages.enumerated()), id: \.offset) { i, url in
-                    PageTextContent(pageURL: url, image: imageFor(url)).tag(i)
+                    PageTextContent(pageURL: url, image: imageFor(url), bookID: bookID).tag(i)
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: pages.count > 1 ? .automatic : .never))
@@ -77,6 +79,7 @@ struct DictionaryPanel: UIViewControllerRepresentable {
 private struct PageTextContent: View {
     let pageURL: URL
     let image: UIImage?
+    let bookID: String
 
     @Environment(\.theme) private var theme
     @State private var boxes: [WordBox] = []
@@ -150,6 +153,9 @@ private struct PageTextContent: View {
             .task {
                 if !loaded {
                     boxes = await BookStore.wordBoxes(for: pageURL); loaded = true
+                    // Explain this page's words in the background, so taps are
+                    // instant (words already known to the book are skipped).
+                    WordCardStore.prewarm(pageURL: pageURL, book: bookID)
                 }
                 if fullText.isEmpty {
                     let t = await BookStore.ocrText(for: pageURL)
@@ -479,8 +485,13 @@ private struct PageTextContent: View {
                 guard !key.isEmpty else { return }
                 withAnimation(.easeOut(duration: 0.2)) { selected = key }
                 if cards[key] == nil {
-                    let ctx = sentenceContext(for: box.text)
-                    Task { await explain(key, line: ctx) }
+                    // Instant when the prewarm pass (or an earlier page) got there first.
+                    if let cached = WordCardStore.card(key, book: bookID) {
+                        cards[key] = cached
+                    } else {
+                        let ctx = sentenceContext(for: box.text)
+                        Task { await explain(key, line: ctx) }
+                    }
                 }
                 if refs[key] == nil { Task { await lookUp(key) } }
             }
@@ -633,8 +644,14 @@ private struct PageTextContent: View {
     private func resetZoom() { scale = 1; lastScale = 1; offset = .zero; lastOffset = .zero }
 
     private func explain(_ word: String, line: String) async {
+        // The prewarm pass may already have it (or a previous page did).
+        if let cached = WordCardStore.card(word, book: bookID) {
+            await MainActor.run { cards[word] = cached }
+            return
+        }
         if let card = await WordStudy.base(for: word, context: line) {
             await MainActor.run { cards[word] = card }
+            WordCardStore.put(card, book: bookID)
         }
     }
 

@@ -107,6 +107,7 @@ struct BookReaderView: View {
         .fullScreenCover(item: $textTarget) { t in
             PageTextReader(pages: pages,
                            startIndex: pages.firstIndex(of: t.url) ?? pageIndex,
+                           bookID: book.id,
                            imageFor: { compositedUIImage(for: $0) }) {
                 textTarget = nil
             }
@@ -265,6 +266,16 @@ struct BookReaderView: View {
                 }.buttonStyle(.plain)
                 #endif
 
+                Button { readLesson() } label: {
+                    Label(speaker.speakingId == "lesson" ? "停止" : "读讲解",
+                          systemImage: speaker.speakingId == "lesson" ? "stop.circle.fill" : "text.bubble")
+                        .font(.system(size: 13, weight: .medium)).foregroundStyle(theme.accentText)
+                        .padding(.horizontal, 11).padding(.vertical, 6)
+                        .background(theme.accent.opacity(0.12), in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .disabled((pageNote ?? "").isEmpty)
+
                 Button { editingNote = true } label: {
                     Label("编辑", systemImage: "square.and.pencil")
                         .font(.system(size: 13, weight: .medium)).foregroundStyle(theme.textSecondary)
@@ -338,6 +349,16 @@ struct BookReaderView: View {
         (try? AttributedString(markdown: s,
                                options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
             ?? AttributedString(s)
+    }
+
+    /// Read the page's course aloud — each line in the voice its language needs
+    /// (中文 explanation in 中文, the book's own language for the examples).
+    private func readLesson() {
+        if speaker.speakingId == "lesson" { speaker.stop(); return }
+        guard let note = pageNote, !note.isEmpty else { return }
+        let segs = LessonSpeech.segments(for: note, foreignLanguage: langByPage[pageIndex])
+        guard !segs.isEmpty else { return }
+        speaker.speakSequence(id: "lesson", segments: segs)
     }
 
     /// Read the WHOLE page in one go (not line by line).
@@ -428,6 +449,10 @@ struct BookReaderView: View {
             let lang = Self.detectLanguage(text)
             await MainActor.run { tokensByPage[page] = rows; langByPage[page] = lang }
         }
+        // Explain this page's words in the background, so tapping any of them
+        // (here or in the full-screen photo reader) opens instantly.
+        WordCardStore.prewarm(pageURL: pages[page], book: book.id)
+
         // The page's course IS its note: pre-populate when empty, never overwrite
         // what the user wrote or pasted.
         let existing = BookStore.pageNote(for: pages[page])

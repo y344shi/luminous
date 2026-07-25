@@ -27,26 +27,47 @@ struct DeepenSection: View {
     @State private var loading = false
     @State private var failed: String?
     @State private var speaker = Speaker()
+    @State private var collapsed: Set<Int> = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             ForEach(Array(rounds.enumerated()), id: \.offset) { i, round in
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text("更多 · \(i + 1)")
-                            .font(.system(size: 11, weight: .medium)).foregroundStyle(theme.textMuted)
+                    HStack(spacing: 10) {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                if collapsed.contains(i) { collapsed.remove(i) } else { collapsed.insert(i) }
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: collapsed.contains(i) ? "chevron.right" : "chevron.down")
+                                    .font(.system(size: 10, weight: .semibold))
+                                Text("更多 · \(i + 1)").font(.system(size: 11, weight: .medium))
+                            }
+                            .foregroundStyle(theme.textMuted)
+                        }.buttonStyle(.plain)
                         Button { speak(round, id: "deep-\(i)") } label: {
                             Image(systemName: speaker.speakingId == "deep-\(i)"
                                   ? "stop.circle.fill" : "speaker.wave.2")
                                 .font(.system(size: 13)).foregroundStyle(theme.accentText)
                         }.buttonStyle(.plain)
                         Spacer()
+                        Button { redo(i) } label: {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 12)).foregroundStyle(theme.textMuted)
+                        }.buttonStyle(.plain).accessibilityLabel("重新讲这一段")
+                        Button { remove(i) } label: {
+                            Image(systemName: "trash")
+                                .font(.system(size: 12)).foregroundStyle(theme.textMuted)
+                        }.buttonStyle(.plain).accessibilityLabel("删掉这一段")
                     }
-                    Text(rendered(round))
-                        .font(.system(size: 14)).lineSpacing(4)
-                        .textSelection(.enabled)
-                        .foregroundStyle(theme.textPrimary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    if !collapsed.contains(i) {
+                        Text(rendered(round))
+                            .font(.system(size: 14)).lineSpacing(4)
+                            .textSelection(.enabled)
+                            .foregroundStyle(theme.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
                 .padding(Spacing.sm)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -91,6 +112,31 @@ struct DeepenSection: View {
                         ? "这次没讲出更多（云端连不上，本机也没写出来）。"
                         : "这次没讲出更多——需要本机的 Apple 智能，或在设置里填云端地址。"
                 }
+            }
+        }
+    }
+
+    /// Drop a round you didn't want.
+    private func remove(_ i: Int) {
+        guard rounds.indices.contains(i) else { return }
+        speaker.stop()
+        withAnimation { rounds.remove(at: i) }
+        collapsed = []
+    }
+
+    /// Redo one round — it's asked again without the version you rejected.
+    private func redo(_ i: Int) {
+        guard rounds.indices.contains(i), !loading else { return }
+        speaker.stop()
+        let others = rounds.enumerated().filter { $0.offset != i }.map(\.element)
+        let sofar = ([alreadyShown()] + others).joined(separator: "\n\n")
+        loading = true; failed = nil
+        Task {
+            let out = await WordStudy.deepen(topic: topic, sofar: sofar,
+                                             context: context, language: language)
+            await MainActor.run {
+                loading = false
+                if let out, rounds.indices.contains(i) { rounds[i] = out }
             }
         }
     }
