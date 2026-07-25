@@ -93,6 +93,7 @@ enum OutingSearch {
                                url: item.url, phone: item.phoneNumber,
                                categoryLabel: cat, mapItem: item)
         }
+        .filter { $0.distanceM <= 100_000 }     // nothing more than 100km away
         .sorted { $0.distanceM < $1.distanceM }
         .prefix(limit).map { $0 }
     }
